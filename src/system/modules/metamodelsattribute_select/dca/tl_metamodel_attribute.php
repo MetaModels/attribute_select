@@ -24,7 +24,7 @@ if (!defined('TL_ROOT'))
 
 $GLOBALS['TL_DCA']['tl_metamodel_attribute']['metapalettes']['select extends _simpleattribute_'] = array
 (
-	'+title' => array('select_table after description', 'select_column', 'select_id')
+	'+title' => array('select_table after description', 'select_column', 'select_id', 'select_alias')
 );
 
 $GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['select_table'] = array
@@ -66,6 +66,23 @@ $GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['select_id'] = array
 	'exclude'               => true,
 	'inputType'             => 'select',
 	'options_callback'      => array('TableMetaModelsAttributeSelect', 'getIntColumnNames'),
+	'eval'                  => array
+	(
+		'includeBlankOption' => true,
+		'doNotSaveEmpty' => true,
+		'alwaysSave' => true,
+		'submitOnChange'=> true,
+		'tl_class'=>'w50',
+		'chosen' => 'true'
+	),
+);
+
+$GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['select_alias'] = array
+(
+	'label'                 => &$GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_alias'],
+	'exclude'               => true,
+	'inputType'             => 'select',
+	'options_callback'      => array('TableMetaModelsAttributeSelect', 'getColumnNames'),
 	'eval'                  => array
 	(
 		'includeBlankOption' => true,

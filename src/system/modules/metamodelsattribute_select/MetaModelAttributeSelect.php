@@ -43,6 +43,7 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 			'select_table',
 			'select_column',
 			'select_id',
+			'select_alias'
 		));
 	}
 
@@ -60,6 +61,19 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 		$arrResult = parent::parseValue($arrRowData, $strOutputFormat);
 		$arrResult['html'] = $arrRowData[$this->getColName()][$this->get('select_column')];
 		return $arrResult;
+	}
+
+	/**
+	 * {@inheritdoc}
+	 */
+	public function parseFilterUrl($arrUrlParams)
+	{
+		$objFilterRule = NULL;
+		if (key_exists($this->getColName(), $arrUrlParams))
+		{
+			$objFilterRule = new MetaModelFilterRuleSelect($this, $arrUrlParams[$this->getColName()]);
+		}
+		return $objFilterRule;
 	}
 
 	/////////////////////////////////////////////////////////////////
