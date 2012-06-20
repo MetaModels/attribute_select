@@ -62,6 +62,10 @@ class MetaModelFilterRuleSelect extends MetaModelFilterRule
 	public function getMatchingIds()
 	{
 		$arrValues = $this->sanitizeValue();
+		if (!$arrValues)
+		{
+			return array();
+		}
 		$objDB = Database::getInstance();
 		$objMatches = $objDB->execute('SELECT id FROM ' . $this->objAttribute->getMetaModel()->getTableName() . ' WHERE ' . $this->objAttribute->getColName() . ' IN (' . implode(',', $arrValues) . ')');
 
