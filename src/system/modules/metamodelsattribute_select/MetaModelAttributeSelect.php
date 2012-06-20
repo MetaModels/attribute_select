@@ -56,10 +56,10 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 		return $arrFieldDef;
 	}
 
-	public function parseValue($arrRowData, $strOutputFormat = 'html')
+	public function parseValue($arrRowData, $strOutputFormat = 'text')
 	{
 		$arrResult = parent::parseValue($arrRowData, $strOutputFormat);
-		$arrResult['html'] = $arrRowData[$this->getColName()][$this->get('select_column')];
+		$arrResult['text'] = $arrRowData[$this->getColName()][$this->get('select_column')];
 		return $arrResult;
 	}
 
