@@ -52,7 +52,7 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 		// TODO: add tree support here.
 		$arrFieldDef=parent::getFieldDefinition();
 		$arrFieldDef['inputType'] = 'select';
-		$arrFieldDef['options'] = $this->getOptions();
+		$arrFieldDef['options'] = $this->getFilterOptions();
 		return $arrFieldDef;
 	}
 
@@ -74,6 +74,51 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 			$objFilterRule = new MetaModelFilterRuleSelect($this, $arrUrlParams[$this->getColName()]);
 		}
 		return $objFilterRule;
+	}
+
+	/**
+	 * {@inheritdoc}
+	 * 
+	 * Fetch filter options from foreign table.
+	 * 
+	 */
+	public function getFilterOptions($arrIds = array())
+	{
+		$strTableName = $this->get('select_table');
+		$strColNameId = $this->get('select_id');
+		$arrReturn = array();
+
+		if ($strTableName && $strColNameId)
+		{
+			$strColNameValue = $this->get('select_column');
+			$strColNameAlias = $this->get('select_alias');
+			if (!$strColNameAlias)
+			{
+				$strColNameAlias = $strColNameId;
+			}
+			$objDB = Database::getInstance();
+			if ($arrIds)
+			{
+				$objValue = $objDB->prepare(sprintf('
+					SELECT %1$s.*
+					FROM %1$s 
+					WHERE %1$s.%2$s IN (%3$s) GROUP BY %1$s.%2$s',
+					$strTableName, // 1
+					$strColNameId, // 2
+					implode(',', $arrIds) // 3
+				))
+				->execute($this->get('id'));
+			} else {
+				$objValue = $objDB->prepare(sprintf('SELECT %1$s.* FROM %1$s', $strTableName))
+				->execute();
+			}
+
+			while ($objValue->next())
+			{
+				$arrReturn[$objValue->$strColNameAlias] = $objValue->$strColNameValue;
+			}
+		}
+		return $arrReturn;
 	}
 
 	/////////////////////////////////////////////////////////////////
