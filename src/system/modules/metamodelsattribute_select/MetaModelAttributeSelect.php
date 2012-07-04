@@ -27,12 +27,6 @@ if (!defined('TL_ROOT'))
  */
 class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 {
-
-	public function getOptions($blnUsedOnly=false)
-	{
-		return array();
-	}
-
 	/////////////////////////////////////////////////////////////////
 	// interface IMetaModelAttribute
 	/////////////////////////////////////////////////////////////////
@@ -61,6 +55,38 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 		$arrResult = parent::parseValue($arrRowData, $strOutputFormat);
 		$arrResult['text'] = $arrRowData[$this->getColName()][$this->get('select_column')];
 		return $arrResult;
+	}
+
+	/**
+	 * {@inheritdoc}
+	 */
+	public function valueToWidget($varValue)
+	{
+		$strColNameAlias = $this->get('select_alias');
+		if (!$strColNameAlias)
+		{
+			$strColNameAlias = $this->get('select_id');
+		}
+		return $varValue[$strColNameAlias];
+	}
+
+	/**
+	 * {@inheritdoc}
+	 */
+	public function widgetToValue($varValue)
+	{
+		$objDB = Database::getInstance();
+		$strColNameAlias = $this->get('select_alias');
+		$strColNameId = $this->get('select_id');
+		if (!$strColNameAlias)
+		{
+			$strColNameAlias = $strColNameId;
+		}
+		// lookup the id for this value.
+		$objValue = $objDB->prepare(sprintf('SELECT %1$s.* FROM %1$s WHERE %2$s=?', $this->get('select_table'), $strColNameAlias))
+		->execute($varValue);
+
+		return $objValue->row();
 	}
 
 	/**
