@@ -193,6 +193,11 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 	{
 		// TODO: store to database.
 	}
+    
+    public function unsetDataFor($arrIds)
+    {
+        // TODO: unset Data
+    }
 }
 
 ?>
