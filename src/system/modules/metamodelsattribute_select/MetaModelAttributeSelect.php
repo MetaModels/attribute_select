@@ -20,7 +20,7 @@ if (!defined('TL_ROOT'))
 
 /**
  * This is the MetaModelAttribute class for handling select attributes.
- * 
+ *
  * @package	   MetaModels
  * @subpackage AttributeSelect
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
@@ -50,13 +50,6 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 		return $arrFieldDef;
 	}
 
-	public function parseValue($arrRowData, $strOutputFormat = 'text', $objSettings = null)
-	{
-		$arrResult = parent::parseValue($arrRowData, $strOutputFormat);
-		$arrResult['text'] = $arrRowData[$this->getColName()][$this->get('select_column')];
-		return $arrResult;
-	}
-
 	/**
 	 * {@inheritdoc}
 	 */
@@ -73,7 +66,7 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 	/**
 	 * {@inheritdoc}
 	 */
-	public function widgetToValue($varValue)
+	public function widgetToValue($varValue, $intId)
 	{
 		$objDB = Database::getInstance();
 		$strColNameAlias = $this->get('select_alias');
@@ -104,9 +97,9 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 
 	/**
 	 * {@inheritdoc}
-	 * 
+	 *
 	 * Fetch filter options from foreign table.
-	 * 
+	 *
 	 */
 	public function getFilterOptions($arrIds = array())
 	{
@@ -127,7 +120,7 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 			{
 				$objValue = $objDB->prepare(sprintf('
 					SELECT %1$s.*
-					FROM %1$s 
+					FROM %1$s
 					WHERE %1$s.%2$s IN (%3$s) GROUP BY %1$s.%2$s',
 					$strTableName, // 1
 					$strColNameId, // 2
@@ -193,7 +186,7 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 	{
 		// TODO: store to database.
 	}
-    
+
     public function unsetDataFor($arrIds)
     {
         // TODO: unset Data
