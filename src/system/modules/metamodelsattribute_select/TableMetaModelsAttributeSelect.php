@@ -20,7 +20,7 @@ if (!defined('TL_ROOT'))
 
 /**
  * Supplementary class for handling DCA information for select attributes.
- * 
+ *
  * @package	   MetaModels
  * @subpackage AttributeSelect
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
@@ -37,13 +37,10 @@ class TableMetaModelsAttributeSelect extends TableMetaModelAttribute
 	{
 		$arrFields = array();
 
-		$objTable = $this->Database->prepare('SELECT select_table FROM tl_metamodel_attribute WHERE id=?')
-				->limit(1)
-				->execute($objDC->id);
-		if (($objTable->numRows > 0)
-		    && $this->Database->tableExists($objTable->select_table))
+		if (($objDC->getCurrentModel())
+		    && $this->Database->tableExists($objDC->getCurrentModel()->getProperty('select_table')))
 		{
-			foreach ($this->Database->listFields($objTable->select_table) as $arrInfo)
+			foreach ($this->Database->listFields($objDC->getCurrentModel()->getProperty('select_table')) as $arrInfo)
 			{
 				if ($arrInfo['type'] != 'index')
 				{
@@ -59,13 +56,10 @@ class TableMetaModelsAttributeSelect extends TableMetaModelAttribute
 	{
 		$arrFields = array();
 
-		$objTable = $this->Database->prepare('SELECT select_table FROM tl_metamodel_attribute WHERE id=?')
-				->limit(1)
-				->execute($objDC->id);
-		if (($objTable->numRows > 0)
-		    && $this->Database->tableExists($objTable->select_table))
+		if (($objDC->getCurrentModel())
+		    && $this->Database->tableExists($objDC->getCurrentModel()->getProperty('select_table')))
 		{
-			foreach ($this->Database->listFields($objTable->select_table) as $arrInfo)
+			foreach ($this->Database->listFields($objDC->getCurrentModel()->getProperty('select_table')) as $arrInfo)
 			{
 				if ($arrInfo['type'] != 'index' && $arrInfo['type'] == 'int')
 				{

@@ -20,17 +20,23 @@ if (!defined('TL_ROOT'))
 
 /**
  * This is the MetaModelFilterRule class for handling select fields.
- * 
+ *
  * @package	   MetaModels
  * @subpackage AttributeSelect
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
  */
 class MetaModelFilterRuleSelect extends MetaModelFilterRule
 {
+	/**
+	 * The attribute this rule applies to.
+	 * @var IMetaModelAttribute
+	 */
+	protected $objAttribute = NULL;
 
 	public function __construct(MetaModelAttributeSelect $objAttribute, $strValue)
 	{
-		parent::__construct($objAttribute);
+		parent::__construct();
+		$this->objAttribute = $objAttribute;
 		$this->value = $strValue;
 	}
 

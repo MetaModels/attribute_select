@@ -78,7 +78,6 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 		// lookup the id for this value.
 		$objValue = $objDB->prepare(sprintf('SELECT %1$s.* FROM %1$s WHERE %2$s=?', $this->get('select_table'), $strColNameAlias))
 		->execute($varValue);
-
 		return $objValue->row();
 	}
 
@@ -184,13 +183,37 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 
 	public function setDataFor($arrValues)
 	{
-		// TODO: store to database.
+		$strTableName = $this->get('select_table');
+		$strColNameId = $this->get('select_id');
+		if ($strTableName && $strColNameId)
+		{
+			$strQuery = sprintf('UPDATE %1$s SET %2$s=? WHERE %1$s.id=?',
+				$this->getMetaModel()->getTableName(),
+				$this->getColName()
+			);
+
+			$objDB = Database::getInstance();
+			foreach($arrValues as $intItemId => $arrValue)
+			{
+				$objQuery = $objDB->prepare($strQuery)->execute($arrValue[$strColNameId], $intItemId);
+			}
+		}
 	}
 
-    public function unsetDataFor($arrIds)
-    {
-        // TODO: unset Data
-    }
+	public function unsetDataFor($arrIds)
+	{
+		$strTableName = $this->get('select_table');
+		$strColNameId = $this->get('select_id');
+		if ($strTableName && $strColNameId)
+		{
+			$strQuery = sprintf('UPDATE %1$s SET %2$s=0 WHERE %1$s.id IN (%3$s)',
+				$this->getMetaModel()->getTableName(),
+				$this->getColName(),
+				implode(',', $arrIds)
+			);
+			Database::getInstance()->execute($strQuery);
+		}
+	}
 }
 
 ?>
