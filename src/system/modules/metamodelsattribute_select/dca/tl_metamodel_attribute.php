@@ -39,6 +39,7 @@ $GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['select_table'] = array
 		'doNotSaveEmpty' => true,
 		'alwaysSave' => true,
 		'submitOnChange'=> true,
+        'tl_class'=>'w50',
 		'chosen' => 'true'
 	),
 );
