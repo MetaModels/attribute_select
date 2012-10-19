@@ -83,19 +83,6 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 
 	/**
 	 * {@inheritdoc}
-	 */
-	public function parseFilterUrl($arrUrlParams)
-	{
-		$objFilterRule = NULL;
-		if (key_exists($this->getColName(), $arrUrlParams))
-		{
-			$objFilterRule = new MetaModelFilterRuleSelect($this, $arrUrlParams[$this->getColName()]);
-		}
-		return $objFilterRule;
-	}
-
-	/**
-	 * {@inheritdoc}
 	 *
 	 * Fetch filter options from foreign table.
 	 *
