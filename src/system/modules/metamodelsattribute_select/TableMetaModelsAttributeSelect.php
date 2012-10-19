@@ -27,6 +27,25 @@ if (!defined('TL_ROOT'))
  */
 class TableMetaModelsAttributeSelect extends TableMetaModelAttribute
 {
+	/**
+	 * @var TableMetaModelRenderSetting
+	 */
+	protected static $objInstance = null;
+
+	/**
+	 * Get the static instance.
+	 *
+	 * @static
+	 * @return MetaPalettes
+	 */
+	public static function getInstance()
+	{
+		if (self::$objInstance == null) {
+			self::$objInstance = new TableMetaModelsAttributeSelect();
+		}
+		return self::$objInstance;
+	}
+
 	public function getTableNames()
 	{
 		$objDB = Database::getInstance();
