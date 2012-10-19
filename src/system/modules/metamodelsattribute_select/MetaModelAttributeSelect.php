@@ -139,6 +139,19 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 		return $arrReturn;
 	}
 
+	/**
+	 * {@inheritdoc}
+	 *
+	 * search value in table
+	 */
+	public function searchFor($strPattern)
+	{
+		$objFilterRule = NULL;
+		$objFilterRule = new MetaModelFilterRuleSelect($this, $strPattern);
+
+		return $objFilterRule->getMatchingIds();
+	}
+
 	/////////////////////////////////////////////////////////////////
 	// interface IMetaModelAttributeSimple
 	/////////////////////////////////////////////////////////////////
