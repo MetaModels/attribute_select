@@ -21,7 +21,7 @@ if (!defined('TL_ROOT'))
 $GLOBALS['METAMODELS']['attributes']['select'] = array
 (
 	'class' => 'MetaModelAttributeSelect',
-	'image' => 'system/modules/metamodelsattribute_select/html/select.gif'
+	'image' => 'system/modules/metamodelsattribute_select/html/select.png'
 );
 
 ?>
