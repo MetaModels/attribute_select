@@ -41,10 +41,10 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 		));
 	}
 
-	public function getFieldDefinition()
+	public function getFieldDefinition($arrOverrides = array())
 	{
 		// TODO: add tree support here.
-		$arrFieldDef=parent::getFieldDefinition();
+		$arrFieldDef=parent::getFieldDefinition($arrOverrides);
 		$arrFieldDef['inputType'] = 'select';
 		$arrFieldDef['options'] = $this->getFilterOptions();
 		return $arrFieldDef;
