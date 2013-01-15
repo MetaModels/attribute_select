@@ -37,7 +37,12 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 			'select_table',
 			'select_column',
 			'select_id',
-			'select_alias'
+			'select_alias',
+			'includeBlankOption',
+			'mandatory',
+			'filterable',
+			'searchable',
+			'sortable'
 		));
 	}
 
