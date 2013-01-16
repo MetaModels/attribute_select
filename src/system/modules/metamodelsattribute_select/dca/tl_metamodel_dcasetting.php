@@ -3,20 +3,19 @@
 $GLOBALS['TL_DCA']['tl_metamodel_dcasetting']['metasubselectpalettes']['attr_id']['select'] =
 array
 (
-	'backend' => array(
-		'tl_class',
-		'mandatory',
+	'presentation' => array(
+        'tl_class',      
+        'includeBlankOption'    
+    ),
+    'functions'  => array(
+        'mandatory'
+    ),
+	'overview' => array(		
 		'filterable',
 		'searchable',
-		'sortable'
-	),
-	'config' => array
-	(
-		'includeBlankOption'
-	),
-	'advanced' => array
-	(
-	),
+		'sortable',
+		'flag'
+	)
 );
 
 ?>
