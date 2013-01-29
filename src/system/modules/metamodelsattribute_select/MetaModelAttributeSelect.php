@@ -51,7 +51,7 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 		// TODO: add tree support here.
 		$arrFieldDef=parent::getFieldDefinition($arrOverrides);
 		$arrFieldDef['inputType'] = 'select';
-		$arrFieldDef['options'] = $this->getFilterOptions();
+		$arrFieldDef['options'] = $this->getFilterOptions(NULL, true);
 		return $arrFieldDef;
 	}
 
@@ -92,8 +92,13 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 	 * Fetch filter options from foreign table.
 	 *
 	 */
-	public function getFilterOptions($arrIds = array())
+	public function getFilterOptions($arrIds, $usedOnly)
 	{
+		if (($arrIds !== NULL) && empty($arrIds))
+		{
+			return array();
+		}
+
 		$strTableName = $this->get('select_table');
 		$strColNameId = $this->get('select_id');
 		$arrReturn = array();
@@ -112,14 +117,32 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 				$objValue = $objDB->prepare(sprintf('
 					SELECT %1$s.*
 					FROM %1$s
-					WHERE %1$s.%2$s IN (%3$s) GROUP BY %1$s.%2$s',
+					RIGHT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
+					WHERE %3$s.id IN (%5$s)
+					GROUP BY %1$s.%2$s',
 					$strTableName, // 1
 					$strColNameId, // 2
-					implode(',', $arrIds) // 3
+					$this->getMetaModel()->getTableName(), // 3
+					$this->getColName(), // 4
+					implode(',', $arrIds) // 5
 				))
 				->execute($this->get('id'));
 			} else {
-				$objValue = $objDB->prepare(sprintf('SELECT %1$s.* FROM %1$s', $strTableName))
+				if ($usedOnly)
+				{
+					$strQuery = sprintf('SELECT %1$s.*
+					FROM %1$s
+					RIGHT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
+					GROUP BY %1$s.%2$s',
+					$strTableName,
+					$strColNameId, // 2
+					$this->getMetaModel()->getTableName(), // 3
+					$this->getColName() // 4
+					);
+				} else {
+					$strQuery = sprintf('SELECT %1$s.* FROM %1$s', $strTableName);
+				}
+				$objValue = $objDB->prepare($strQuery)
 				->execute();
 			}
 

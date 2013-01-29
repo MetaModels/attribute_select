@@ -54,7 +54,6 @@ class MetaModelFilterRuleSelect extends MetaModelFilterRule
 		{
 			$arrLookup = array_map('mysql_real_escape_string', $arrValues);
 			$objSelectIds = $objDB->execute('SELECT ' . $strColNameId . ' FROM ' . $strTableNameId . ' WHERE ' . $strColNameAlias . ' IN (\'' . implode('\',\'', $arrLookup) . '\')');
-
 			$arrValues = $objSelectIds->fetchEach($strColNameId);
 		} else {
 			$arrValues = array_map('intval', $arrValues);
