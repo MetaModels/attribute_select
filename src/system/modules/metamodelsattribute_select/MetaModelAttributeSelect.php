@@ -51,7 +51,7 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 		// TODO: add tree support here.
 		$arrFieldDef=parent::getFieldDefinition($arrOverrides);
 		$arrFieldDef['inputType'] = 'select';
-		$arrFieldDef['options'] = $this->getFilterOptions(NULL, true);
+		$arrFieldDef['options'] = $this->getFilterOptions(NULL, false);
 		return $arrFieldDef;
 	}
 
