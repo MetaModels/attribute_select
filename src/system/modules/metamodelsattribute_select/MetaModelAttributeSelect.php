@@ -42,7 +42,8 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 			'mandatory',
 			'filterable',
 			'searchable',
-			'sortable'
+			'sortable',
+			'flag'
 		));
 	}
 
