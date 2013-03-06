@@ -1,4 +1,5 @@
 <?php
+
 /**
  * The MetaModels extension allows the creation of multiple collections of custom items,
  * each with its own unique set of selectable attributes, with attribute extendability.
@@ -6,17 +7,13 @@
  * data in each collection.
  *
  * PHP version 5
- * @package	   MetaModels
- * @subpackage AttributeSelect
- * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
- * @copyright  The MetaModels team.
- * @license    LGPL.
+ * @package     MetaModels
+ * @subpackage  AttributeSelect
+ * @author      Christian Schiffler <c.schiffler@cyberspectrum.de>
+ * @copyright   The MetaModels team.
+ * @license     LGPL.
  * @filesource
  */
-if (!defined('TL_ROOT'))
-{
-	die('You cannot access this file directly!');
-}
 
 /**
  * Table tl_metamodel_attribute 
@@ -39,7 +36,7 @@ $GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['select_table'] = array
 		'doNotSaveEmpty' => true,
 		'alwaysSave' => true,
 		'submitOnChange'=> true,
-        'tl_class'=>'w50',
+		'tl_class'=>'w50',
 		'chosen' => 'true'
 	),
 );
@@ -94,5 +91,3 @@ $GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['select_alias'] = array
 		'chosen' => 'true'
 	),
 );
-
-?>
