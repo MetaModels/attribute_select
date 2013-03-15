@@ -190,7 +190,8 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 			$strMetaModelTableName = $this->getMetaModel()->getTableName();
 			$strMetaModelTableNameId = $strMetaModelTableName.'_id';
 
-			$objValue = $objDB->prepare(sprintf('SELECT %1$s.*, %2$s.id AS %3$s FROM %1$s LEFT JOIN %2$s ON (%1$s.%4$s=%2$s.%5$s) WHERE %2$s.id IN (%6$s)',
+			// using aliased join here to resolve issue #3 - SQL error for self referencing table
+			$objValue = $objDB->prepare(sprintf('SELECT sourceTable.*, %2$s.id AS %3$s FROM %1$s sourceTable LEFT JOIN %2$s ON (sourceTable.%4$s=%2$s.%5$s) WHERE %2$s.id IN (%6$s)',
 				$strTableNameId, // 1
 				$strMetaModelTableName, // 2
 				$strMetaModelTableNameId, // 3
