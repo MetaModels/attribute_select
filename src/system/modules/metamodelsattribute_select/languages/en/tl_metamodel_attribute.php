@@ -19,3 +19,4 @@
  * Fields
  */
 $GLOBALS['TL_LANG']['tl_metamodel_attribute']['typeOptions']['select']    = 'Select';
+$GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_where']             = array('SQL', 'The list of options can be limited by using SQL.');

@@ -21,7 +21,7 @@
 
 $GLOBALS['TL_DCA']['tl_metamodel_attribute']['metapalettes']['select extends _simpleattribute_'] = array
 (
-	'+title' => array('select_table after description', 'select_column', 'select_id', 'select_alias')
+	'+title' => array('select_table after description', 'select_column', 'select_id', 'select_alias', 'select_where')
 );
 
 $GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['select_table'] = array
@@ -90,4 +90,16 @@ $GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['select_alias'] = array
 		'tl_class'=>'w50',
 		'chosen' => 'true'
 	),
+);
+
+$GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['select_where'] = array
+(
+	'label'                 => &$GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_where'],
+	'exclude'               => true,
+	'inputType'             => 'textarea',
+	'eval'                  => array
+	(
+		'tl_class'=>'clr',
+		'style'=>'height: 4em;',
+	)
 );

@@ -35,6 +35,7 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 			'select_column',
 			'select_id',
 			'select_alias',
+			'select_where',
 			'includeBlankOption',
 			'mandatory',
 			'filterable',
@@ -105,6 +106,7 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 		{
 			$strColNameValue = $this->get('select_column');
 			$strColNameAlias = $this->get('select_alias');
+			$strColNameWhere = ($this->get('select_where') ? html_entity_decode($this->get('select_where')) : false);
 			if (!$strColNameAlias)
 			{
 				$strColNameAlias = $strColNameId;
@@ -116,13 +118,14 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 					SELECT %1$s.*
 					FROM %1$s
 					RIGHT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
-					WHERE %3$s.id IN (%5$s)
+					WHERE (%3$s.id IN (%5$s)%6$s)
 					GROUP BY %1$s.%2$s',
 					$strTableName, // 1
 					$strColNameId, // 2
 					$this->getMetaModel()->getTableName(), // 3
 					$this->getColName(), // 4
-					implode(',', $arrIds) // 5
+					implode(',', $arrIds), // 5
+					($strColNameWhere ? ' AND ('.$strColNameWhere.')' : '') //6
 				))
 				->execute($this->get('id'));
 			} else {
@@ -131,14 +134,20 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 					$strQuery = sprintf('SELECT %1$s.*
 					FROM %1$s
 					RIGHT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
+					%5$s
 					GROUP BY %1$s.%2$s',
 					$strTableName,
 					$strColNameId, // 2
 					$this->getMetaModel()->getTableName(), // 3
-					$this->getColName() // 4
+					$this->getColName(), // 4
+					($strColNameWhere ? ' WHERE ('.$strColNameWhere.')' : '') //5
 					);
 				} else {
-					$strQuery = sprintf('SELECT %1$s.* FROM %1$s', $strTableName);
+					$strQuery = sprintf('SELECT %1$s.* 
+					FROM %1$s%2$s', 
+					$strTableName, //1
+					($strColNameWhere ? ' WHERE ('.$strColNameWhere.')' : false) //2
+					);
 				}
 				$objValue = $objDB->prepare($strQuery)
 				->execute();
