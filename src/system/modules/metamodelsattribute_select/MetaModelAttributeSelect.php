@@ -38,6 +38,7 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 			'select_where',
 			'includeBlankOption',
 			'mandatory',
+			'chosen',
 			'filterable',
 			'searchable',
 			'sortable',
