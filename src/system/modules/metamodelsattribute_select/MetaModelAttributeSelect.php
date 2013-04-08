@@ -143,8 +143,8 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 					($strColNameWhere ? ' WHERE ('.$strColNameWhere.')' : '') //5
 					);
 				} else {
-					$strQuery = sprintf('SELECT %1$s.* 
-					FROM %1$s%2$s', 
+					$strQuery = sprintf('SELECT %1$s.*
+					FROM %1$s%2$s',
 					$strTableName, //1
 					($strColNameWhere ? ' WHERE ('.$strColNameWhere.')' : false) //2
 					);
