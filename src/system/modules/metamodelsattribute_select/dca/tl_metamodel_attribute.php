@@ -10,6 +10,7 @@
  * @package     MetaModels
  * @subpackage  AttributeSelect
  * @author      Christian Schiffler <c.schiffler@cyberspectrum.de>
+ * @author      Christian de la Haye <service@delahaye.de>
  * @copyright   The MetaModels team.
  * @license     LGPL.
  * @filesource
@@ -21,7 +22,7 @@
 
 $GLOBALS['TL_DCA']['tl_metamodel_attribute']['metapalettes']['select extends _simpleattribute_'] = array
 (
-	'+title' => array('select_table after description', 'select_column', 'select_id', 'select_alias', 'select_where')
+	'+title' => array('select_table after description', 'select_column', 'select_id', 'select_alias', 'select_sorting', 'select_where')
 );
 
 $GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['select_table'] = array
@@ -90,6 +91,23 @@ $GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['select_alias'] = array
 		'tl_class'=>'w50',
 		'chosen' => 'true'
 	),
+);
+
+$GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['select_sorting'] = array
+(
+    'label'                 => &$GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_sorting'],
+    'exclude'               => true,
+    'inputType'             => 'select',
+    'options_callback'      => array('TableMetaModelsAttributeSelect', 'getColumnNames'),
+    'eval'                  => array
+    (
+        'includeBlankOption' => true,
+        'doNotSaveEmpty' => true,
+        'alwaysSave' => true,
+        'submitOnChange'=> true,
+        'tl_class' => 'w50',
+        'chosen' => 'true'
+    ),
 );
 
 $GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['select_where'] = array
