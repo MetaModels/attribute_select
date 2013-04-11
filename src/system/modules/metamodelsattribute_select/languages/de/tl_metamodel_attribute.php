@@ -22,3 +22,4 @@
 $GLOBALS['TL_LANG']['tl_metamodel_attribute']['typeOptions']['select']    = 'Auswahl';
 $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_sorting']           = array('Einträge Sortierung', 'Bitte einen Eintrag für die Sortierung auswählen.');
 $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_where']             = array('SQL-Bedingung', 'Mit der Bedingung kann die Liste der Auswahlpunkte eingeschränkt werden.');
+$GLOBALS['TL_LANG']['tl_metamodel_attribute']['sql_error']                = 'Die SQL-Bedingung erzeugt einen Fehler.';

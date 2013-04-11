@@ -86,4 +86,46 @@ class TableMetaModelsAttributeSelect extends TableMetaModelAttribute
 
 		return $arrFields;
 	}
+
+	public function checkQuery($varValue, DataContainer $objDC)
+	{
+		if ($objDC->getCurrentModel() && $varValue)
+		{
+			$objDB = Database::getInstance();
+
+			$strTableName = $objDC->getCurrentModel()->getProperty('select_table');
+			$strColNameId = $objDC->getCurrentModel()->getProperty('select_id');
+			$strColNameValue = $objDC->getCurrentModel()->getProperty('select_column');
+			$strColNameAlias = $objDC->getCurrentModel()->getProperty('select_alias') ? $objDC->getCurrentModel()->getProperty('select_alias') : $strColNameId;
+			$strSortColumn = $objDC->getCurrentModel()->getProperty('select_sorting') ? $objDC->getCurrentModel()->getProperty('select_sorting') : $strColNameId;
+
+			$strColNameWhere = $varValue;
+
+			$strQuery = sprintf('SELECT %1$s.* 
+			FROM %1$s%2$s ORDER BY %1$s.%3$s', 
+			$strTableName, //1
+			($strColNameWhere ? ' WHERE ('.$strColNameWhere.')' : false), //2
+			$strSortColumn // 3
+			);
+
+			try
+			{
+				$objValue = $objDB->prepare($strQuery)
+				->execute();
+			}
+			catch(Exception $e)
+			{
+				// add error
+				$objDC->addError('xxx');
+
+				// log error
+				$this->log($e->getMessage(), 'TableMetaModelsAttributeSelect checkQuery()', TL_ERROR);
+
+				// keep the current value
+				return $objDC->getCurrentModel()->getProperty('select_where');
+			}
+		}
+
+		return $varValue;
+	}
 }

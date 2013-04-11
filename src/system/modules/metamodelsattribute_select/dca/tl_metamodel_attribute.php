@@ -115,9 +115,11 @@ $GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['select_where'] = array
 	'label'                 => &$GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_where'],
 	'exclude'               => true,
 	'inputType'             => 'textarea',
+	'save_callback'         => array(array('TableMetaModelsAttributeSelect', 'checkQuery')),
 	'eval'                  => array
 	(
 		'tl_class'=>'clr',
 		'style'=>'height: 4em;',
+		'decodeEntities'=>'true'
 	)
 );

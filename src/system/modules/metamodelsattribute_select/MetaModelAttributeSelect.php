@@ -110,7 +110,7 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 		{
 			$strColNameValue = $this->get('select_column');
 			$strColNameAlias = $this->get('select_alias');
-			$strSortColumn = $this->get('select_sorting');
+			$strSortColumn = $this->get('select_sorting') ? $this->get('select_sorting') : $strColNameId;
 			$strColNameWhere = ($this->get('select_where') ? html_entity_decode($this->get('select_where')) : false);
 
 			if (!$strColNameAlias)
@@ -125,7 +125,7 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 					FROM %1$s
 					RIGHT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
 					WHERE (%3$s.id IN (%5$s)%6$s)
-					GROUP BY %1$s.%2$s ORDER BY %7$s',
+					GROUP BY %1$s.%2$s ORDER BY %1$s.%7$s',
 					$strTableName, // 1
 					$strColNameId, // 2
 					$this->getMetaModel()->getTableName(), // 3
@@ -142,7 +142,7 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 					FROM %1$s
 					RIGHT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
 					%5$s
-					GROUP BY %1$s.%2$s ORDER BY %6$s',
+					GROUP BY %1$s.%2$s ORDER BY %1$s.%6$s',
 					$strTableName,
 					$strColNameId, // 2
 					$this->getMetaModel()->getTableName(), // 3
@@ -152,7 +152,7 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 					);
 				} else {
 					$strQuery = sprintf('SELECT %1$s.* 
-					FROM %1$s%2$s ORDER BY %3$s', 
+					FROM %1$s%2$s ORDER BY %1$s.%3$s', 
 					$strTableName, //1
 					($strColNameWhere ? ' WHERE ('.$strColNameWhere.')' : false), //2
 					$strSortColumn // 3
