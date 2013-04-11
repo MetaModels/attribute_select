@@ -116,7 +116,7 @@ class TableMetaModelsAttributeSelect extends TableMetaModelAttribute
 			catch(Exception $e)
 			{
 				// add error
-				$objDC->addError('xxx');
+				$objDC->addError($GLOBALS['TL_LANG']['tl_metamodel_attribute']['sql_error']);
 
 				// log error
 				$this->log($e->getMessage(), 'TableMetaModelsAttributeSelect checkQuery()', TL_ERROR);
