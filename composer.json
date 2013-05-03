@@ -47,7 +47,7 @@
 		"php":">=5.3",
 		"contao/core":"~2.11",
 		"contao-community-alliance/composer-installer": "dev-master",
-		"metamodels/core":"~1",
+		"metamodels/core":"~1"
 	},
 	"require-dev": {
 		"metamodels/php-coding-standard":"dev-master",
