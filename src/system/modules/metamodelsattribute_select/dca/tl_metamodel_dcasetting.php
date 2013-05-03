@@ -20,7 +20,8 @@ $GLOBALS['TL_DCA']['tl_metamodel_dcasetting']['metasubselectpalettes']['attr_id'
 	'presentation' => array(
 		'tl_class',
 		'includeBlankOption',
-		'chosen'
+		'chosen',
+		'select_as_radio'
 	),
 	'functions'  => array(
 		'mandatory'
@@ -30,5 +31,16 @@ $GLOBALS['TL_DCA']['tl_metamodel_dcasetting']['metasubselectpalettes']['attr_id'
 		'searchable',
 		'sortable',
 		'flag'
+	)
+);
+
+$GLOBALS['TL_DCA']['tl_metamodel_dcasetting']['fields']['select_as_radio'] = array
+(
+	'label'                 => &$GLOBALS['TL_LANG']['tl_metamodel_dcasetting']['select_as_radio'],
+	'exclude'               => true,
+	'inputType'             => 'checkbox',
+	'eval'                  => array
+	(
+		'tl_class'          => 'clr m12'
 	)
 );

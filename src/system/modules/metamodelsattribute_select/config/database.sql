@@ -19,3 +19,11 @@ CREATE TABLE `tl_metamodel_attribute` (
   `select_sorting` varchar(255) NOT NULL default '',
   `select_where` text NULL,
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+-- 
+-- Table `tl_metamodel_dcasetting`
+-- 
+
+CREATE TABLE `tl_metamodel_dcasetting` (
+  `select_as_radio` varchar(1) NOT NULL default '0',
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;

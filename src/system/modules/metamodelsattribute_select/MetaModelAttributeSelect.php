@@ -39,6 +39,7 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 			'select_alias',
 			'select_where',
 			'select_sorting',
+			'select_as_radio',
 			'includeBlankOption',
 			'mandatory',
 			'chosen',
@@ -52,9 +53,17 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 	public function getFieldDefinition($arrOverrides = array())
 	{
 		// TODO: add tree support here.
-		$arrFieldDef=parent::getFieldDefinition($arrOverrides);
-		$arrFieldDef['inputType'] = 'select';
-		$arrFieldDef['options'] = $this->getFilterOptions(NULL, false);
+		$arrFieldDef = parent::getFieldDefinition($arrOverrides);
+		
+		// If select as radio is true, change the input type.
+		if ($arrOverrides['select_as_radio'] == true)
+		{
+			$arrFieldDef['inputType'] = 'radio';
+		} else {
+			$arrFieldDef['inputType'] = 'select';
+		}
+
+		$arrFieldDef['options'] = $this->getFilterOptions(null, false);
 		return $arrFieldDef;
 	}
 
