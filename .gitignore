@@ -1,9 +1,18 @@
-/*
-!/.gitignore
-!/src/
-!/dev/
-!/ext/
-!/publish/
-!/test/
-!/build.xml
-!/README.md
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs 
+.buildpath
+.project
+.settings/
+.build/
+.external*/
+.idea/
+nbproject/
+
+# composer related
+vendor/
+
+# build
+build/
