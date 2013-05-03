@@ -59,7 +59,9 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 		if ($arrOverrides['select_as_radio'] == true)
 		{
 			$arrFieldDef['inputType'] = 'radio';
-		} else {
+		}
+		else
+		{
 			$arrFieldDef['inputType'] = 'select';
 		}
 
