@@ -22,7 +22,7 @@
 
 $GLOBALS['TL_DCA']['tl_metamodel_attribute']['metapalettes']['select extends _simpleattribute_'] = array
 (
-	'+title' => array('select_table after description', 'select_column', 'select_id', 'select_alias', 'select_sorting', 'select_where')
+	'+display' => array('select_table after description', 'select_column', 'select_id', 'select_alias', 'select_sorting', 'select_where')
 );
 
 $GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['select_table'] = array
