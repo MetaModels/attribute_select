@@ -166,13 +166,15 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 					);
 				} else {
 					$strQuery = sprintf('
-					SELECT COUNT(%3$s) as mm_count, %1$s.* 
-					FROM %1$s%2$s 
-					GROUP BY %3$s
-					ORDER BY %1$s.%3$s', 
-					$strTableName, //1
-					($strColNameWhere ? ' WHERE ('.$strColNameWhere.')' : false), //2
-					$strSortColumn // 3
+					SELECT COUNT(%1$s.%2$s) as mm_count, %1$s.*
+					FROM %1$s
+					%3$s
+					GROUP BY %1$s.%2$s 
+					ORDER BY %1$s.%4$s',
+					$strTableName, // 1
+					$strColNameId, // 2
+					($strColNameWhere ? ' WHERE ('.$strColNameWhere.')' : ''), //3
+					$strSortColumn // 4
 					);
 				}
 				$objValue = $objDB->prepare($strQuery)
