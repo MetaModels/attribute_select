@@ -166,7 +166,7 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 					);
 				} else {
 					$strQuery = sprintf('
-					SELECT %1$s.* 
+					SELECT COUNT(%1$s.%2$s) as mm_count, %1$s.* 
 					FROM %1$s%2$s 
 					GROUP BY %1$s.%2$s 
 					ORDER BY %1$s.%3$s', 
