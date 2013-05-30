@@ -132,11 +132,12 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 			if ($arrIds)
 			{
 				$objValue = $objDB->prepare(sprintf('
-					SELECT %1$s.*
+					SELECT COUNT(%1$s.%2$s) as mm_count, %1$s.*
 					FROM %1$s
 					RIGHT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
 					WHERE (%3$s.id IN (%5$s)%6$s)
-					GROUP BY %1$s.%2$s ORDER BY %1$s.%7$s',
+					GROUP BY %1$s.%2$s
+					ORDER BY %1$s.%7$s',
 					$strTableName, // 1
 					$strColNameId, // 2
 					$this->getMetaModel()->getTableName(), // 3
@@ -149,11 +150,13 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 			} else {
 				if ($usedOnly)
 				{
-					$strQuery = sprintf('SELECT %1$s.*
+					$strQuery = sprintf('
+					SELECT COUNT(%1$s.%2$s) as mm_count, %1$s.*
 					FROM %1$s
 					RIGHT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
 					%5$s
-					GROUP BY %1$s.%2$s ORDER BY %1$s.%6$s',
+					GROUP BY %1$s.%2$s
+					ORDER BY %1$s.%6$s',
 					$strTableName,
 					$strColNameId, // 2
 					$this->getMetaModel()->getTableName(), // 3
@@ -162,11 +165,16 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 					$strSortColumn // 6
 					);
 				} else {
-					$strQuery = sprintf('SELECT %1$s.*
-					FROM %1$s%2$s ORDER BY %1$s.%3$s',
-					$strTableName, //1
-					($strColNameWhere ? ' WHERE ('.$strColNameWhere.')' : false), //2
-					$strSortColumn // 3
+					$strQuery = sprintf('
+					SELECT COUNT(%1$s.%2$s) as mm_count, %1$s.*
+					FROM %1$s
+					%3$s
+					GROUP BY %1$s.%2$s
+					ORDER BY %1$s.%4$s',
+					$strTableName, // 1
+					$strColNameId, // 2
+					($strColNameWhere ? ' WHERE ('.$strColNameWhere.')' : ''), //3
+					$strSortColumn // 4
 					);
 				}
 				$objValue = $objDB->prepare($strQuery)
@@ -175,6 +183,11 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 
 			while ($objValue->next())
 			{
+				if(is_array($arrCount))
+				{
+					$arrCount[$objValue->$strColNameAlias] = $objValue->mm_count;
+				}
+
 				$arrReturn[$objValue->$strColNameAlias] = $objValue->$strColNameValue;
 			}
 		}
