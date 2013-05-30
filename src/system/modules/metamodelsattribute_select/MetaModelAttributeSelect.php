@@ -54,7 +54,7 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 	{
 		// TODO: add tree support here.
 		$arrFieldDef = parent::getFieldDefinition($arrOverrides);
-		
+
 		// If select as radio is true, change the input type.
 		if ($arrOverrides['select_as_radio'] == true)
 		{
@@ -106,7 +106,7 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 	 * Fetch filter options from foreign table.
 	 *
 	 */
-	public function getFilterOptions($arrIds, $usedOnly)
+	public function getFilterOptions($arrIds, $usedOnly, &$arrCount = null)
 	{
 		if (($arrIds !== NULL) && empty($arrIds))
 		{
@@ -162,8 +162,8 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 					$strSortColumn // 6
 					);
 				} else {
-					$strQuery = sprintf('SELECT %1$s.* 
-					FROM %1$s%2$s ORDER BY %1$s.%3$s', 
+					$strQuery = sprintf('SELECT %1$s.*
+					FROM %1$s%2$s ORDER BY %1$s.%3$s',
 					$strTableName, //1
 					($strColNameWhere ? ' WHERE ('.$strColNameWhere.')' : false), //2
 					$strSortColumn // 3
