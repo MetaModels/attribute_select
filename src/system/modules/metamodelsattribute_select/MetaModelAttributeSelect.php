@@ -30,6 +30,29 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 	// interface IMetaModelAttribute
 	/////////////////////////////////////////////////////////////////
 
+	public function sortIds($arrIds, $strDirection)
+	{               
+		$strTableName = $this->get('select_table');
+		$strColNameId = $this->get('select_id');
+		$strSortColumn = $this->get('select_sorting') ? $this->get('select_sorting') : $strColNameId;                
+		$arrIds = Database::getInstance()->prepare(sprintf('
+			SELECT %1$s.id FROM %1$s
+			LEFT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
+			WHERE %1$s.id IN (%5$s) 
+			ORDER BY %3$s.%6$s %7$s',
+			$this->getMetaModel()->getTableName(), //1
+			$this->getColName(), //2
+			$strTableName, //3
+			$strColNameId, //4
+			implode(',', $arrIds),//5
+			$strSortColumn, // 6
+			$strDirection // 7
+			))
+			->execute()
+			->fetchEach('id');
+		return $arrIds;
+	}
+	
 	public function getAttributeSettingNames()
 	{
 		return array_merge(parent::getAttributeSettingNames(), array(
