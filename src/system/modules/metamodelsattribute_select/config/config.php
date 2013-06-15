@@ -15,8 +15,5 @@
  * @filesource
  */
 
-$GLOBALS['METAMODELS']['attributes']['select'] = array
-(
-	'class' => 'MetaModelAttributeSelect',
-	'image' => 'system/modules/metamodelsattribute_select/html/select.png'
-);
+$GLOBALS['METAMODELS']['attributes']['select']['class'] = 'MetaModelAttributeSelect';
+$GLOBALS['METAMODELS']['attributes']['select']['image'] = 'system/modules/metamodelsattribute_select/html/select.png';
