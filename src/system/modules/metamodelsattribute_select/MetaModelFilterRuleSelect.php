@@ -26,21 +26,28 @@ class MetaModelFilterRuleSelect extends MetaModelFilterRule
 {
 	/**
 	 * The attribute this rule applies to.
+	 *
 	 * @var IMetaModelAttribute
 	 */
-	protected $objAttribute = NULL;
+	protected $objAttribute = null;
 
 	public function __construct(MetaModelAttributeSelect $objAttribute, $strValue)
 	{
 		parent::__construct();
+
 		$this->objAttribute = $objAttribute;
-		$this->value = $strValue;
+		$this->value        = $strValue;
 	}
 
+	/**
+	 * Convert a list of aliases to id list.
+	 *
+	 * @return int[]
+	 */
 	public function sanitizeValue()
 	{
-		$strTableNameId = $this->objAttribute->get('select_table');
-		$strColNameId = $this->objAttribute->get('select_id');
+		$strTableNameId  = $this->objAttribute->get('select_table');
+		$strColNameId    = $this->objAttribute->get('select_id');
 		$strColNameAlias = $this->objAttribute->get('select_alias');
 
 		$arrValues = explode(',', $this->value);
@@ -49,8 +56,16 @@ class MetaModelFilterRuleSelect extends MetaModelFilterRule
 
 		if ($strColNameAlias)
 		{
-			$arrLookup = array_map('mysql_real_escape_string', $arrValues);
-			$objSelectIds = $objDB->execute('SELECT ' . $strColNameId . ' FROM ' . $strTableNameId . ' WHERE ' . $strColNameAlias . ' IN (\'' . implode('\',\'', $arrLookup) . '\')');
+			$objSelectIds = $objDB
+				->prepare(sprintf(
+					'SELECT %s FROM %s WHERE %s IN (%s)',
+					$strColNameId,
+					$strTableNameId,
+					$strColNameAlias,
+					implode(',', array_fill(0, count($arrValues), '?'))
+				))
+				->executeUncached($arrValues);
+
 			$arrValues = $objSelectIds->fetchEach($strColNameId);
 		} else {
 			$arrValues = array_map('intval', $arrValues);
@@ -68,11 +83,15 @@ class MetaModelFilterRuleSelect extends MetaModelFilterRule
 		{
 			return array();
 		}
-		$objDB = Database::getInstance();
-		$objMatches = $objDB->execute('SELECT id FROM ' . $this->objAttribute->getMetaModel()->getTableName() . ' WHERE ' . $this->objAttribute->getColName() . ' IN (' . implode(',', $arrValues) . ')');
+
+		$objDB      = Database::getInstance();
+		$objMatches = $objDB->executeUncached(sprintf(
+			'SELECT id FROM %s WHERE %s IN (%s)',
+			$this->objAttribute->getMetaModel()->getTableName(),
+			$this->objAttribute->getColName(),
+			implode(',', $arrValues)
+		));
 
 		return $objMatches->fetchEach('id');
 	}
 }
-
-?>
