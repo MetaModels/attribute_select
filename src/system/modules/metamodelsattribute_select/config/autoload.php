@@ -21,9 +21,13 @@
  */
 ClassLoader::addClasses(array
 (
-	'MetaModelAttributeSelect'              => 'system/modules/metamodelsattribute_select/MetaModelAttributeSelect.php',
-	'MetaModelFilterRuleSelect'             => 'system/modules/metamodelsattribute_select/MetaModelFilterRuleSelect.php',
-	'TableMetaModelsAttributeSelect'        => 'system/modules/metamodelsattribute_select/TableMetaModelsAttributeSelect.php',
+	'MetaModels\Attribute\Select\Select'       => 'system/modules/metamodelsattribute_select/MetaModels/Attribute/Select/Select.php',
+	'MetaModels\Dca\AttributeSelect'           => 'system/modules/metamodelsattribute_select/MetaModels/Dca/AttributeSelect.php',
+	'MetaModels\Filter\Rules\FilterRuleSelect' => 'system/modules/metamodelsattribute_select/MetaModels/Filter/Rules/FilterRuleSelect.php',
+
+	'MetaModelAttributeSelect'              => 'system/modules/metamodelsattribute_select/deprecated/MetaModelAttributeSelect.php',
+	'MetaModelFilterRuleSelect'             => 'system/modules/metamodelsattribute_select/deprecated/MetaModelFilterRuleSelect.php',
+	'TableMetaModelsAttributeSelect'        => 'system/modules/metamodelsattribute_select/deprecated/TableMetaModelsAttributeSelect.php',
 ));
 
 

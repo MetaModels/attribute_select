@@ -16,26 +16,30 @@
  * @filesource
  */
 
+namespace MetaModels\Attribute\Select;
+
+use MetaModels\Attribute\AbstractHybrid;
+use MetaModels\Filter\Rules\FilterRuleSelect;
+
 /**
  * This is the MetaModelAttribute class for handling select attributes.
  *
- * @package	   MetaModels
+ * @package    MetaModels
  * @subpackage AttributeSelect
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
  * @author     Christian de la Haye <service@delahaye.de>
  */
-class MetaModelAttributeSelect extends MetaModelAttributeHybrid
+class Select extends AbstractHybrid
 {
-	/////////////////////////////////////////////////////////////////
-	// interface IMetaModelAttribute
-	/////////////////////////////////////////////////////////////////
-
+	/**
+	 * {@inheritdoc}
+	 */
 	public function sortIds($arrIds, $strDirection)
-	{               
+	{
 		$strTableName = $this->get('select_table');
 		$strColNameId = $this->get('select_id');
 		$strSortColumn = $this->get('select_sorting') ? $this->get('select_sorting') : $strColNameId;                
-		$arrIds = Database::getInstance()->prepare(sprintf('
+		$arrIds = \Database::getInstance()->prepare(sprintf('
 			SELECT %1$s.id FROM %1$s
 			LEFT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
 			WHERE %1$s.id IN (%5$s) 
@@ -52,7 +56,10 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 			->fetchEach('id');
 		return $arrIds;
 	}
-	
+
+	/**
+	 * {@inheritdoc}
+	 */
 	public function getAttributeSettingNames()
 	{
 		return array_merge(parent::getAttributeSettingNames(), array(
@@ -73,6 +80,9 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 		));
 	}
 
+	/**
+	 * {@inheritdoc}
+	 */
 	public function getFieldDefinition($arrOverrides = array())
 	{
 		// TODO: add tree support here.
@@ -110,7 +120,7 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 	 */
 	public function widgetToValue($varValue, $intId)
 	{
-		$objDB = Database::getInstance();
+		$objDB = \Database::getInstance();
 		$strColNameAlias = $this->get('select_alias');
 		$strColNameId = $this->get('select_id');
 		if (!$strColNameAlias)
@@ -119,7 +129,7 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 		}
 		// lookup the id for this value.
 		$objValue = $objDB->prepare(sprintf('SELECT %1$s.* FROM %1$s WHERE %2$s=?', $this->get('select_table'), $strColNameAlias))
-		->execute($varValue);
+			->execute($varValue);
 		return $objValue->row();
 	}
 
@@ -165,7 +175,7 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 			{
 				$strColNameAlias = $strColNameId;
 			}
-			$objDB = Database::getInstance();
+			$objDB = \Database::getInstance();
 			if ($arrIds)
 			{
 				$objValue = $objDB->prepare(sprintf('
@@ -183,7 +193,7 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 					($strColNameWhere ? ' AND ('.$strColNameWhere.')' : ''), //6
 					$strSortColumn // 7
 				))
-				->execute($this->get('id'));
+					->execute($this->get('id'));
 			} else {
 				if ($usedOnly)
 				{
@@ -194,12 +204,12 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 					%5$s
 					GROUP BY %1$s.%2$s
 					ORDER BY %1$s.%6$s',
-					$strTableName,
-					$strColNameId, // 2
-					$this->getMetaModel()->getTableName(), // 3
-					$this->getColName(), // 4
-					($strColNameWhere ? ' WHERE ('.$strColNameWhere.')' : ''), //5
-					$strSortColumn // 6
+						$strTableName,
+						$strColNameId, // 2
+						$this->getMetaModel()->getTableName(), // 3
+						$this->getColName(), // 4
+						($strColNameWhere ? ' WHERE ('.$strColNameWhere.')' : ''), //5
+						$strSortColumn // 6
 					);
 				} else {
 					$strQuery = sprintf('
@@ -208,14 +218,14 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 					%3$s
 					GROUP BY %1$s.%2$s
 					ORDER BY %1$s.%4$s',
-					$strTableName, // 1
-					$strColNameId, // 2
-					($strColNameWhere ? ' WHERE ('.$strColNameWhere.')' : ''), //3
-					$strSortColumn // 4
+						$strTableName, // 1
+						$strColNameId, // 2
+						($strColNameWhere ? ' WHERE ('.$strColNameWhere.')' : ''), //3
+						$strSortColumn // 4
 					);
 				}
 				$objValue = $objDB->prepare($strQuery)
-				->execute();
+					->execute();
 			}
 
 			while ($objValue->next())
@@ -239,27 +249,25 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 	public function searchFor($strPattern)
 	{
 		$objFilterRule = NULL;
-		$objFilterRule = new MetaModelFilterRuleSelect($this, $strPattern);
+		$objFilterRule = new FilterRuleSelect($this, $strPattern);
 
 		return $objFilterRule->getMatchingIds();
 	}
 
-	/////////////////////////////////////////////////////////////////
-	// interface IMetaModelAttributeSimple
-	/////////////////////////////////////////////////////////////////
-
+	/**
+	 * {@inheritdoc}
+	 */
 	public function getSQLDataType()
 	{
 		return 'int(11) NOT NULL default \'0\'';
 	}
 
-	/////////////////////////////////////////////////////////////////
-	// interface IMetaModelAttributeComplex
-	/////////////////////////////////////////////////////////////////
-
+	/**
+	 * {@inheritdoc}
+	 */
 	public function getDataFor($arrIds)
 	{
-		$objDB = Database::getInstance();
+		$objDB = \Database::getInstance();
 		$strTableNameId = $this->get('select_table');
 		$strColNameId = $this->get('select_id');
 		$arrReturn = array();
@@ -278,7 +286,7 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 				$this->getColName(), // 5
 				implode(',', $arrIds) //6
 			))
-			->execute();
+				->execute();
 			while ($objValue->next())
 			{
 				$arrReturn[$objValue->$strMetaModelTableNameId] = $objValue->row();
@@ -287,6 +295,9 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 		return $arrReturn;
 	}
 
+	/**
+	 * {@inheritdoc}
+	 */
 	public function setDataFor($arrValues)
 	{
 		$strTableName = $this->get('select_table');
@@ -298,14 +309,17 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 				$this->getColName()
 			);
 
-			$objDB = Database::getInstance();
+			$objDB = \Database::getInstance();
 			foreach($arrValues as $intItemId => $arrValue)
 			{
-				$objQuery = $objDB->prepare($strQuery)->execute($arrValue[$strColNameId], $intItemId);
+				$objDB->prepare($strQuery)->execute($arrValue[$strColNameId], $intItemId);
 			}
 		}
 	}
 
+	/**
+	 * {@inheritdoc}
+	 */
 	public function unsetDataFor($arrIds)
 	{
 		$strTableName = $this->get('select_table');
@@ -317,7 +331,7 @@ class MetaModelAttributeSelect extends MetaModelAttributeHybrid
 				$this->getColName(),
 				implode(',', $arrIds)
 			);
-			Database::getInstance()->execute($strQuery);
+			\Database::getInstance()->execute($strQuery);
 		}
 	}
 }

@@ -15,23 +15,29 @@
  * @filesource
  */
 
+namespace MetaModels\Filter\Rules;
+
+use MetaModels\Filter\FilterRule;
+use MetaModels\Attribute\IAttribute;
+use MetaModels\Attribute\Select\Select;
+
 /**
  * This is the MetaModelFilterRule class for handling select fields.
  *
- * @package	   MetaModels
+ * @package    MetaModels
  * @subpackage AttributeSelect
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
  */
-class MetaModelFilterRuleSelect extends MetaModelFilterRule
+class FilterRuleSelect extends FilterRule
 {
 	/**
 	 * The attribute this rule applies to.
 	 *
-	 * @var IMetaModelAttribute
+	 * @var IAttribute
 	 */
 	protected $objAttribute = null;
 
-	public function __construct(MetaModelAttributeSelect $objAttribute, $strValue)
+	public function __construct(Select $objAttribute, $strValue)
 	{
 		parent::__construct();
 
@@ -52,7 +58,7 @@ class MetaModelFilterRuleSelect extends MetaModelFilterRule
 
 		$arrValues = explode(',', $this->value);
 
-		$objDB = Database::getInstance();
+		$objDB = \Database::getInstance();
 
 		if ($strColNameAlias)
 		{
@@ -84,7 +90,7 @@ class MetaModelFilterRuleSelect extends MetaModelFilterRule
 			return array();
 		}
 
-		$objDB      = Database::getInstance();
+		$objDB      = \Database::getInstance();
 		$objMatches = $objDB->executeUncached(sprintf(
 			'SELECT id FROM %s WHERE %s IN (%s)',
 			$this->objAttribute->getMetaModel()->getTableName(),
