@@ -114,8 +114,8 @@ class AttributeSelect extends Attribute
 				$strSortColumn // 3
 			);
 
-            // replace inserttags but do not cache
-            $strQuery = ContaoController::getInstance()->replaceInsertTags($strQuery, false);
+			// replace inserttags but do not cache
+			$strQuery = ContaoController::getInstance()->replaceInsertTags($strQuery, false);
 
 			try
 			{
