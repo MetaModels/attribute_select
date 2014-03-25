@@ -18,6 +18,7 @@
 namespace MetaModels\Dca;
 
 use DcGeneral\DataContainerInterface;
+use MetaModels\Helper\ContaoController;
 
 /**
  * Supplementary class for handling DCA information for select attributes.
@@ -112,6 +113,9 @@ class AttributeSelect extends Attribute
 				($strColNameWhere ? ' WHERE ('.$strColNameWhere.')' : false), //2
 				$strSortColumn // 3
 			);
+
+            // replace inserttags but do not cache
+            $strQuery = ContaoController::getInstance()->replaceInsertTags($strQuery, false);
 
 			try
 			{
