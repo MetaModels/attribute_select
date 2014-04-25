@@ -139,9 +139,9 @@ class AttributeSelect extends Attribute
 			$strColNameWhere = $varValue;
 
 			$strQuery = sprintf('
-			SELECT %1$s.*
-			FROM %1$s%2$s
-			ORDER BY %1$s.%3$s',
+				SELECT %1$s.*
+				FROM %1$s%2$s
+				ORDER BY %1$s.%3$s',
 				// @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
 				$strTableName,                                                // 1
 				($strColNameWhere ? ' WHERE ('.$strColNameWhere.')' : false), // 2
@@ -164,7 +164,7 @@ class AttributeSelect extends Attribute
 				$this->log($e->getMessage(), 'TableMetaModelsAttributeSelect checkQuery()', TL_ERROR);
 
 				// Keep the current value.
-				return $objDC->getEnvironment()->getCurrentModel()->getProperty('select_where');
+				return $objModel->getProperty('select_where');
 			}
 		}
 
