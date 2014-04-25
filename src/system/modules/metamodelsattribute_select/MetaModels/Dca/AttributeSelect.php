@@ -29,6 +29,8 @@ use DcGeneral\DataContainerInterface;
 class AttributeSelect extends Attribute
 {
 	/**
+	 * The singleton instance.
+	 *
 	 * @var AttributeSelect
 	 */
 	protected static $objInstance = null;
@@ -41,26 +43,40 @@ class AttributeSelect extends Attribute
 	 */
 	public static function getInstance()
 	{
-		if (self::$objInstance == null) {
+		if (self::$objInstance == null)
+		{
 			self::$objInstance = new AttributeSelect();
 		}
 		return self::$objInstance;
 	}
 
+	/**
+	 * Retrieve all database table names.
+	 *
+	 * @return array
+	 */
 	public function getTableNames()
 	{
 		$objDB = \Database::getInstance();
 		return $objDB->listTables();
 	}
 
+	/**
+	 * Retrieve all column names for the current selected table.
+	 *
+	 * @param DataContainerInterface $objDC The data container.
+	 *
+	 * @return array
+	 */
 	public function getColumnNames(DataContainerInterface $objDC)
 	{
 		$arrFields = array();
+		$objDB     = \Database::getInstance();
+		$model     = $objDC->getEnvironment()->getCurrentModel();
 
-		if (($objDC->getEnvironment()->getCurrentModel())
-			&& \Database::getInstance()->tableExists($objDC->getEnvironment()->getCurrentModel()->getProperty('select_table')))
+		if ($model && $objDB->tableExists($model->getProperty('select_table')))
 		{
-			foreach ($this->Database->listFields($objDC->getEnvironment()->getCurrentModel()->getProperty('select_table')) as $arrInfo)
+			foreach ($objDB->listFields($model->getProperty('select_table')) as $arrInfo)
 			{
 				if ($arrInfo['type'] != 'index')
 				{
@@ -72,14 +88,22 @@ class AttributeSelect extends Attribute
 		return $arrFields;
 	}
 
+	/**
+	 * Retrieve all column names of type int for the current selected table.
+	 *
+	 * @param DataContainerInterface $objDC The data container.
+	 *
+	 * @return array
+	 */
 	public function getIntColumnNames(DataContainerInterface $objDC)
 	{
 		$arrFields = array();
+		$objDB     = \Database::getInstance();
+		$model     = $objDC->getEnvironment()->getCurrentModel();
 
-		if (($objDC->getEnvironment()->getCurrentModel())
-			&& \Database::getInstance()->tableExists($objDC->getEnvironment()->getCurrentModel()->getProperty('select_table')))
+		if ($model && $objDB->tableExists($model->getProperty('select_table')))
 		{
-			foreach (\Database::getInstance()->listFields($objDC->getEnvironment()->getCurrentModel()->getProperty('select_table')) as $arrInfo)
+			foreach ($objDB->listFields($model->getProperty('select_table')) as $arrInfo)
 			{
 				if ($arrInfo['type'] != 'index' && $arrInfo['type'] == 'int')
 				{
@@ -91,43 +115,55 @@ class AttributeSelect extends Attribute
 		return $arrFields;
 	}
 
+	/**
+	 * Check if the select_where value is valid by firing a test query.
+	 *
+	 * @param string                 $varValue The where condition to test.
+	 *
+	 * @param DataContainerInterface $objDC    The data container.
+	 *
+	 * @return array
+	 */
 	public function checkQuery($varValue, DataContainerInterface $objDC)
 	{
-		if ($objDC->getEnvironment()->getCurrentModel() && $varValue)
-		{
-			$objDB    = \Database::getInstance();
-			$objModel = $objDC->getEnvironment()->getCurrentModel();
+		$objModel = $objDC->getEnvironment()->getCurrentModel();
 
-			$strTableName = $objModel->getProperty('select_table');
-			$strColNameId = $objModel->getProperty('select_id');
-			$strColNameValue = $objModel->getProperty('select_column');
-			$strColNameAlias = $objModel->getProperty('select_alias') ? $objModel->getProperty('select_alias') : $strColNameId;
-			$strSortColumn = $objModel->getProperty('select_sorting') ? $objModel->getProperty('select_sorting') : $strColNameId;
+		if ($objModel && $varValue)
+		{
+			$objDB = \Database::getInstance();
+
+			$strTableName  = $objModel->getProperty('select_table');
+			$strColNameId  = $objModel->getProperty('select_id');
+			$strSortColumn = $objModel->getProperty('select_sorting') ?: $strColNameId;
 
 			$strColNameWhere = $varValue;
 
-			$strQuery = sprintf('SELECT %1$s.*
-			FROM %1$s%2$s ORDER BY %1$s.%3$s',
-				$strTableName, //1
-				($strColNameWhere ? ' WHERE ('.$strColNameWhere.')' : false), //2
-				$strSortColumn // 3
+			$strQuery = sprintf('
+			SELECT %1$s.*
+			FROM %1$s%2$s
+			ORDER BY %1$s.%3$s',
+				// @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
+				$strTableName,                                                // 1
+				($strColNameWhere ? ' WHERE ('.$strColNameWhere.')' : false), // 2
+				$strSortColumn                                                // 3
+				// @codingStandardsIgnoreEnd
 			);
 
 			try
 			{
-				$objValue = $objDB
+				$objDB
 					->prepare($strQuery)
 					->execute();
 			}
 			catch(\Exception $e)
 			{
-				// add error
+				// Add error.
 				$objDC->addError($GLOBALS['TL_LANG']['tl_metamodel_attribute']['sql_error']);
 
-				// log error
+				// Log error.
 				$this->log($e->getMessage(), 'TableMetaModelsAttributeSelect checkQuery()', TL_ERROR);
 
-				// keep the current value
+				// Keep the current value.
 				return $objDC->getEnvironment()->getCurrentModel()->getProperty('select_where');
 			}
 		}

@@ -36,21 +36,23 @@ class Select extends AbstractHybrid
 	 */
 	public function sortIds($arrIds, $strDirection)
 	{
-		$strTableName = $this->get('select_table');
-		$strColNameId = $this->get('select_id');
-		$strSortColumn = $this->get('select_sorting') ? $this->get('select_sorting') : $strColNameId;                
-		$arrIds = \Database::getInstance()->prepare(sprintf('
+		$strTableName  = $this->get('select_table');
+		$strColNameId  = $this->get('select_id');
+		$strSortColumn = $this->get('select_sorting') ? $this->get('select_sorting') : $strColNameId;
+		$arrIds        = \Database::getInstance()->prepare(sprintf('
 			SELECT %1$s.id FROM %1$s
 			LEFT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
 			WHERE %1$s.id IN (%5$s) 
 			ORDER BY %3$s.%6$s %7$s',
-			$this->getMetaModel()->getTableName(), //1
-			$this->getColName(), //2
-			$strTableName, //3
-			$strColNameId, //4
-			implode(',', $arrIds),//5
-			$strSortColumn, // 6
-			$strDirection // 7
+			// @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
+			$this->getMetaModel()->getTableName(), // 1
+			$this->getColName(),                   // 2
+			$strTableName,                         // 3
+			$strColNameId,                         // 4
+			implode(',', $arrIds),                 // 5
+			$strSortColumn,                        // 6
+			$strDirection                          // 7
+			// @codingStandardsIgnoreEnd
 			))
 			->execute()
 			->fetchEach('id');
@@ -120,15 +122,16 @@ class Select extends AbstractHybrid
 	 */
 	public function widgetToValue($varValue, $intId)
 	{
-		$objDB = \Database::getInstance();
+		$objDB           = \Database::getInstance();
 		$strColNameAlias = $this->get('select_alias');
-		$strColNameId = $this->get('select_id');
+		$strColNameId    = $this->get('select_id');
 		if (!$strColNameAlias)
 		{
 			$strColNameAlias = $strColNameId;
 		}
-		// lookup the id for this value.
-		$objValue = $objDB->prepare(sprintf('SELECT %1$s.* FROM %1$s WHERE %2$s=?', $this->get('select_table'), $strColNameAlias))
+		// Lookup the id for this value.
+		$objValue = $objDB
+			->prepare(sprintf('SELECT %1$s.* FROM %1$s WHERE %2$s=?', $this->get('select_table'), $strColNameAlias))
 			->execute($varValue);
 		return $objValue->row();
 	}
@@ -138,7 +141,7 @@ class Select extends AbstractHybrid
 	 *
 	 * This returns the value of the alias if any defined or the value of the id otherwise.
 	 *
-	 * @param mixed $varValue The source value
+	 * @param mixed $varValue The source value.
 	 *
 	 * @return string
 	 */
@@ -155,20 +158,20 @@ class Select extends AbstractHybrid
 	 */
 	public function getFilterOptions($arrIds, $usedOnly, &$arrCount = null)
 	{
-		if (($arrIds !== NULL) && empty($arrIds))
+		if (($arrIds !== null) && empty($arrIds))
 		{
 			return array();
 		}
 
 		$strTableName = $this->get('select_table');
 		$strColNameId = $this->get('select_id');
-		$arrReturn = array();
+		$arrReturn    = array();
 
 		if ($strTableName && $strColNameId)
 		{
 			$strColNameValue = $this->get('select_column');
 			$strColNameAlias = $this->get('select_alias');
-			$strSortColumn = $this->get('select_sorting') ? $this->get('select_sorting') : $strColNameId;
+			$strSortColumn   = $this->get('select_sorting') ? $this->get('select_sorting') : $strColNameId;
 			$strColNameWhere = ($this->get('select_where') ? html_entity_decode($this->get('select_where')) : false);
 
 			if (!$strColNameAlias)
@@ -185,13 +188,15 @@ class Select extends AbstractHybrid
 					WHERE (%3$s.id IN (%5$s)%6$s)
 					GROUP BY %1$s.%2$s
 					ORDER BY %1$s.%7$s',
-					$strTableName, // 1
-					$strColNameId, // 2
-					$this->getMetaModel()->getTableName(), // 3
-					$this->getColName(), // 4
-					implode(',', $arrIds), // 5
-					($strColNameWhere ? ' AND ('.$strColNameWhere.')' : ''), //6
-					$strSortColumn // 7
+					// @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
+					$strTableName,                                           // 1
+					$strColNameId,                                           // 2
+					$this->getMetaModel()->getTableName(),                   // 3
+					$this->getColName(),                                     // 4
+					implode(',', $arrIds),                                   // 5
+					($strColNameWhere ? ' AND ('.$strColNameWhere.')' : ''), // 6
+					$strSortColumn                                           // 7
+					// @codingStandardsIgnoreEnd
 				))
 					->execute($this->get('id'));
 			} else {
@@ -204,12 +209,14 @@ class Select extends AbstractHybrid
 					%5$s
 					GROUP BY %1$s.%2$s
 					ORDER BY %1$s.%6$s',
-						$strTableName,
-						$strColNameId, // 2
-						$this->getMetaModel()->getTableName(), // 3
-						$this->getColName(), // 4
-						($strColNameWhere ? ' WHERE ('.$strColNameWhere.')' : ''), //5
-						$strSortColumn // 6
+						// @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
+						$strTableName,                                             // 1
+						$strColNameId,                                             // 2
+						$this->getMetaModel()->getTableName(),                     // 3
+						$this->getColName(),                                       // 4
+						($strColNameWhere ? ' WHERE ('.$strColNameWhere.')' : ''), // 5
+						$strSortColumn                                             // 6
+						// @codingStandardsIgnoreEnd
 					);
 				} else {
 					$strQuery = sprintf('
@@ -218,10 +225,12 @@ class Select extends AbstractHybrid
 					%3$s
 					GROUP BY %1$s.%2$s
 					ORDER BY %1$s.%4$s',
-						$strTableName, // 1
-						$strColNameId, // 2
-						($strColNameWhere ? ' WHERE ('.$strColNameWhere.')' : ''), //3
-						$strSortColumn // 4
+						// @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
+						$strTableName,                                             // 1
+						$strColNameId,                                             // 2
+						($strColNameWhere ? ' WHERE ('.$strColNameWhere.')' : ''), // 3
+						$strSortColumn                                             // 4
+						// @codingStandardsIgnoreEnd
 					);
 				}
 				$objValue = $objDB->prepare($strQuery)
@@ -230,7 +239,7 @@ class Select extends AbstractHybrid
 
 			while ($objValue->next())
 			{
-				if(is_array($arrCount))
+				if (is_array($arrCount))
 				{
 					$arrCount[$objValue->$strColNameAlias] = $objValue->mm_count;
 				}
@@ -248,7 +257,7 @@ class Select extends AbstractHybrid
 	 */
 	public function searchFor($strPattern)
 	{
-		$objFilterRule = NULL;
+		$objFilterRule = null;
 		$objFilterRule = new FilterRuleSelect($this, $strPattern);
 
 		return $objFilterRule->getMatchingIds();
@@ -267,26 +276,34 @@ class Select extends AbstractHybrid
 	 */
 	public function getDataFor($arrIds)
 	{
-		$objDB = \Database::getInstance();
+		$objDB          = \Database::getInstance();
 		$strTableNameId = $this->get('select_table');
-		$strColNameId = $this->get('select_id');
-		$arrReturn = array();
+		$strColNameId   = $this->get('select_id');
+		$arrReturn      = array();
 
 		if ($strTableNameId && $strColNameId)
 		{
-			$strMetaModelTableName = $this->getMetaModel()->getTableName();
+			$strMetaModelTableName   = $this->getMetaModel()->getTableName();
 			$strMetaModelTableNameId = $strMetaModelTableName.'_id';
 
-			// using aliased join here to resolve issue #3 - SQL error for self referencing table
-			$objValue = $objDB->prepare(sprintf('SELECT sourceTable.*, %2$s.id AS %3$s FROM %1$s sourceTable LEFT JOIN %2$s ON (sourceTable.%4$s=%2$s.%5$s) WHERE %2$s.id IN (%6$s)',
-				$strTableNameId, // 1
-				$strMetaModelTableName, // 2
-				$strMetaModelTableNameId, // 3
-				$strColNameId, // 4
-				$this->getColName(), // 5
-				implode(',', $arrIds) //6
-			))
+			// Using aliased join here to resolve issue #3 - SQL error for self referencing table.
+			$objValue = $objDB
+				->prepare(sprintf('
+					SELECT sourceTable.*, %2$s.id AS %3$s
+					FROM %1$s sourceTable
+					LEFT JOIN %2$s ON (sourceTable.%4$s=%2$s.%5$s)
+					WHERE %2$s.id IN (%6$s)',
+					// @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
+					$strTableNameId,          // 1
+					$strMetaModelTableName,   // 2
+					$strMetaModelTableNameId, // 3
+					$strColNameId,            // 4
+					$this->getColName(),      // 5
+					implode(',', $arrIds)     // 6
+					// @codingStandardsIgnoreEnd
+				))
 				->execute();
+
 			while ($objValue->next())
 			{
 				$arrReturn[$objValue->$strMetaModelTableNameId] = $objValue->row();
@@ -310,7 +327,7 @@ class Select extends AbstractHybrid
 			);
 
 			$objDB = \Database::getInstance();
-			foreach($arrValues as $intItemId => $arrValue)
+			foreach ($arrValues as $intItemId => $arrValue)
 			{
 				$objDB->prepare($strQuery)->execute($arrValue[$strColNameId], $intItemId);
 			}

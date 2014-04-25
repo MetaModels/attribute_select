@@ -37,6 +37,9 @@ class FilterRuleSelect extends FilterRule
 	 */
 	protected $objAttribute = null;
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function __construct(Select $objAttribute, $strValue)
 	{
 		parent::__construct();
