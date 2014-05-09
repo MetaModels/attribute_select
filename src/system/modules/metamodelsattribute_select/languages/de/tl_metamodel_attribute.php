@@ -8,10 +8,11 @@
  *
  * @license http://www.gnu.org/licenses/lgpl-3.0.html LGPL
  *
- * last-updated: 2013-07-10T12:10:43+02:00
+ * last-updated: 2014-05-09T16:14:40+02:00
  */
 
 $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_alias']['0']     = 'Alias-Spalte';
+$GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_alias']['1']     = 'Bitte wählen Sie die Tabellenspalte die als Optionsalias (zum Beispiel in Filterwidgets) benutzt werden soll. Falls Sie unsicher sind wählen Sie dieselbe Spalte wie für die ID aus.';
 $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_column']['0']    = 'Werte-Spalte';
 $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_column']['1']    = 'Bitte wählen Sie die Tabellenspalte aus der ein Textwert bezogen werden soll.';
 $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_id']['0']        = 'ID-Spalte';
