@@ -117,8 +117,6 @@ $GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['select_where'] = array
 	'label'                  => &$GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_where'],
 	'exclude'                => true,
 	'inputType'              => 'textarea',
-	// FIXME: change to event based approach.
-//	'save_callback'          => array(array('MetaModels\Dca\AttributeSelect', 'checkQuery')),
 	'eval'                   => array
 	(
 		'tl_class'           => 'clr',

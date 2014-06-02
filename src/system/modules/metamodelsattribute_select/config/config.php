@@ -20,3 +20,6 @@ $GLOBALS['METAMODELS']['attributes']['select']['image'] = 'system/modules/metamo
 
 $GLOBALS['TL_EVENTS'][\ContaoCommunityAlliance\Contao\EventDispatcher\Event\CreateEventDispatcherEvent::NAME][] =
 	'MetaModels\DcGeneral\Events\Table\Attribute\Select\PropertyAttribute::registerEvents';
+
+$GLOBALS['TL_EVENTS'][\ContaoCommunityAlliance\Contao\EventDispatcher\Event\CreateEventDispatcherEvent::NAME][] =
+	'MetaModels\DcGeneral\Events\Table\Attribute\Select\PropertySelectWhere::registerEvents';
