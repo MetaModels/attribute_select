@@ -40,13 +40,13 @@ $GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['select_table'] = array
 	'eval'                   => array
 	(
 		'includeBlankOption' => true,
-		'doNotSaveEmpty'     => true,
-		'alwaysSave'         => true,
+		'mandatory'          => true,
 		'submitOnChange'     => true,
 		'tl_class'           => 'w50',
 		'chosen'             => 'true'
 	),
 );
+
 
 $GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['select_column'] = array
 (
@@ -56,8 +56,7 @@ $GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['select_column'] = array
 	'eval'                   => array
 	(
 		'includeBlankOption' => true,
-		'doNotSaveEmpty'     => true,
-		'alwaysSave'         => true,
+		'mandatory'          => true,
 		'submitOnChange'     => true,
 		'tl_class'           => 'w50',
 		'chosen'             => 'true'
@@ -72,8 +71,7 @@ $GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['select_id'] = array
 	'eval'                   => array
 	(
 		'includeBlankOption' => true,
-		'doNotSaveEmpty'     => true,
-		'alwaysSave'         => true,
+		'mandatory'          => true,
 		'submitOnChange'     => true,
 		'tl_class'           => 'w50',
 		'chosen'             => 'true'
@@ -88,8 +86,7 @@ $GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['select_alias'] = array
 	'eval'                   => array
 	(
 		'includeBlankOption' => true,
-		'doNotSaveEmpty'     => true,
-		'alwaysSave'         => true,
+		'mandatory'          => true,
 		'submitOnChange'     => true,
 		'tl_class'           => 'w50',
 		'chosen'             => 'true'
@@ -104,8 +101,7 @@ $GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['select_sorting'] = array
 	'eval'                   => array
 	(
 		'includeBlankOption' => true,
-		'doNotSaveEmpty'     => true,
-		'alwaysSave'         => true,
+		'mandatory'          => true,
 		'submitOnChange'     => true,
 		'tl_class'           => 'w50',
 		'chosen'             => 'true'
