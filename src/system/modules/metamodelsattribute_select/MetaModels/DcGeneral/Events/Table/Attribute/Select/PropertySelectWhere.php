@@ -79,7 +79,7 @@ class PropertySelectWhere
 	 *
 	 * @throws \RuntimeException When the where condition is invalid.
 	 */
-	public function checkQuery(EncodePropertyValueFromWidgetEvent $event)
+	public static function checkQuery(EncodePropertyValueFromWidgetEvent $event)
 	{
 		$model = $event->getModel();
 		$where = $event->getValue();
