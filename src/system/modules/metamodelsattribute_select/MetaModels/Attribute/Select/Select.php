@@ -56,20 +56,21 @@ class Select extends AbstractHybrid
 		$strTableName  = $this->get('select_table');
 		$strColNameId  = $this->get('select_id');
 		$strSortColumn = $this->get('select_sorting') ? $this->get('select_sorting') : $strColNameId;
-		$arrIds        = \Database::getInstance()->prepare(sprintf('
-			SELECT %1$s.id FROM %1$s
-			LEFT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
-			WHERE %1$s.id IN (%5$s) 
-			ORDER BY %3$s.%6$s %7$s',
-			// @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
-			$this->getMetaModel()->getTableName(), // 1
-			$this->getColName(),                   // 2
-			$strTableName,                         // 3
-			$strColNameId,                         // 4
-			implode(',', $arrIds),                 // 5
-			$strSortColumn,                        // 6
-			$strDirection                          // 7
-			// @codingStandardsIgnoreEnd
+		$arrIds        = \Database::getInstance()
+			->prepare(sprintf('
+				SELECT %1$s.id FROM %1$s
+				LEFT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
+				WHERE %1$s.id IN (%5$s)
+				ORDER BY %3$s.%6$s %7$s',
+				// @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
+				$this->getMetaModel()->getTableName(), // 1
+				$this->getColName(),                   // 2
+				$strTableName,                         // 3
+				$strColNameId,                         // 4
+				implode(',', $arrIds),                 // 5
+				$strSortColumn,                        // 6
+				$strDirection                          // 7
+				// @codingStandardsIgnoreEnd
 			))
 			->execute()
 			->fetchEach('id');
@@ -157,6 +158,7 @@ class Select extends AbstractHybrid
 		$objValue = $objDB
 			->prepare(sprintf('SELECT %1$s.* FROM %1$s WHERE %2$s=?', $this->get('select_table'), $strColNameAlias))
 			->execute($varValue);
+
 		return $objValue->row();
 	}
 
@@ -205,23 +207,24 @@ class Select extends AbstractHybrid
 			$objDB = \Database::getInstance();
 			if ($arrIds)
 			{
-				$objValue = $objDB->prepare(sprintf('
-					SELECT COUNT(%1$s.%2$s) as mm_count, %1$s.*
-					FROM %1$s
-					RIGHT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
-					WHERE (%3$s.id IN (%5$s)%6$s)
-					GROUP BY %1$s.%2$s
-					ORDER BY %1$s.%7$s',
-					// @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
-					$strTableName,                                           // 1
-					$strColNameId,                                           // 2
-					$this->getMetaModel()->getTableName(),                   // 3
-					$this->getColName(),                                     // 4
-					implode(',', $arrIds),                                   // 5
-					($strColNameWhere ? ' AND ('.$strColNameWhere.')' : ''), // 6
-					$strSortColumn                                           // 7
-					// @codingStandardsIgnoreEnd
-				))
+				$objValue = $objDB
+					->prepare(sprintf('
+						SELECT COUNT(%1$s.%2$s) as mm_count, %1$s.*
+						FROM %1$s
+						RIGHT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
+						WHERE (%3$s.id IN (%5$s)%6$s)
+						GROUP BY %1$s.%2$s
+						ORDER BY %1$s.%7$s',
+						// @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
+						$strTableName,                                           // 1
+						$strColNameId,                                           // 2
+						$this->getMetaModel()->getTableName(),                   // 3
+						$this->getColName(),                                     // 4
+						implode(',', $arrIds),                                   // 5
+						($strColNameWhere ? ' AND ('.$strColNameWhere.')' : ''), // 6
+						$strSortColumn                                           // 7
+						// @codingStandardsIgnoreEnd
+					))
 					->execute($this->get('id'));
 			} else {
 				if ($usedOnly)
