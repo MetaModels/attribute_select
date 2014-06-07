@@ -38,9 +38,11 @@ $GLOBALS['TL_DCA']['tl_metamodel_dcasetting']['fields']['select_as_radio'] = arr
 (
 	'label'                 => &$GLOBALS['TL_LANG']['tl_metamodel_dcasetting']['select_as_radio'],
 	'exclude'               => true,
-	'inputType'             => 'checkbox',
+	'inputType'             => 'select',
+	'options'               => array(0, 1, 2),
+	'reference'             => &$GLOBALS['TL_LANG']['tl_metamodel_dcasetting']['select_as_radio_reference'],
 	'eval'                  => array
 	(
-		'tl_class'          => 'clr m12'
+		'tl_class'          => 'clr'
 	)
 );

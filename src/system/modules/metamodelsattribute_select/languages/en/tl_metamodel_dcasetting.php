@@ -20,4 +20,11 @@
 /**
  * Fields
  */
-$GLOBALS['TL_LANG']['tl_metamodel_dcasetting']['select_as_radio']           = array('Display as radio buttons', 'Select this options to change the display type from "select" to a "radio"');
+$GLOBALS['TL_LANG']['tl_metamodel_dcasetting']['select_as_radio'] = array('Display type', 'Select the desired display type.');
+
+/**
+ * Reference
+ */
+$GLOBALS['TL_LANG']['tl_metamodel_dcasetting']['select_as_radio_reference'][0] = 'Display as select menu';
+$GLOBALS['TL_LANG']['tl_metamodel_dcasetting']['select_as_radio_reference'][1] = 'Display as radio button list';
+$GLOBALS['TL_LANG']['tl_metamodel_dcasetting']['select_as_radio_reference'][2] = 'Display as picker popup';

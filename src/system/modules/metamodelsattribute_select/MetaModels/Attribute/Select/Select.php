@@ -32,6 +32,23 @@ use MetaModels\Filter\Rules\FilterRuleSelect;
 class Select extends AbstractHybrid
 {
 	/**
+	 * The widget mode to use.
+	 *
+	 * @var int
+	 */
+	protected $widgetMode;
+
+	/**
+	 * Determine if we want to use tree selection.
+	 *
+	 * @return bool
+	 */
+	protected function isTreePicker()
+	{
+		return $this->widgetMode == 2;
+	}
+
+	/**
 	 * {@inheritdoc}
 	 */
 	public function sortIds($arrIds, $strDirection)
@@ -87,11 +104,17 @@ class Select extends AbstractHybrid
 	 */
 	public function getFieldDefinition($arrOverrides = array())
 	{
-		// TODO: add tree support here.
-		$arrFieldDef = parent::getFieldDefinition($arrOverrides);
-
+		$arrFieldDef      = parent::getFieldDefinition($arrOverrides);
+		$this->widgetMode = $arrOverrides['select_as_radio'];
+		if ($this->isTreePicker())
+		{
+			$arrFieldDef['inputType']          = 'DcGeneralTreePicker';
+			$arrFieldDef['eval']['sourceName'] = $this->get('select_table');
+			$arrFieldDef['eval']['sourceName'] = $this->get('select_table');
+			$arrFieldDef['eval']['fieldType']  = 'radio';
+		}
 		// If select as radio is true, change the input type.
-		if ($arrOverrides['select_as_radio'] == true)
+		elseif ($this->widgetMode == 1)
 		{
 			$arrFieldDef['inputType'] = 'radio';
 		}
@@ -110,10 +133,11 @@ class Select extends AbstractHybrid
 	public function valueToWidget($varValue)
 	{
 		$strColNameAlias = $this->get('select_alias');
-		if (!$strColNameAlias)
+		if ($this->isTreePicker() || !$strColNameAlias)
 		{
 			$strColNameAlias = $this->get('select_id');
 		}
+
 		return $varValue[$strColNameAlias];
 	}
 
@@ -125,7 +149,7 @@ class Select extends AbstractHybrid
 		$objDB           = \Database::getInstance();
 		$strColNameAlias = $this->get('select_alias');
 		$strColNameId    = $this->get('select_id');
-		if (!$strColNameAlias)
+		if ($this->isTreePicker() || !$strColNameAlias)
 		{
 			$strColNameAlias = $strColNameId;
 		}
