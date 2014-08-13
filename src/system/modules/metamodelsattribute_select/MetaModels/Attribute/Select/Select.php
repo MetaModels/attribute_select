@@ -247,17 +247,20 @@ class Select extends AbstractHybrid
 					);
 				} else {
 					$strQuery = sprintf('
-					SELECT COUNT(%1$s.%2$s) as mm_count, %1$s.*
+					SELECT COUNT(%3$s.%4$s) as mm_count, %1$s.*
 					FROM %1$s
-					%3$s
+					LEFT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
+					%5$s
 					GROUP BY %1$s.%2$s
-					ORDER BY %1$s.%4$s',
+					ORDER BY %1$s.%6$s',
 						// @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
 						$strTableName,                                             // 1
 						$strColNameId,                                             // 2
-						($strColNameWhere ? ' WHERE ('.$strColNameWhere.')' : ''), // 3
-						$strSortColumn                                             // 4
-						// @codingStandardsIgnoreEnd
+						$this->getMetaModel()->getTableName(),                     // 3
+						$this->getColName(),                                       // 4
+						($strColNameWhere ? ' WHERE ('.$strColNameWhere.')' : ''), // 5
+						$strSortColumn                                             // 6
+					// @codingStandardsIgnoreEnd
 					);
 				}
 				$objValue = $objDB->prepare($strQuery)
