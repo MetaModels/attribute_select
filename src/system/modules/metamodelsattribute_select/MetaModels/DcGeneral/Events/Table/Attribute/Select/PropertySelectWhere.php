@@ -81,16 +81,16 @@ class PropertySelectWhere
 	 */
 	public static function checkQuery(EncodePropertyValueFromWidgetEvent $event)
 	{
-		$model = $event->getModel();
-		$where = $event->getValue();
+		$where  = $event->getValue();
+		$values = $event->getPropertyValueBag();
 
-		if ($model && $where)
+		if ($where)
 		{
 			$objDB = \Database::getInstance();
 
-			$strTableName  = $model->getProperty('select_table');
-			$strColNameId  = $model->getProperty('select_id');
-			$strSortColumn = $model->getProperty('select_sorting') ?: $strColNameId;
+			$strTableName  = $values->getPropertyValue('select_table');
+			$strColNameId  = $values->getPropertyValue('select_id');
+			$strSortColumn = $values->getPropertyValue('select_sorting') ?: $strColNameId;
 
 			$query = sprintf('
 				SELECT %1$s.*
