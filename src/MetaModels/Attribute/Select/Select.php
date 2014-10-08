@@ -167,7 +167,112 @@ class Select extends AbstractHybrid
      */
     public function getFilterUrlValue($varValue)
     {
-        return urlencode($varValue[$this->get('select_alias') ? $this->get('select_alias') : $this->get('select_id')]);
+        return urlencode($varValue[$this->getAliasColumn()]);
+    }
+
+    /**
+     * Determine the correct alias column to use.
+     *
+     * @return string
+     */
+    protected function getAliasColumn()
+    {
+        return $this->get('select_alias') ?: $this->get('select_id');
+    }
+
+    /**
+     * Determine the correct sorting column to use.
+     *
+     * @return string
+     */
+    protected function getSortingColumn()
+    {
+        return $this->get('select_sorting') ?: $this->get('select_id');
+    }
+
+    /**
+     * Determine the correct sorting column to use.
+     *
+     * @return string
+     */
+    protected function getAdditionalWhere()
+    {
+        return $this->get('select_where') ? html_entity_decode($this->get('select_where')) : false;
+    }
+
+    /**
+     * Convert the database result into a proper result array.
+     *
+     * @param \Database\Result $values      The database result.
+     *
+     * @param string           $aliasColumn The name of the alias column to be used.
+     *
+     * @param string           $valueColumn The name of the value column.
+     *
+     * @param array            $count       The optional count array.
+     *
+     * @return array
+     */
+    protected function convertOptionsList($values, $aliasColumn, $valueColumn, &$count = null)
+    {
+        $arrReturn = array();
+        while ($values->next()) {
+            if (is_array($count)) {
+                $count[$values->$aliasColumn] = $values->mm_count;
+            }
+
+            $arrReturn[$values->$aliasColumn] = $values->$valueColumn;
+        }
+
+        return $arrReturn;
+    }
+
+    /**
+     * Fetch filter options from foreign table taking the given flag into account.
+     *
+     * @param bool $usedOnly The flag if only used values shall be returned.
+     *
+     * @return \Database\Result
+     */
+    public function getFilterOptionsForUsedOnly($usedOnly)
+    {
+        $additionalWhere = $this->getAdditionalWhere();
+        $sortColumn      = $this->getSortingColumn();
+        if ($usedOnly) {
+            return \Database::getInstance()->executeUncached(sprintf(
+                'SELECT COUNT(%1$s.%2$s) as mm_count, %1$s.*
+                    FROM %1$s
+                    RIGHT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
+                    %5$s
+                    GROUP BY %1$s.%2$s
+                    ORDER BY %1$s.%6$s',
+                // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
+                $this->get('select_table'),                                // 1
+                $this->get('select_id'),                                   // 2
+                $this->getMetaModel()->getTableName(),                     // 3
+                $this->getColName(),                                       // 4
+                ($additionalWhere ? ' WHERE ('.$additionalWhere.')' : ''), // 5
+                $sortColumn                                                // 6
+                // @codingStandardsIgnoreEnd
+            ));
+        }
+
+        return \Database::getInstance()->executeUncached(sprintf(
+            'SELECT COUNT(%3$s.%4$s) as mm_count, %1$s.*
+                FROM %1$s
+                LEFT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
+                %5$s
+                GROUP BY %1$s.%2$s
+                ORDER BY %1$s.%6$s',
+            // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
+            $this->get('select_table'),                                // 1
+            $this->get('select_id'),                                   // 2
+            $this->getMetaModel()->getTableName(),                     // 3
+            $this->getColName(),                                       // 4
+            ($additionalWhere ? ' WHERE ('.$additionalWhere.')' : ''), // 5
+            $sortColumn                                                // 6
+            // @codingStandardsIgnoreEnd
+        ));
     }
 
     /**
@@ -182,89 +287,42 @@ class Select extends AbstractHybrid
             return array();
         }
 
-        $strTableName = $this->get('select_table');
-        $strColNameId = $this->get('select_id');
-        $arrReturn    = array();
+        $tableName = $this->get('select_table');
+        $idColumn  = $this->get('select_id');
 
-        if ($strTableName && $strColNameId) {
-            $strColNameValue = $this->get('select_column');
-            $strColNameAlias = $this->get('select_alias');
-            $strSortColumn   = $this->get('select_sorting') ? $this->get('select_sorting') : $strColNameId;
-            $strColNameWhere = ($this->get('select_where') ? html_entity_decode($this->get('select_where')) : false);
-
-            if (!$strColNameAlias) {
-                $strColNameAlias = $strColNameId;
-            }
-            $objDB = \Database::getInstance();
-            if ($arrIds) {
-                $objValue = $objDB
-                    ->prepare(sprintf(
-                        'SELECT COUNT(%1$s.%2$s) as mm_count, %1$s.*
-                        FROM %1$s
-                        RIGHT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
-                        WHERE (%3$s.id IN (%5$s)%6$s)
-                        GROUP BY %1$s.%2$s
-                        ORDER BY %1$s.%7$s',
-                        // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
-                        $strTableName,                                           // 1
-                        $strColNameId,                                           // 2
-                        $this->getMetaModel()->getTableName(),                   // 3
-                        $this->getColName(),                                     // 4
-                        implode(',', $arrIds),                                   // 5
-                        ($strColNameWhere ? ' AND ('.$strColNameWhere.')' : ''), // 6
-                        $strSortColumn                                           // 7
-                        // @codingStandardsIgnoreEnd
-                    ))
-                    ->execute($this->get('id'));
-            } else {
-                if ($usedOnly) {
-                    $strQuery = sprintf(
-                        'SELECT COUNT(%1$s.%2$s) as mm_count, %1$s.*
-                        FROM %1$s
-                        RIGHT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
-                        %5$s
-                        GROUP BY %1$s.%2$s
-                        ORDER BY %1$s.%6$s',
-                        // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
-                        $strTableName,                                             // 1
-                        $strColNameId,                                             // 2
-                        $this->getMetaModel()->getTableName(),                     // 3
-                        $this->getColName(),                                       // 4
-                        ($strColNameWhere ? ' WHERE ('.$strColNameWhere.')' : ''), // 5
-                        $strSortColumn                                             // 6
-                        // @codingStandardsIgnoreEnd
-                    );
-                } else {
-                    $strQuery = sprintf(
-                        'SELECT COUNT(%3$s.%4$s) as mm_count, %1$s.*
-                        FROM %1$s
-                        LEFT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
-                        %5$s
-                        GROUP BY %1$s.%2$s
-                        ORDER BY %1$s.%6$s',
-                        // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
-                        $strTableName,                                             // 1
-                        $strColNameId,                                             // 2
-                        $this->getMetaModel()->getTableName(),                     // 3
-                        $this->getColName(),                                       // 4
-                        ($strColNameWhere ? ' WHERE ('.$strColNameWhere.')' : ''), // 5
-                        $strSortColumn                                             // 6
-                    // @codingStandardsIgnoreEnd
-                    );
-                }
-                $objValue = $objDB->prepare($strQuery)
-                    ->execute();
-            }
-
-            while ($objValue->next()) {
-                if (is_array($arrCount)) {
-                    $arrCount[$objValue->$strColNameAlias] = $objValue->mm_count;
-                }
-
-                $arrReturn[$objValue->$strColNameAlias] = $objValue->$strColNameValue;
-            }
+        if (empty($tableName) || empty($idColumn)) {
+            return array();
         }
-        return $arrReturn;
+
+        $strSortColumn   = $this->getSortingColumn();
+        $strColNameWhere = $this->getAdditionalWhere();
+
+        $objDB = \Database::getInstance();
+        if ($arrIds) {
+            $objValue = $objDB
+                ->prepare(sprintf(
+                    'SELECT COUNT(%1$s.%2$s) as mm_count, %1$s.*
+                    FROM %1$s
+                    RIGHT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
+                    WHERE (%3$s.id IN (%5$s)%6$s)
+                    GROUP BY %1$s.%2$s
+                    ORDER BY %1$s.%7$s',
+                    // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
+                    $tableName,                                           // 1
+                    $idColumn,                                           // 2
+                    $this->getMetaModel()->getTableName(),                   // 3
+                    $this->getColName(),                                     // 4
+                    implode(',', $arrIds),                                   // 5
+                    ($strColNameWhere ? ' AND ('.$strColNameWhere.')' : ''), // 6
+                    $strSortColumn                                           // 7
+                    // @codingStandardsIgnoreEnd
+                ))
+                ->execute($this->get('id'));
+        } else {
+            $objValue = $this->getFilterOptionsForUsedOnly($usedOnly);
+        }
+
+        return $this->convertOptionsList($objValue, $this->getAliasColumn(), $this->get('select_column'), $arrCount);
     }
 
     /**
