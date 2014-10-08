@@ -62,8 +62,7 @@ class FilterRuleSelect extends FilterRule
 
         $objDB = \Database::getInstance();
 
-        if ($strColNameAlias)
-        {
+        if ($strColNameAlias) {
             $objSelectIds = $objDB
                 ->prepare(sprintf(
                     'SELECT %s FROM %s WHERE %s IN (%s)',
@@ -87,8 +86,7 @@ class FilterRuleSelect extends FilterRule
     public function getMatchingIds()
     {
         $arrValues = $this->sanitizeValue();
-        if (!$arrValues)
-        {
+        if (!$arrValues) {
             return array();
         }
 

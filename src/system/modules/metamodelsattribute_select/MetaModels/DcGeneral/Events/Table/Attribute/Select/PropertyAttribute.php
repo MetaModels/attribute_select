@@ -24,8 +24,7 @@ use MetaModels\DcGeneral\Events\BaseSubscriber;
 /**
  * Handle events for tl_metamodel_attribute.alias_fields.attr_id.
  */
-class PropertyAttribute
-    extends BaseSubscriber
+class PropertyAttribute extends BaseSubscriber
 {
     /**
      * Register all listeners to handle creation of a data container.
@@ -54,8 +53,7 @@ class PropertyAttribute
     public static function registerTableMetaModelAttributeEvents(BuildDataDefinitionEvent $event)
     {
         static $registered;
-        if ($registered)
-        {
+        if ($registered) {
             return;
         }
         $registered = true;
@@ -128,17 +126,14 @@ class PropertyAttribute
         $table   = $model->getProperty('select_table');
         $databse = \Database::getInstance();
 
-        if (!$table || !$databse->tableExists($table))
-        {
+        if (!$table || !$databse->tableExists($table)) {
             return;
         }
 
         $result = array();
 
-        foreach ($databse->listFields($table) as $arrInfo)
-        {
-            if ($arrInfo['type'] != 'index')
-            {
+        foreach ($databse->listFields($table) as $arrInfo) {
+            if ($arrInfo['type'] != 'index') {
                 $result[$arrInfo['name']] = $arrInfo['name'];
             }
         }
@@ -159,17 +154,14 @@ class PropertyAttribute
         $table   = $model->getProperty('select_table');
         $databse = \Database::getInstance();
 
-        if (!$table || !$databse->tableExists($table))
-        {
+        if (!$table || !$databse->tableExists($table)) {
             return;
         }
 
         $result = array();
 
-        foreach ($databse->listFields($table) as $arrInfo)
-        {
-            if ($arrInfo['type'] != 'index' && $arrInfo['type'] == 'int')
-            {
+        foreach ($databse->listFields($table) as $arrInfo) {
+            if ($arrInfo['type'] != 'index' && $arrInfo['type'] == 'int') {
                 $result[$arrInfo['name']] = $arrInfo['name'];
             }
         }

@@ -24,8 +24,7 @@ use MetaModels\DcGeneral\Events\BaseSubscriber;
 /**
  * Handle events for tl_metamodel_attribute.alias_fields.select_where.
  */
-class PropertySelectWhere
-    extends BaseSubscriber
+class PropertySelectWhere extends BaseSubscriber
 {
     /**
      * Register all listeners to handle creation of a data container.
@@ -54,8 +53,7 @@ class PropertySelectWhere
     public static function registerTableMetaModelAttributeEvents(BuildDataDefinitionEvent $event)
     {
         static $registered;
-        if ($registered)
-        {
+        if ($registered) {
             return;
         }
         $registered = true;
@@ -78,43 +76,43 @@ class PropertySelectWhere
      * @return void
      *
      * @throws \RuntimeException When the where condition is invalid.
+     *
+     * @SuppressWarnings(PHPMD.Superglobals)
+     * @SuppressWarnings(PHPMD.CamelCaseVariableName)
      */
     public static function checkQuery(EncodePropertyValueFromWidgetEvent $event)
     {
         $where  = $event->getValue();
         $values = $event->getPropertyValueBag();
 
-        if ($where)
-        {
+        if ($where) {
             $objDB = \Database::getInstance();
 
             $strTableName  = $values->getPropertyValue('select_table');
             $strColNameId  = $values->getPropertyValue('select_id');
             $strSortColumn = $values->getPropertyValue('select_sorting') ?: $strColNameId;
 
-            $query = sprintf('
-                SELECT %1$s.*
+            $query = sprintf(
+                'SELECT %1$s.*
                 FROM %1$s%2$s
                 ORDER BY %1$s.%3$s',
                 // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
                 $strTableName,                            // 1
                 ($where ? ' WHERE ('.$where.')' : false), // 2
                 $strSortColumn                            // 3
-            // @codingStandardsIgnoreEnd
+                // @codingStandardsIgnoreEnd
             );
 
-            try
-            {
+            try {
                 $objDB
                     ->prepare($query)
                     ->execute();
-            }
-            catch(\Exception $e)
-            {
-                throw new \RuntimeException(sprintf(
-                    '%s %s',
-                    $GLOBALS['TL_LANG']['tl_metamodel_attribute']['sql_error'],
-                    $e->getMessage()
+            } catch (\Exception $e) {
+                throw new \RuntimeException(
+                    sprintf(
+                        '%s %s',
+                        $GLOBALS['TL_LANG']['tl_metamodel_attribute']['sql_error'],
+                        $e->getMessage()
                     )
                 );
             }
