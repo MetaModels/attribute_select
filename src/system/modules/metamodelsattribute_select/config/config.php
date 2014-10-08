@@ -1,5 +1,4 @@
 <?php
-
 /**
  * The MetaModels extension allows the creation of multiple collections of custom items,
  * each with its own unique set of selectable attributes, with attribute extendability.
@@ -19,7 +18,7 @@ $GLOBALS['METAMODELS']['attributes']['select']['class'] = 'MetaModels\Attribute\
 $GLOBALS['METAMODELS']['attributes']['select']['image'] = 'system/modules/metamodelsattribute_select/html/select.png';
 
 $GLOBALS['TL_EVENTS'][\ContaoCommunityAlliance\Contao\EventDispatcher\Event\CreateEventDispatcherEvent::NAME][] =
-	'MetaModels\DcGeneral\Events\Table\Attribute\Select\PropertyAttribute::registerEvents';
+    'MetaModels\DcGeneral\Events\Table\Attribute\Select\PropertyAttribute::registerEvents';
 
 $GLOBALS['TL_EVENTS'][\ContaoCommunityAlliance\Contao\EventDispatcher\Event\CreateEventDispatcherEvent::NAME][] =
-	'MetaModels\DcGeneral\Events\Table\Attribute\Select\PropertySelectWhere::registerEvents';
+    'MetaModels\DcGeneral\Events\Table\Attribute\Select\PropertySelectWhere::registerEvents';

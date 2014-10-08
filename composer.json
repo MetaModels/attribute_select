@@ -1,83 +1,83 @@
 {
-	"name":"metamodels/attribute_select",
-	"description":"MetaModels attribute for selects",
-	"keywords":["contao", "metamodels", "attribute", "select", "nontranslatable"],
-	"type":"contao-module",
-	"homepage":"http://now.metamodel.me/",
-	"license":"LGPL-3.0+",
-	"authors":[
-		{
-			"name":"Christian Schiffler",
-			"email":"c.schiffler@cyberspectrum.de",
-			"homepage":"http://www.cyberspectrum.de",
-			"role":"Developer"
-		},
-		{
-			"name":"Andreas Isaak",
-			"email":"info@andreas-isaak.de",
-			"homepage":"http://www.andreas-isaak.de",
-			"role":"Developer"
-		},
-		{
-			"name":"Stefan Heimes",
-			"email":"stefan_heimes@hotmail.com",
-			"role":"Developer"
-		},
-		{
-			"name":"Christian de la Haye",
-			"email":"service@delahaye.de",
-			"homepage":"http://www.delahaye.de/",
-			"role":"Developer"
-		},
-		{
-			"name":"Oliver Hoff",
-			"email":"oliver@hofff.com",
-			"homepage":"http://www.hofff.com/",
-			"role":"Developer"
-		}
-	],
-	"support":{
-		"email":"mail@metamodel.me",
-		"issues":"https://github.com/MetaModels/attribute_select/issues",
-		"wiki":"http://de.contaowiki.org/MetaModels",
-		"irc":"irc://irc.freenode.org/contao.mm",
-		"source":"https://github.com/MetaModels/attribute_select"
-	},
-	"require":{
-		"php":">=5.3",
-		"contao/core": ">=2.11,<4.0",
-		"contao-community-alliance/composer-plugin": "*",
-		"metamodels/core":"~2.0.0"
-	},
-	"require-dev": {
-		"metamodels/php-coding-standard": "dev-master",
-		"cyberspectrum/contao-toolbox": "dev-master",
-		"phpunit/phpunit": ">=3.7.10,<4-dev"
-	},
-	"conflict": {
-		"contao/core": "3.0.*"
-	},
-	"autoload": {
-		"psr-0": {
-			"MetaModels": "src/system/modules/metamodelsattribute_select"
-		}
-	},
-	"extra":{
-		"contao": {
-			"symlinks":{
-				"src/system/modules/metamodelsattribute_select":"system/modules/metamodelsattribute_select"
-			},
-			"transifex": {
-				"project": "metamodels",
-				"prefix": "attribute_select-",
-				"languages_cto": "src/system/modules/metamodelsattribute_select/languages",
-				"languages_tx": ".tx"
-			}
-		},
-		"branch-alias": {
-			"dev-tng": "2.0.x-dev"
-		}
-	},
-	"minimum-stability": "dev",
-	"prefer-stable": true
+    "name":"metamodels/attribute_select",
+    "description":"MetaModels attribute for selects",
+    "keywords":["contao", "metamodels", "attribute", "select", "nontranslatable"],
+    "type":"contao-module",
+    "homepage":"http://now.metamodel.me/",
+    "license":"LGPL-3.0+",
+    "authors":[
+        {
+            "name":"Christian Schiffler",
+            "email":"c.schiffler@cyberspectrum.de",
+            "homepage":"http://www.cyberspectrum.de",
+            "role":"Developer"
+        },
+        {
+            "name":"Andreas Isaak",
+            "email":"info@andreas-isaak.de",
+            "homepage":"http://www.andreas-isaak.de",
+            "role":"Developer"
+        },
+        {
+            "name":"Stefan Heimes",
+            "email":"stefan_heimes@hotmail.com",
+            "role":"Developer"
+        },
+        {
+            "name":"Christian de la Haye",
+            "email":"service@delahaye.de",
+            "homepage":"http://www.delahaye.de/",
+            "role":"Developer"
+        },
+        {
+            "name":"Oliver Hoff",
+            "email":"oliver@hofff.com",
+            "homepage":"http://www.hofff.com/",
+            "role":"Developer"
+        }
+    ],
+    "support":{
+        "email":"mail@metamodel.me",
+        "issues":"https://github.com/MetaModels/attribute_select/issues",
+        "wiki":"http://de.contaowiki.org/MetaModels",
+        "irc":"irc://irc.freenode.org/contao.mm",
+        "source":"https://github.com/MetaModels/attribute_select"
+    },
+    "require":{
+        "php":">=5.3",
+        "contao/core": ">=2.11,<4.0",
+        "contao-community-alliance/composer-plugin": "*",
+        "metamodels/core":"~2.0.0"
+    },
+    "require-dev": {
+        "metamodels/php-coding-standard": "dev-master",
+        "cyberspectrum/contao-toolbox": "dev-master",
+        "phpunit/phpunit": ">=3.7.10,<4-dev"
+    },
+    "conflict": {
+        "contao/core": "3.0.*"
+    },
+    "autoload": {
+        "psr-0": {
+            "MetaModels": "src/system/modules/metamodelsattribute_select"
+        }
+    },
+    "extra":{
+        "contao": {
+            "symlinks":{
+                "src/system/modules/metamodelsattribute_select":"system/modules/metamodelsattribute_select"
+            },
+            "transifex": {
+                "project": "metamodels",
+                "prefix": "attribute_select-",
+                "languages_cto": "src/system/modules/metamodelsattribute_select/languages",
+                "languages_tx": ".tx"
+            }
+        },
+        "branch-alias": {
+            "dev-tng": "2.0.x-dev"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }

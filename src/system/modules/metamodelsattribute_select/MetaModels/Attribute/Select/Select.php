@@ -31,354 +31,354 @@ use MetaModels\Filter\Rules\FilterRuleSelect;
  */
 class Select extends AbstractHybrid
 {
-	/**
-	 * The widget mode to use.
-	 *
-	 * @var int
-	 */
-	protected $widgetMode;
+    /**
+     * The widget mode to use.
+     *
+     * @var int
+     */
+    protected $widgetMode;
 
-	/**
-	 * Determine if we want to use tree selection.
-	 *
-	 * @return bool
-	 */
-	protected function isTreePicker()
-	{
-		return $this->widgetMode == 2;
-	}
+    /**
+     * Determine if we want to use tree selection.
+     *
+     * @return bool
+     */
+    protected function isTreePicker()
+    {
+        return $this->widgetMode == 2;
+    }
 
-	/**
-	 * {@inheritdoc}
-	 */
-	public function sortIds($arrIds, $strDirection)
-	{
-		$strTableName  = $this->get('select_table');
-		$strColNameId  = $this->get('select_id');
-		$strSortColumn = $this->get('select_sorting') ? $this->get('select_sorting') : $strColNameId;
-		$arrIds        = \Database::getInstance()
-			->prepare(sprintf('
-				SELECT %1$s.id FROM %1$s
-				LEFT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
-				WHERE %1$s.id IN (%5$s)
-				ORDER BY %3$s.%6$s %7$s',
-				// @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
-				$this->getMetaModel()->getTableName(), // 1
-				$this->getColName(),                   // 2
-				$strTableName,                         // 3
-				$strColNameId,                         // 4
-				implode(',', $arrIds),                 // 5
-				$strSortColumn,                        // 6
-				$strDirection                          // 7
-				// @codingStandardsIgnoreEnd
-			))
-			->execute()
-			->fetchEach('id');
-		return $arrIds;
-	}
+    /**
+     * {@inheritdoc}
+     */
+    public function sortIds($arrIds, $strDirection)
+    {
+        $strTableName  = $this->get('select_table');
+        $strColNameId  = $this->get('select_id');
+        $strSortColumn = $this->get('select_sorting') ? $this->get('select_sorting') : $strColNameId;
+        $arrIds        = \Database::getInstance()
+            ->prepare(sprintf('
+                SELECT %1$s.id FROM %1$s
+                LEFT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
+                WHERE %1$s.id IN (%5$s)
+                ORDER BY %3$s.%6$s %7$s',
+                // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
+                $this->getMetaModel()->getTableName(), // 1
+                $this->getColName(),                   // 2
+                $strTableName,                         // 3
+                $strColNameId,                         // 4
+                implode(',', $arrIds),                 // 5
+                $strSortColumn,                        // 6
+                $strDirection                          // 7
+                // @codingStandardsIgnoreEnd
+            ))
+            ->execute()
+            ->fetchEach('id');
+        return $arrIds;
+    }
 
-	/**
-	 * {@inheritdoc}
-	 */
-	public function getAttributeSettingNames()
-	{
-		return array_merge(parent::getAttributeSettingNames(), array(
-			'select_table',
-			'select_column',
-			'select_id',
-			'select_alias',
-			'select_where',
-			'select_sorting',
-			'select_as_radio',
-			'includeBlankOption',
-			'mandatory',
-			'chosen',
-			'filterable',
-			'searchable',
-			'sortable',
-			'flag'
-		));
-	}
+    /**
+     * {@inheritdoc}
+     */
+    public function getAttributeSettingNames()
+    {
+        return array_merge(parent::getAttributeSettingNames(), array(
+            'select_table',
+            'select_column',
+            'select_id',
+            'select_alias',
+            'select_where',
+            'select_sorting',
+            'select_as_radio',
+            'includeBlankOption',
+            'mandatory',
+            'chosen',
+            'filterable',
+            'searchable',
+            'sortable',
+            'flag'
+        ));
+    }
 
-	/**
-	 * {@inheritdoc}
-	 */
-	public function getFieldDefinition($arrOverrides = array())
-	{
-		$arrFieldDef      = parent::getFieldDefinition($arrOverrides);
-		$this->widgetMode = $arrOverrides['select_as_radio'];
-		if ($this->isTreePicker())
-		{
-			$arrFieldDef['inputType']          = 'DcGeneralTreePicker';
-			$arrFieldDef['eval']['sourceName'] = $this->get('select_table');
-			$arrFieldDef['eval']['sourceName'] = $this->get('select_table');
-			$arrFieldDef['eval']['fieldType']  = 'radio';
-		}
-		// If select as radio is true, change the input type.
-		elseif ($this->widgetMode == 1)
-		{
-			$arrFieldDef['inputType'] = 'radio';
-		}
-		else
-		{
-			$arrFieldDef['inputType'] = 'select';
-		}
+    /**
+     * {@inheritdoc}
+     */
+    public function getFieldDefinition($arrOverrides = array())
+    {
+        $arrFieldDef      = parent::getFieldDefinition($arrOverrides);
+        $this->widgetMode = $arrOverrides['select_as_radio'];
+        if ($this->isTreePicker())
+        {
+            $arrFieldDef['inputType']          = 'DcGeneralTreePicker';
+            $arrFieldDef['eval']['sourceName'] = $this->get('select_table');
+            $arrFieldDef['eval']['sourceName'] = $this->get('select_table');
+            $arrFieldDef['eval']['fieldType']  = 'radio';
+        }
+        // If select as radio is true, change the input type.
+        elseif ($this->widgetMode == 1)
+        {
+            $arrFieldDef['inputType'] = 'radio';
+        }
+        else
+        {
+            $arrFieldDef['inputType'] = 'select';
+        }
 
-		$arrFieldDef['options'] = $this->getFilterOptions(null, false);
-		return $arrFieldDef;
-	}
+        $arrFieldDef['options'] = $this->getFilterOptions(null, false);
+        return $arrFieldDef;
+    }
 
-	/**
-	 * {@inheritdoc}
-	 */
-	public function valueToWidget($varValue)
-	{
-		$strColNameAlias = $this->get('select_alias');
-		if ($this->isTreePicker() || !$strColNameAlias)
-		{
-			$strColNameAlias = $this->get('select_id');
-		}
+    /**
+     * {@inheritdoc}
+     */
+    public function valueToWidget($varValue)
+    {
+        $strColNameAlias = $this->get('select_alias');
+        if ($this->isTreePicker() || !$strColNameAlias)
+        {
+            $strColNameAlias = $this->get('select_id');
+        }
 
-		return $varValue[$strColNameAlias];
-	}
+        return $varValue[$strColNameAlias];
+    }
 
-	/**
-	 * {@inheritdoc}
-	 */
-	public function widgetToValue($varValue, $intId)
-	{
-		$objDB           = \Database::getInstance();
-		$strColNameAlias = $this->get('select_alias');
-		$strColNameId    = $this->get('select_id');
-		if ($this->isTreePicker() || !$strColNameAlias)
-		{
-			$strColNameAlias = $strColNameId;
-		}
-		// Lookup the id for this value.
-		$objValue = $objDB
-			->prepare(sprintf('SELECT %1$s.* FROM %1$s WHERE %2$s=?', $this->get('select_table'), $strColNameAlias))
-			->execute($varValue);
+    /**
+     * {@inheritdoc}
+     */
+    public function widgetToValue($varValue, $intId)
+    {
+        $objDB           = \Database::getInstance();
+        $strColNameAlias = $this->get('select_alias');
+        $strColNameId    = $this->get('select_id');
+        if ($this->isTreePicker() || !$strColNameAlias)
+        {
+            $strColNameAlias = $strColNameId;
+        }
+        // Lookup the id for this value.
+        $objValue = $objDB
+            ->prepare(sprintf('SELECT %1$s.* FROM %1$s WHERE %2$s=?', $this->get('select_table'), $strColNameAlias))
+            ->execute($varValue);
 
-		return $objValue->row();
-	}
+        return $objValue->row();
+    }
 
-	/**
-	 * Convert a native attribute value into a value to be used in a filter Url.
-	 *
-	 * This returns the value of the alias if any defined or the value of the id otherwise.
-	 *
-	 * @param mixed $varValue The source value.
-	 *
-	 * @return string
-	 */
-	public function getFilterUrlValue($varValue)
-	{
-		return urlencode($varValue[$this->get('select_alias') ? $this->get('select_alias') : $this->get('select_id')]);
-	}
+    /**
+     * Convert a native attribute value into a value to be used in a filter Url.
+     *
+     * This returns the value of the alias if any defined or the value of the id otherwise.
+     *
+     * @param mixed $varValue The source value.
+     *
+     * @return string
+     */
+    public function getFilterUrlValue($varValue)
+    {
+        return urlencode($varValue[$this->get('select_alias') ? $this->get('select_alias') : $this->get('select_id')]);
+    }
 
-	/**
-	 * {@inheritdoc}
-	 *
-	 * Fetch filter options from foreign table.
-	 *
-	 */
-	public function getFilterOptions($arrIds, $usedOnly, &$arrCount = null)
-	{
-		if (($arrIds !== null) && empty($arrIds))
-		{
-			return array();
-		}
+    /**
+     * {@inheritdoc}
+     *
+     * Fetch filter options from foreign table.
+     *
+     */
+    public function getFilterOptions($arrIds, $usedOnly, &$arrCount = null)
+    {
+        if (($arrIds !== null) && empty($arrIds))
+        {
+            return array();
+        }
 
-		$strTableName = $this->get('select_table');
-		$strColNameId = $this->get('select_id');
-		$arrReturn    = array();
+        $strTableName = $this->get('select_table');
+        $strColNameId = $this->get('select_id');
+        $arrReturn    = array();
 
-		if ($strTableName && $strColNameId)
-		{
-			$strColNameValue = $this->get('select_column');
-			$strColNameAlias = $this->get('select_alias');
-			$strSortColumn   = $this->get('select_sorting') ? $this->get('select_sorting') : $strColNameId;
-			$strColNameWhere = ($this->get('select_where') ? html_entity_decode($this->get('select_where')) : false);
+        if ($strTableName && $strColNameId)
+        {
+            $strColNameValue = $this->get('select_column');
+            $strColNameAlias = $this->get('select_alias');
+            $strSortColumn   = $this->get('select_sorting') ? $this->get('select_sorting') : $strColNameId;
+            $strColNameWhere = ($this->get('select_where') ? html_entity_decode($this->get('select_where')) : false);
 
-			if (!$strColNameAlias)
-			{
-				$strColNameAlias = $strColNameId;
-			}
-			$objDB = \Database::getInstance();
-			if ($arrIds)
-			{
-				$objValue = $objDB
-					->prepare(sprintf('
-						SELECT COUNT(%1$s.%2$s) as mm_count, %1$s.*
-						FROM %1$s
-						RIGHT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
-						WHERE (%3$s.id IN (%5$s)%6$s)
-						GROUP BY %1$s.%2$s
-						ORDER BY %1$s.%7$s',
-						// @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
-						$strTableName,                                           // 1
-						$strColNameId,                                           // 2
-						$this->getMetaModel()->getTableName(),                   // 3
-						$this->getColName(),                                     // 4
-						implode(',', $arrIds),                                   // 5
-						($strColNameWhere ? ' AND ('.$strColNameWhere.')' : ''), // 6
-						$strSortColumn                                           // 7
-						// @codingStandardsIgnoreEnd
-					))
-					->execute($this->get('id'));
-			} else {
-				if ($usedOnly)
-				{
-					$strQuery = sprintf('
-					SELECT COUNT(%1$s.%2$s) as mm_count, %1$s.*
-					FROM %1$s
-					RIGHT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
-					%5$s
-					GROUP BY %1$s.%2$s
-					ORDER BY %1$s.%6$s',
-						// @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
-						$strTableName,                                             // 1
-						$strColNameId,                                             // 2
-						$this->getMetaModel()->getTableName(),                     // 3
-						$this->getColName(),                                       // 4
-						($strColNameWhere ? ' WHERE ('.$strColNameWhere.')' : ''), // 5
-						$strSortColumn                                             // 6
-						// @codingStandardsIgnoreEnd
-					);
-				} else {
-					$strQuery = sprintf('
-					SELECT COUNT(%3$s.%4$s) as mm_count, %1$s.*
-					FROM %1$s
-					LEFT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
-					%5$s
-					GROUP BY %1$s.%2$s
-					ORDER BY %1$s.%6$s',
-						// @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
-						$strTableName,                                             // 1
-						$strColNameId,                                             // 2
-						$this->getMetaModel()->getTableName(),                     // 3
-						$this->getColName(),                                       // 4
-						($strColNameWhere ? ' WHERE ('.$strColNameWhere.')' : ''), // 5
-						$strSortColumn                                             // 6
-					// @codingStandardsIgnoreEnd
-					);
-				}
-				$objValue = $objDB->prepare($strQuery)
-					->execute();
-			}
+            if (!$strColNameAlias)
+            {
+                $strColNameAlias = $strColNameId;
+            }
+            $objDB = \Database::getInstance();
+            if ($arrIds)
+            {
+                $objValue = $objDB
+                    ->prepare(sprintf('
+                        SELECT COUNT(%1$s.%2$s) as mm_count, %1$s.*
+                        FROM %1$s
+                        RIGHT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
+                        WHERE (%3$s.id IN (%5$s)%6$s)
+                        GROUP BY %1$s.%2$s
+                        ORDER BY %1$s.%7$s',
+                        // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
+                        $strTableName,                                           // 1
+                        $strColNameId,                                           // 2
+                        $this->getMetaModel()->getTableName(),                   // 3
+                        $this->getColName(),                                     // 4
+                        implode(',', $arrIds),                                   // 5
+                        ($strColNameWhere ? ' AND ('.$strColNameWhere.')' : ''), // 6
+                        $strSortColumn                                           // 7
+                        // @codingStandardsIgnoreEnd
+                    ))
+                    ->execute($this->get('id'));
+            } else {
+                if ($usedOnly)
+                {
+                    $strQuery = sprintf('
+                    SELECT COUNT(%1$s.%2$s) as mm_count, %1$s.*
+                    FROM %1$s
+                    RIGHT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
+                    %5$s
+                    GROUP BY %1$s.%2$s
+                    ORDER BY %1$s.%6$s',
+                        // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
+                        $strTableName,                                             // 1
+                        $strColNameId,                                             // 2
+                        $this->getMetaModel()->getTableName(),                     // 3
+                        $this->getColName(),                                       // 4
+                        ($strColNameWhere ? ' WHERE ('.$strColNameWhere.')' : ''), // 5
+                        $strSortColumn                                             // 6
+                        // @codingStandardsIgnoreEnd
+                    );
+                } else {
+                    $strQuery = sprintf('
+                    SELECT COUNT(%3$s.%4$s) as mm_count, %1$s.*
+                    FROM %1$s
+                    LEFT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
+                    %5$s
+                    GROUP BY %1$s.%2$s
+                    ORDER BY %1$s.%6$s',
+                        // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
+                        $strTableName,                                             // 1
+                        $strColNameId,                                             // 2
+                        $this->getMetaModel()->getTableName(),                     // 3
+                        $this->getColName(),                                       // 4
+                        ($strColNameWhere ? ' WHERE ('.$strColNameWhere.')' : ''), // 5
+                        $strSortColumn                                             // 6
+                    // @codingStandardsIgnoreEnd
+                    );
+                }
+                $objValue = $objDB->prepare($strQuery)
+                    ->execute();
+            }
 
-			while ($objValue->next())
-			{
-				if (is_array($arrCount))
-				{
-					$arrCount[$objValue->$strColNameAlias] = $objValue->mm_count;
-				}
+            while ($objValue->next())
+            {
+                if (is_array($arrCount))
+                {
+                    $arrCount[$objValue->$strColNameAlias] = $objValue->mm_count;
+                }
 
-				$arrReturn[$objValue->$strColNameAlias] = $objValue->$strColNameValue;
-			}
-		}
-		return $arrReturn;
-	}
+                $arrReturn[$objValue->$strColNameAlias] = $objValue->$strColNameValue;
+            }
+        }
+        return $arrReturn;
+    }
 
-	/**
-	 * {@inheritdoc}
-	 *
-	 * search value in table
-	 */
-	public function searchFor($strPattern)
-	{
-		$objFilterRule = null;
-		$objFilterRule = new FilterRuleSelect($this, $strPattern);
+    /**
+     * {@inheritdoc}
+     *
+     * search value in table
+     */
+    public function searchFor($strPattern)
+    {
+        $objFilterRule = null;
+        $objFilterRule = new FilterRuleSelect($this, $strPattern);
 
-		return $objFilterRule->getMatchingIds();
-	}
+        return $objFilterRule->getMatchingIds();
+    }
 
-	/**
-	 * {@inheritdoc}
-	 */
-	public function getSQLDataType()
-	{
-		return 'int(11) NOT NULL default \'0\'';
-	}
+    /**
+     * {@inheritdoc}
+     */
+    public function getSQLDataType()
+    {
+        return 'int(11) NOT NULL default \'0\'';
+    }
 
-	/**
-	 * {@inheritdoc}
-	 */
-	public function getDataFor($arrIds)
-	{
-		$objDB          = \Database::getInstance();
-		$strTableNameId = $this->get('select_table');
-		$strColNameId   = $this->get('select_id');
-		$arrReturn      = array();
+    /**
+     * {@inheritdoc}
+     */
+    public function getDataFor($arrIds)
+    {
+        $objDB          = \Database::getInstance();
+        $strTableNameId = $this->get('select_table');
+        $strColNameId   = $this->get('select_id');
+        $arrReturn      = array();
 
-		if ($strTableNameId && $strColNameId)
-		{
-			$strMetaModelTableName   = $this->getMetaModel()->getTableName();
-			$strMetaModelTableNameId = $strMetaModelTableName.'_id';
+        if ($strTableNameId && $strColNameId)
+        {
+            $strMetaModelTableName   = $this->getMetaModel()->getTableName();
+            $strMetaModelTableNameId = $strMetaModelTableName.'_id';
 
-			// Using aliased join here to resolve issue #3 - SQL error for self referencing table.
-			$objValue = $objDB
-				->prepare(sprintf('
-					SELECT sourceTable.*, %2$s.id AS %3$s
-					FROM %1$s sourceTable
-					LEFT JOIN %2$s ON (sourceTable.%4$s=%2$s.%5$s)
-					WHERE %2$s.id IN (%6$s)',
-					// @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
-					$strTableNameId,          // 1
-					$strMetaModelTableName,   // 2
-					$strMetaModelTableNameId, // 3
-					$strColNameId,            // 4
-					$this->getColName(),      // 5
-					implode(',', $arrIds)     // 6
-					// @codingStandardsIgnoreEnd
-				))
-				->execute();
+            // Using aliased join here to resolve issue #3 - SQL error for self referencing table.
+            $objValue = $objDB
+                ->prepare(sprintf('
+                    SELECT sourceTable.*, %2$s.id AS %3$s
+                    FROM %1$s sourceTable
+                    LEFT JOIN %2$s ON (sourceTable.%4$s=%2$s.%5$s)
+                    WHERE %2$s.id IN (%6$s)',
+                    // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
+                    $strTableNameId,          // 1
+                    $strMetaModelTableName,   // 2
+                    $strMetaModelTableNameId, // 3
+                    $strColNameId,            // 4
+                    $this->getColName(),      // 5
+                    implode(',', $arrIds)     // 6
+                    // @codingStandardsIgnoreEnd
+                ))
+                ->execute();
 
-			while ($objValue->next())
-			{
-				$arrReturn[$objValue->$strMetaModelTableNameId] = $objValue->row();
-			}
-		}
-		return $arrReturn;
-	}
+            while ($objValue->next())
+            {
+                $arrReturn[$objValue->$strMetaModelTableNameId] = $objValue->row();
+            }
+        }
+        return $arrReturn;
+    }
 
-	/**
-	 * {@inheritdoc}
-	 */
-	public function setDataFor($arrValues)
-	{
-		$strTableName = $this->get('select_table');
-		$strColNameId = $this->get('select_id');
-		if ($strTableName && $strColNameId)
-		{
-			$strQuery = sprintf('UPDATE %1$s SET %2$s=? WHERE %1$s.id=?',
-				$this->getMetaModel()->getTableName(),
-				$this->getColName()
-			);
+    /**
+     * {@inheritdoc}
+     */
+    public function setDataFor($arrValues)
+    {
+        $strTableName = $this->get('select_table');
+        $strColNameId = $this->get('select_id');
+        if ($strTableName && $strColNameId)
+        {
+            $strQuery = sprintf('UPDATE %1$s SET %2$s=? WHERE %1$s.id=?',
+                $this->getMetaModel()->getTableName(),
+                $this->getColName()
+            );
 
-			$objDB = \Database::getInstance();
-			foreach ($arrValues as $intItemId => $arrValue)
-			{
-				$objDB->prepare($strQuery)->execute($arrValue[$strColNameId], $intItemId);
-			}
-		}
-	}
+            $objDB = \Database::getInstance();
+            foreach ($arrValues as $intItemId => $arrValue)
+            {
+                $objDB->prepare($strQuery)->execute($arrValue[$strColNameId], $intItemId);
+            }
+        }
+    }
 
-	/**
-	 * {@inheritdoc}
-	 */
-	public function unsetDataFor($arrIds)
-	{
-		$strTableName = $this->get('select_table');
-		$strColNameId = $this->get('select_id');
-		if ($strTableName && $strColNameId)
-		{
-			$strQuery = sprintf('UPDATE %1$s SET %2$s=0 WHERE %1$s.id IN (%3$s)',
-				$this->getMetaModel()->getTableName(),
-				$this->getColName(),
-				implode(',', $arrIds)
-			);
-			\Database::getInstance()->execute($strQuery);
-		}
-	}
+    /**
+     * {@inheritdoc}
+     */
+    public function unsetDataFor($arrIds)
+    {
+        $strTableName = $this->get('select_table');
+        $strColNameId = $this->get('select_id');
+        if ($strTableName && $strColNameId)
+        {
+            $strQuery = sprintf('UPDATE %1$s SET %2$s=0 WHERE %1$s.id IN (%3$s)',
+                $this->getMetaModel()->getTableName(),
+                $this->getColName(),
+                implode(',', $arrIds)
+            );
+            \Database::getInstance()->execute($strQuery);
+        }
+    }
 }
