@@ -308,8 +308,8 @@ class Select extends AbstractHybrid
                     GROUP BY %1$s.%2$s
                     ORDER BY %1$s.%7$s',
                     // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
-                    $tableName,                                           // 1
-                    $idColumn,                                           // 2
+                    $tableName,                                              // 1
+                    $idColumn,                                               // 2
                     $this->getMetaModel()->getTableName(),                   // 3
                     $this->getColName(),                                     // 4
                     implode(',', $arrIds),                                   // 5
