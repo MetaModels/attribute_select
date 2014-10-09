@@ -70,10 +70,13 @@ class MetaModelSelect extends AbstractSelect
      */
     public function getAttributeSettingNames()
     {
-        return array_merge(parent::getAttributeSettingNames(), array(
-            'select_filter',
-            'select_filterparams',
-        ));
+        return array_merge(
+            parent::getAttributeSettingNames(),
+            array(
+                'select_filter',
+                'select_filterparams',
+            )
+        );
     }
 
     /**
@@ -81,21 +84,7 @@ class MetaModelSelect extends AbstractSelect
      */
     public function valueToWidget($varValue)
     {
-        $arrReturn = array();
-
-        if (!is_array($varValue) || empty($varValue)) {
-            return $arrReturn;
-        }
-
-        foreach ($varValue as $mixItem) {
-            if (is_array($mixItem) && isset($mixItem['id'])) {
-                $arrReturn[] = $mixItem['id'];
-            } elseif (!is_array($mixItem)) {
-                $arrReturn[] = $mixItem;
-            }
-        }
-
-        return $arrReturn;
+        return $varValue['id'];
     }
 
     /**
@@ -103,7 +92,13 @@ class MetaModelSelect extends AbstractSelect
      */
     public function widgetToValue($varValue, $intId)
     {
-        return $varValue;
+        $database = $this->getDatabase();
+        // Lookup the id for this value.
+        $objValue = $database
+            ->prepare(sprintf('SELECT %1$s.* FROM %1$s WHERE id=?', $this->getSelectSource()))
+            ->execute($varValue);
+
+        return $objValue->row();
     }
 
     /**
@@ -261,11 +256,10 @@ class MetaModelSelect extends AbstractSelect
     {
         $displayValue = $this->getValueColumn();
         $result       = array();
-
-        // Get data from MetaModel.
-        $metaModel = $this->getSelectMetaModel();
+        $metaModel    = $this->getSelectMetaModel();
 
         if ($this->getSelectSource() && $metaModel && $displayValue) {
+            $valueColumn = $this->getColName();
             // First pass, load database rows.
             $rows = $this->getDatabase()->prepare(
                 sprintf(
@@ -273,29 +267,34 @@ class MetaModelSelect extends AbstractSelect
                     // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following
                     // lines.
                     $this->getMetaModel()->getTableName(),     // 1
-                    $this->getColName(),                       // 2
+                    $valueColumn,                              // 2
                     implode(',', array_map('intval', $arrIds)) // 3
-                    // @codingStandardsIgnoreEnd
+                // @codingStandardsIgnoreEnd
                 )
-            )->execute();
+            )->executeUncached();
 
+            $valueIds = array();
             while ($rows->next()) {
-                $result[$rows->id] = $rows->row();
+                $valueIds[$rows->id] = $rows->$valueColumn;
             }
 
             $filter = $metaModel->getEmptyFilter();
-            $filter->addFilterRule(new StaticIdList($arrIds));
+            $filter->addFilterRule(new StaticIdList($valueIds));
 
-            $items = $metaModel->findByFilter($filter);
-
+            $items  = $metaModel->findByFilter($filter, 'id');
+            $values = array();
             foreach ($items as $item) {
-                $itemId    = $item->get('id');
-                $arrValues = $item->parseValue();
+                $valueId    = $item->get('id');
+                $parsedItem = $item->parseValue();
 
-                $result[$itemId] = array_merge(
-                    $result[$itemId],
-                    $arrValues['text']
+                $values[$valueId] = array_merge(
+                    $parsedItem['raw'],
+                    $parsedItem['text']
                 );
+            }
+
+            foreach ($valueIds as $itemId => $valueId) {
+                $result[$itemId] = $values[$valueIds[$itemId]];
             }
         }
 
@@ -324,7 +323,7 @@ class MetaModelSelect extends AbstractSelect
         $database = $this->getDatabase();
         foreach ($arrValues as $itemId => $value) {
             if (is_array($value) && isset($value['id'])) {
-                    $database->prepare($query)->execute($value['id'], $itemId);
+                $database->prepare($query)->execute($value['id'], $itemId);
             } elseif (is_numeric($itemId) && is_numeric($value)) {
                 $database->prepare($query)->execute($value, $itemId);
             } else {
