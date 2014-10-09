@@ -24,3 +24,4 @@ $GLOBALS['TL_EVENTS'][\ContaoCommunityAlliance\Contao\EventDispatcher\Event\Crea
     'MetaModels\DcGeneral\Events\Table\Attribute\Select\PropertySelectWhere::registerEvents';
 
 $GLOBALS['TL_EVENT_SUBSCRIBERS'][] = 'MetaModels\Attribute\Select\AttributeTypeFactory';
+$GLOBALS['TL_EVENT_SUBSCRIBERS'][] = 'MetaModels\DcGeneral\Events\MetaModels\Select\BackendSubscriber';

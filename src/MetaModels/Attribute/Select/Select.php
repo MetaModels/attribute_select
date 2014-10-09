@@ -17,45 +17,25 @@
 
 namespace MetaModels\Attribute\Select;
 
-use MetaModels\Attribute\AbstractHybrid;
-use MetaModels\Filter\Rules\FilterRuleSelect;
-
 /**
- * This is the MetaModelAttribute class for handling select attributes.
+ * This is the MetaModelAttribute class for handling select attributes on plain SQL tables.
  *
  * @package    MetaModels
  * @subpackage AttributeSelect
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
  * @author     Christian de la Haye <service@delahaye.de>
  */
-class Select extends AbstractHybrid
+class Select extends AbstractSelect
 {
-    /**
-     * The widget mode to use.
-     *
-     * @var int
-     */
-    protected $widgetMode;
-
-    /**
-     * Determine if we want to use tree selection.
-     *
-     * @return bool
-     */
-    protected function isTreePicker()
-    {
-        return $this->widgetMode == 2;
-    }
-
     /**
      * {@inheritdoc}
      */
     public function sortIds($arrIds, $strDirection)
     {
-        $strTableName  = $this->get('select_table');
+        $strTableName  = $this->getSelectSource();
         $strColNameId  = $this->get('select_id');
-        $strSortColumn = $this->get('select_sorting') ? $this->get('select_sorting') : $strColNameId;
-        $arrIds        = \Database::getInstance()
+        $strSortColumn = $this->getSortingColumn();
+        $arrIds        = $this->getDatabase()
             ->prepare(
                 sprintf(
                     'SELECT %1$s.id FROM %1$s
@@ -84,44 +64,10 @@ class Select extends AbstractHybrid
     public function getAttributeSettingNames()
     {
         return array_merge(parent::getAttributeSettingNames(), array(
-            'select_table',
-            'select_column',
             'select_id',
             'select_alias',
             'select_where',
-            'select_sorting',
-            'select_as_radio',
-            'includeBlankOption',
-            'mandatory',
-            'chosen',
-            'filterable',
-            'searchable',
-            'sortable',
-            'flag'
         ));
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getFieldDefinition($arrOverrides = array())
-    {
-        $arrFieldDef      = parent::getFieldDefinition($arrOverrides);
-        $this->widgetMode = $arrOverrides['select_as_radio'];
-        if ($this->isTreePicker()) {
-            $arrFieldDef['inputType']          = 'DcGeneralTreePicker';
-            $arrFieldDef['eval']['sourceName'] = $this->get('select_table');
-            $arrFieldDef['eval']['sourceName'] = $this->get('select_table');
-            $arrFieldDef['eval']['fieldType']  = 'radio';
-        } elseif ($this->widgetMode == 1) {
-            // If select as radio is true, change the input type.
-            $arrFieldDef['inputType'] = 'radio';
-        } else {
-            $arrFieldDef['inputType'] = 'select';
-        }
-
-        $arrFieldDef['options'] = $this->getFilterOptions(null, false);
-        return $arrFieldDef;
     }
 
     /**
@@ -142,14 +88,14 @@ class Select extends AbstractHybrid
      */
     public function widgetToValue($varValue, $intId)
     {
-        $objDB           = \Database::getInstance();
+        $database        = $this->getDatabase();
         $strColNameAlias = $this->get('select_alias');
         $strColNameId    = $this->get('select_id');
         if ($this->isTreePicker() || !$strColNameAlias) {
             $strColNameAlias = $strColNameId;
         }
         // Lookup the id for this value.
-        $objValue = $objDB
+        $objValue = $database
             ->prepare(sprintf('SELECT %1$s.* FROM %1$s WHERE %2$s=?', $this->get('select_table'), $strColNameAlias))
             ->execute($varValue);
 
@@ -178,16 +124,6 @@ class Select extends AbstractHybrid
     protected function getAliasColumn()
     {
         return $this->get('select_alias') ?: $this->get('select_id');
-    }
-
-    /**
-     * Determine the correct sorting column to use.
-     *
-     * @return string
-     */
-    protected function getSortingColumn()
-    {
-        return $this->get('select_sorting') ?: $this->get('select_id');
     }
 
     /**
@@ -247,7 +183,7 @@ class Select extends AbstractHybrid
                     GROUP BY %1$s.%2$s
                     ORDER BY %1$s.%6$s',
                 // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
-                $this->get('select_table'),                                // 1
+                $this->getSelectSource(),                                  // 1
                 $this->get('select_id'),                                   // 2
                 $this->getMetaModel()->getTableName(),                     // 3
                 $this->getColName(),                                       // 4
@@ -265,7 +201,7 @@ class Select extends AbstractHybrid
                 GROUP BY %1$s.%2$s
                 ORDER BY %1$s.%6$s',
             // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
-            $this->get('select_table'),                                // 1
+            $this->getSelectSource(),                                  // 1
             $this->get('select_id'),                                   // 2
             $this->getMetaModel()->getTableName(),                     // 3
             $this->getColName(),                                       // 4
@@ -287,7 +223,7 @@ class Select extends AbstractHybrid
             return array();
         }
 
-        $tableName = $this->get('select_table');
+        $tableName = $this->getSelectSource();
         $idColumn  = $this->get('select_id');
 
         if (empty($tableName) || empty($idColumn)) {
@@ -322,28 +258,7 @@ class Select extends AbstractHybrid
             $objValue = $this->getFilterOptionsForUsedOnly($usedOnly);
         }
 
-        return $this->convertOptionsList($objValue, $this->getAliasColumn(), $this->get('select_column'), $arrCount);
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * search value in table
-     */
-    public function searchFor($strPattern)
-    {
-        $objFilterRule = null;
-        $objFilterRule = new FilterRuleSelect($this, $strPattern);
-
-        return $objFilterRule->getMatchingIds();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getSQLDataType()
-    {
-        return 'int(11) NOT NULL default \'0\'';
+        return $this->convertOptionsList($objValue, $this->getAliasColumn(), $this->getValueColumn(), $arrCount);
     }
 
     /**
@@ -352,7 +267,7 @@ class Select extends AbstractHybrid
     public function getDataFor($arrIds)
     {
         $objDB          = \Database::getInstance();
-        $strTableNameId = $this->get('select_table');
+        $strTableNameId = $this->getSelectSource();
         $strColNameId   = $this->get('select_id');
         $arrReturn      = array();
 
@@ -390,7 +305,7 @@ class Select extends AbstractHybrid
      */
     public function setDataFor($arrValues)
     {
-        $strTableName = $this->get('select_table');
+        $strTableName = $this->getSelectSource();
         $strColNameId = $this->get('select_id');
         if ($strTableName && $strColNameId) {
             $strQuery = sprintf(
@@ -403,24 +318,6 @@ class Select extends AbstractHybrid
             foreach ($arrValues as $intItemId => $arrValue) {
                 $objDB->prepare($strQuery)->execute($arrValue[$strColNameId], $intItemId);
             }
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function unsetDataFor($arrIds)
-    {
-        $strTableName = $this->get('select_table');
-        $strColNameId = $this->get('select_id');
-        if ($strTableName && $strColNameId) {
-            $strQuery = sprintf(
-                'UPDATE %1$s SET %2$s=0 WHERE %1$s.id IN (%3$s)',
-                $this->getMetaModel()->getTableName(),
-                $this->getColName(),
-                implode(',', $arrIds)
-            );
-            \Database::getInstance()->execute($strQuery);
         }
     }
 }

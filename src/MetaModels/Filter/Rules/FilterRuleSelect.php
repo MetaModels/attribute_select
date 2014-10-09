@@ -16,9 +16,9 @@
 
 namespace MetaModels\Filter\Rules;
 
+use MetaModels\Attribute\Select\AbstractSelect;
 use MetaModels\Filter\FilterRule;
 use MetaModels\Attribute\IAttribute;
-use MetaModels\Attribute\Select\Select;
 
 /**
  * This is the MetaModelFilterRule class for handling select fields.
@@ -39,7 +39,7 @@ class FilterRuleSelect extends FilterRule
     /**
      * {@inheritDoc}
      */
-    public function __construct(Select $objAttribute, $strValue)
+    public function __construct(AbstractSelect $objAttribute, $strValue)
     {
         parent::__construct();
 
