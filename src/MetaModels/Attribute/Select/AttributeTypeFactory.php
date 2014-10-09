@@ -17,14 +17,14 @@
 
 namespace MetaModels\Attribute\Select;
 
-use MetaModels\Attribute\AbstractAttributeTypeFactory;
 use MetaModels\Attribute\Events\CreateAttributeFactoryEvent;
+use MetaModels\Attribute\IAttributeTypeFactory;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * Attribute type factory for select attributes.
  */
-class AttributeTypeFactory extends AbstractAttributeTypeFactory implements EventSubscriberInterface
+class AttributeTypeFactory implements EventSubscriberInterface, IAttributeTypeFactory
 {
     /**
      * {@inheritDoc}
@@ -50,12 +50,52 @@ class AttributeTypeFactory extends AbstractAttributeTypeFactory implements Event
     }
 
     /**
-     * Create a new instance.
+     * {@inheritdoc}
      */
-    public function __construct()
+    public function getTypeName()
     {
-        parent::__construct();
-        $this->typeName  = 'select';
-        $this->typeClass = 'MetaModels\Attribute\Select\Select';
+        return 'select';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function createInstance($information, $metaModel)
+    {
+        if (substr($information['select_table'], 0, 3) === 'mm_') {
+            return new MetaModelSelect($metaModel, $information);
+        }
+
+        return new Select($metaModel, $information);
+    }
+
+    /**
+     * Check if the type is translated.
+     *
+     * @return bool
+     */
+    public function isTranslatedType()
+    {
+        return false;
+    }
+
+    /**
+     * Check if the type is of simple nature.
+     *
+     * @return bool
+     */
+    public function isSimpleType()
+    {
+        return true;
+    }
+
+    /**
+     * Check if the type is of complex nature.
+     *
+     * @return bool
+     */
+    public function isComplexType()
+    {
+        return true;
     }
 }
