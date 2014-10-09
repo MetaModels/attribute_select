@@ -32,4 +32,8 @@ if (
     exit(1);
 }
 
-$loader->add('MetaModels\Test', __DIR__);
+if (is_dir(__DIR__ . '/../vendor/metamodels/core/tests')) {
+    $loader->add('MetaModels\Test', realpath(__DIR__ . '/../vendor/metamodels/core/tests'));
+} elseif (is_dir(__DIR__.'/../../../metamodels/core/tests')) {
+    $loader->add('MetaModels\Test', realpath(__DIR__.'/../../../metamodels/core/tests'));
+}
