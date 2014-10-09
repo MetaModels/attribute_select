@@ -9,13 +9,13 @@
  * @package     MetaModels
  * @subpackage  AttributeSelect
  * @author      Christian Schiffler <c.schiffler@cyberspectrum.de>
+ * @author      Stefan heimes <stefan_heimes@hotmail.com>
  * @copyright   The MetaModels team.
  * @license     LGPL.
  * @filesource
  */
 
-$GLOBALS['METAMODELS']['attributes']['select']['class'] = 'MetaModels\Attribute\Select\Select';
-$GLOBALS['METAMODELS']['attributes']['select']['image'] = 'system/modules/metamodelsattribute_select/html/select.png';
+//$GLOBALS['METAMODELS']['attributes']['select']['image'] = 'system/modules/metamodelsattribute_select/html/select.png';
 
 $GLOBALS['TL_EVENTS'][\ContaoCommunityAlliance\Contao\EventDispatcher\Event\CreateEventDispatcherEvent::NAME][] =
     'MetaModels\DcGeneral\Events\Table\Attribute\Select\PropertyAttribute::registerEvents';
