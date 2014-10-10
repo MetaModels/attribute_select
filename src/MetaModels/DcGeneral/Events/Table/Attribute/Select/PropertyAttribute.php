@@ -174,9 +174,17 @@ class PropertyAttribute extends BaseSubscriber
             }
         }
 
-        asort($result[$translated]);
-        asort($result[$untranslated]);
-        asort($result[$sqlTable]);
+        if (is_array($result[$translated])) {
+            asort($result[$translated]);
+        }
+
+        if (is_array($result[$untranslated])) {
+            asort($result[$untranslated]);
+        }
+
+        if (is_array($result[$sqlTable])) {
+            asort($result[$sqlTable]);
+        }
 
         $event->setOptions($result);
     }
