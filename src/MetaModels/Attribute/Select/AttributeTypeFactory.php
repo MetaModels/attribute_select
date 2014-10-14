@@ -60,6 +60,14 @@ class AttributeTypeFactory implements EventSubscriberInterface, IAttributeTypeFa
     /**
      * {@inheritdoc}
      */
+    public function getTypeIcon()
+    {
+        return 'system/modules/metamodelsattribute_select/html/select.png';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function createInstance($information, $metaModel)
     {
         if (substr($information['select_table'], 0, 3) === 'mm_') {

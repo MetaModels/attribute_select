@@ -15,8 +15,6 @@
  * @filesource
  */
 
-//$GLOBALS['METAMODELS']['attributes']['select']['image'] = 'system/modules/metamodelsattribute_select/html/select.png';
-
 $GLOBALS['TL_EVENTS'][\ContaoCommunityAlliance\Contao\EventDispatcher\Event\CreateEventDispatcherEvent::NAME][] =
     'MetaModels\DcGeneral\Events\Table\Attribute\Select\PropertyAttribute::registerEvents';
 
