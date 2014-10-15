@@ -98,6 +98,12 @@ class MetaModelSelect extends AbstractSelect
             ->prepare(sprintf('SELECT %1$s.* FROM %1$s WHERE id=?', $this->getSelectSource()))
             ->execute($varValue);
 
+        if (!$objValue->numRows) {
+            return array(
+                'id' => 0
+            );
+        }
+
         return $objValue->row();
     }
 
