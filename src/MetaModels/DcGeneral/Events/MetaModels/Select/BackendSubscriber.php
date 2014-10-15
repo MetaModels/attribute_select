@@ -18,7 +18,7 @@
 namespace MetaModels\DcGeneral\Events\MetaModels\Select;
 
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\GetPropertyOptionsEvent;
-use MetaModels\Attribute\Select\Select;
+use MetaModels\Attribute\Select\AbstractSelect;
 use MetaModels\DcGeneral\Data\Model;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -56,7 +56,7 @@ class BackendSubscriber implements EventSubscriberInterface
         $item      = $model->getItem();
         $attribute = $item->getMetaModel()->getAttribute($event->getPropertyName());
 
-        if (!($attribute instanceof Select)) {
+        if (!($attribute instanceof AbstractSelect)) {
             return;
         }
 
