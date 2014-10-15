@@ -161,6 +161,6 @@ abstract class AbstractSelect extends AbstractHybrid
             $this->getColName(),
             implode(',', $arrIds)
         );
-        \Database::getInstance()->execute($strQuery);
+        $this->getDatabase()->execute($strQuery);
     }
 }

@@ -131,7 +131,7 @@ class MetaModelSelect extends AbstractSelect
             );
         }
 
-        $arrUsedValues = \Database::getInstance()
+        $arrUsedValues = $this->getDatabase()
             ->prepare($query)
             ->execute()
             ->fetchEach($this->getColName());
