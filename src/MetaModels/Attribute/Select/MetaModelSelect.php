@@ -87,6 +87,34 @@ class MetaModelSelect extends AbstractSelect
     }
 
     /**
+     * Retrieve the values with the given ids.
+     *
+     * @param int[] $valueIds The ids of the values to retrieve.
+     *
+     * @return array
+     */
+    protected function getValuesById($valueIds)
+    {
+        $metaModel    = $this->getSelectMetaModel();
+        $filter = $metaModel->getEmptyFilter();
+        $filter->addFilterRule(new StaticIdList($valueIds));
+
+        $items  = $metaModel->findByFilter($filter, 'id');
+        $values = array();
+        foreach ($items as $item) {
+            $valueId    = $item->get('id');
+            $parsedItem = $item->parseValue();
+
+            $values[$valueId] = array_merge(
+                array(self::SELECT_RAW => $parsedItem['raw']),
+                $parsedItem['text']
+            );
+        }
+
+        return $values;
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function valueToWidget($varValue)
@@ -118,7 +146,7 @@ class MetaModelSelect extends AbstractSelect
             if (!$ids) {
                 $valueId = 0;
             } else {
-                if (count($ids)) {
+                if (count($ids) > 1) {
                     throw new \RuntimeException('Multiple values found for ' . var_export($varValue, true));
                 }
                 $valueId = array_shift($ids);
@@ -146,9 +174,9 @@ class MetaModelSelect extends AbstractSelect
             }
         }
 
-        return array(
-            'id' => $valueId
-        );
+        $value = $this->getValuesById(array($valueId));
+
+        return $value[$valueId];
     }
 
     /**
@@ -387,8 +415,8 @@ class MetaModelSelect extends AbstractSelect
 
         $database = $this->getDatabase();
         foreach ($arrValues as $itemId => $value) {
-            if (is_array($value) && isset($varValue[self::SELECT_RAW]['id'])) {
-                $database->prepare($query)->execute($varValue[self::SELECT_RAW]['id'], $itemId);
+            if (is_array($value) && isset($value[self::SELECT_RAW]['id'])) {
+                $database->prepare($query)->execute($value[self::SELECT_RAW]['id'], $itemId);
             } elseif (is_numeric($itemId) && is_numeric($value)) {
                 $database->prepare($query)->execute($value, $itemId);
             } else {
