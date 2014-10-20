@@ -65,7 +65,6 @@ class Select extends AbstractSelect
     {
         return array_merge(parent::getAttributeSettingNames(), array(
             'select_id',
-            'select_alias',
             'select_where',
         ));
     }
@@ -114,16 +113,6 @@ class Select extends AbstractSelect
     public function getFilterUrlValue($varValue)
     {
         return urlencode($varValue[$this->getAliasColumn()]);
-    }
-
-    /**
-     * Determine the correct alias column to use.
-     *
-     * @return string
-     */
-    protected function getAliasColumn()
-    {
-        return $this->get('select_alias') ?: $this->get('select_id');
     }
 
     /**

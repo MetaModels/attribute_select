@@ -20,6 +20,8 @@ namespace MetaModels\Attribute\Select;
 use MetaModels\Filter\IFilter;
 use MetaModels\Filter\Rules\StaticIdList;
 use MetaModels\Filter\Setting\Factory as FilterSettingFactory;
+use MetaModels\IItem;
+use MetaModels\IItems;
 use MetaModels\IMetaModel;
 use MetaModels\Render\Template as MetaModelTemplate;
 use MetaModels\Factory as MetaModelFactory;
@@ -34,6 +36,11 @@ use MetaModels\Factory as MetaModelFactory;
  */
 class MetaModelSelect extends AbstractSelect
 {
+    /**
+     * The key in the result array where the RAW values shall be stored.
+     */
+    const SELECT_RAW = '__SELECT_RAW__';
+
     /**
      * The MetaModel we are referencing on.
      *
@@ -84,7 +91,16 @@ class MetaModelSelect extends AbstractSelect
      */
     public function valueToWidget($varValue)
     {
-        return $varValue['id'];
+        if (isset($varValue[$this->getAliasColumn()])) {
+            // Hope the best that this is unique...
+            return $varValue[$this->getAliasColumn()];
+        }
+
+        if (isset($varValue[self::SELECT_RAW]['id'])) {
+            return $varValue[self::SELECT_RAW]['id'];
+        }
+
+        return null;
     }
 
     /**
@@ -92,19 +108,47 @@ class MetaModelSelect extends AbstractSelect
      */
     public function widgetToValue($varValue, $intId)
     {
-        $database = $this->getDatabase();
-        // Lookup the id for this value.
-        $objValue = $database
-            ->prepare(sprintf('SELECT %1$s.* FROM %1$s WHERE id=?', $this->getSelectSource()))
-            ->execute($varValue);
+        $model     = $this->getSelectMetaModel();
+        $alias     = $this->getAliasColumn();
+        $attribute = $model->getAttribute($alias);
 
-        if (!$objValue->numRows) {
-            return array(
-                'id' => 0
-            );
+        if ($attribute) {
+            // It is an attribute, we may search for it.
+            $ids = $attribute->searchFor($varValue);
+            if (!$ids) {
+                $valueId = 0;
+            } else {
+                if (count($ids)) {
+                    throw new \RuntimeException('Multiple values found for ' . var_export($varValue, true));
+                }
+                $valueId = array_shift($ids);
+            }
+        } else {
+            // Must be a system column then.
+            //Special case first, the id is our alias, easy way out.
+            if ($alias === 'id') {
+                $valueId = $varValue;
+            } else {
+                $result = $this->getDatabase()
+                    ->prepare(
+                        sprintf(
+                            'SELECT v.id FROM %1$s AS v WHERE v.%2$s=?',
+                            $this->getSelectSource(),
+                            $this->getAliasColumn()
+                        )
+                    )
+                    ->execute($varValue);
+
+                if (!$result->numRows) {
+                    throw new \RuntimeException('Could not translate value ' . var_export($varValue, true));
+                }
+                $valueId = $result->id;
+            }
         }
 
-        return $objValue->row();
+        return array(
+            'id' => $valueId
+        );
     }
 
     /**
@@ -200,6 +244,31 @@ class MetaModelSelect extends AbstractSelect
     }
 
     /**
+     * Convert a collection of items into a proper filter option list.
+     *
+     * @param IItems|IItem[] $items        The item collection to convert.
+     * @param string         $displayValue The name of the attribute to use as value.
+     * @param string         $aliasColumn  The name of the attribute to use as alias.
+     *
+     * @return array
+     */
+    protected function convertItemsToFilterOptions($items, $displayValue, $aliasColumn) {
+        $result = array();
+        foreach ($items as $item) {
+            $parsed = $item->parseValue();
+
+            $textValue = $parsed['text'][$displayValue];
+            $aliasValue = isset($parsed['text'][$aliasColumn])
+                ? $parsed['text'][$aliasColumn]
+                : $parsed['raw'][$aliasColumn];
+
+            $result[$aliasValue] = $textValue;
+        }
+
+        return $result;
+    }
+
+    /**
      * {@inheritdoc}
      *
      * Fetch filter options from foreign table.
@@ -211,8 +280,7 @@ class MetaModelSelect extends AbstractSelect
     {
         $strDisplayValue = $this->get('select_column');
         $strSortingValue = $this->getSortingColumn();
-
-        $arrReturn = array();
+        $aliasColumn     = $this->getAliasColumn();
 
         if (!($this->getSelectMetaModel() && $strDisplayValue)) {
             return array();
@@ -243,16 +311,7 @@ class MetaModelSelect extends AbstractSelect
             $GLOBALS['TL_LANGUAGE'] = $strCurrentLanguage;
         }
 
-        foreach ($objItems as $objItem) {
-            $arrItem = $objItem->parseValue();
-
-            $strValue = $arrItem['text'][$strDisplayValue];
-            $strAlias = $objItem->get('id');
-
-            $arrReturn[$strAlias] = $strValue;
-        }
-
-        return $arrReturn;
+        return $this->convertItemsToFilterOptions($objItems, $strDisplayValue, $aliasColumn);
     }
 
     /**
@@ -294,7 +353,7 @@ class MetaModelSelect extends AbstractSelect
                 $parsedItem = $item->parseValue();
 
                 $values[$valueId] = array_merge(
-                    $parsedItem['raw'],
+                    array(self::SELECT_RAW => $parsedItem['raw']),
                     $parsedItem['text']
                 );
             }
@@ -328,8 +387,8 @@ class MetaModelSelect extends AbstractSelect
 
         $database = $this->getDatabase();
         foreach ($arrValues as $itemId => $value) {
-            if (is_array($value) && isset($value['id'])) {
-                $database->prepare($query)->execute($value['id'], $itemId);
+            if (is_array($value) && isset($varValue[self::SELECT_RAW]['id'])) {
+                $database->prepare($query)->execute($varValue[self::SELECT_RAW]['id'], $itemId);
             } elseif (is_numeric($itemId) && is_numeric($value)) {
                 $database->prepare($query)->execute($value, $itemId);
             } else {

@@ -128,7 +128,6 @@ class PropertyAttribute extends BaseSubscriber
         self::buildConditions(
             array(
                 'select_id'     => false,
-                'select_alias'  => false,
                 'select_where'  => false,
                 'select_filter' => true,
                 'select_filterparams' => true,

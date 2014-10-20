@@ -95,6 +95,16 @@ abstract class AbstractSelect extends AbstractHybrid
     }
 
     /**
+     * Determine the correct alias column to use.
+     *
+     * @return string
+     */
+    protected function getAliasColumn()
+    {
+        return $this->get('select_alias') ?: $this->get('select_id');
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function getFieldDefinition($arrOverrides = array())
@@ -125,6 +135,7 @@ abstract class AbstractSelect extends AbstractHybrid
             array(
                 'select_table',
                 'select_column',
+                'select_alias',
                 'select_sorting',
                 'select_as_radio',
                 'includeBlankOption',
