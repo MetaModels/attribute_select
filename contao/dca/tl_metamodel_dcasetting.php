@@ -19,6 +19,7 @@ $GLOBALS['TL_DCA']['tl_metamodel_dcasetting']['metasubselectpalettes']['attr_id'
     'presentation' => array(
         'tl_class',
         'includeBlankOption',
+        'submitOnChange',
         'chosen',
         'select_as_radio'
     ),
