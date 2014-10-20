@@ -139,6 +139,7 @@ abstract class AbstractSelect extends AbstractHybrid
                 'select_sorting',
                 'select_as_radio',
                 'includeBlankOption',
+                'submitOnChange',
                 'mandatory',
                 'chosen',
                 'filterable',
