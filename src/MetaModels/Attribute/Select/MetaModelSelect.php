@@ -95,8 +95,8 @@ class MetaModelSelect extends AbstractSelect
      */
     protected function getValuesById($valueIds)
     {
-        $metaModel    = $this->getSelectMetaModel();
-        $filter = $metaModel->getEmptyFilter();
+        $metaModel = $this->getSelectMetaModel();
+        $filter    = $metaModel->getEmptyFilter();
         $filter->addFilterRule(new StaticIdList($valueIds));
 
         $items  = $metaModel->findByFilter($filter, 'id');
@@ -133,6 +133,8 @@ class MetaModelSelect extends AbstractSelect
 
     /**
      * {@inheritdoc}
+     *
+     * @throws \RuntimeException when the value is invalid.
      */
     public function widgetToValue($varValue, $intId)
     {
@@ -153,7 +155,7 @@ class MetaModelSelect extends AbstractSelect
             }
         } else {
             // Must be a system column then.
-            //Special case first, the id is our alias, easy way out.
+            // Special case first, the id is our alias, easy way out.
             if ($alias === 'id') {
                 $valueId = $varValue;
             } else {
@@ -280,12 +282,13 @@ class MetaModelSelect extends AbstractSelect
      *
      * @return array
      */
-    protected function convertItemsToFilterOptions($items, $displayValue, $aliasColumn) {
+    protected function convertItemsToFilterOptions($items, $displayValue, $aliasColumn)
+    {
         $result = array();
         foreach ($items as $item) {
             $parsed = $item->parseValue();
 
-            $textValue = $parsed['text'][$displayValue];
+            $textValue  = $parsed['text'][$displayValue];
             $aliasValue = isset($parsed['text'][$aliasColumn])
                 ? $parsed['text'][$aliasColumn]
                 : $parsed['raw'][$aliasColumn];

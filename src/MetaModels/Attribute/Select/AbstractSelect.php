@@ -115,7 +115,7 @@ abstract class AbstractSelect extends AbstractHybrid
             $arrFieldDef['inputType']          = 'DcGeneralTreePicker';
             $arrFieldDef['eval']['sourceName'] = $this->getSelectSource();
             $arrFieldDef['eval']['fieldType']  = 'radio';
-            $arrFieldDef['eval']['idProperty']  = $this->getAliasColumn();
+            $arrFieldDef['eval']['idProperty'] = $this->getAliasColumn();
         } elseif ($this->widgetMode == 1) {
             // If select as radio is true, change the input type.
             $arrFieldDef['inputType'] = 'radio';
