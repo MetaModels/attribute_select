@@ -56,6 +56,10 @@ class FilterRuleSelect extends FilterRule
     {
         $strTableNameId  = $this->objAttribute->get('select_table');
         $strColNameId    = $this->objAttribute->get('select_id');
+        
+        //check if strColNameId has a value, if not use the default 'id'
+        isset($strColNameId) ?: $strColNameId = 'id';
+        
         $strColNameAlias = $this->objAttribute->get('select_alias');
 
         $arrValues = explode(',', $this->value);
