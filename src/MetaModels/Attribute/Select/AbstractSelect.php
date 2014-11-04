@@ -176,4 +176,13 @@ abstract class AbstractSelect extends AbstractHybrid
         );
         $this->getDatabase()->execute($strQuery);
     }
+
+    /**
+     * Convert the passed values to a list of value ids.
+     *
+     * @param string[] $values The values to convert.
+     *
+     * @return int[]
+     */
+    abstract public function convertValuesToValueIds($values);
 }

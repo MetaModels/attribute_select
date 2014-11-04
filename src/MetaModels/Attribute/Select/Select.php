@@ -309,4 +309,32 @@ class Select extends AbstractSelect
             }
         }
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function convertValuesToValueIds($values)
+    {
+        $strTableNameId  = $this->getSelectSource();
+        $strColNameId    = $this->get('select_id');
+        $strColNameAlias = $this->getAliasColumn();
+
+        if ($strColNameAlias) {
+            $objSelectIds = $this->getDatabase()
+                ->prepare(sprintf(
+                    'SELECT %s FROM %s WHERE %s IN (%s)',
+                    $strColNameId,
+                    $strTableNameId,
+                    $strColNameAlias,
+                    implode(',', array_fill(0, count($values), '?'))
+                ))
+                ->executeUncached($values);
+
+            $values = $objSelectIds->fetchEach($strColNameId);
+        } else {
+            $values = array_map('intval', $values);
+        }
+
+        return $values;
+    }
 }

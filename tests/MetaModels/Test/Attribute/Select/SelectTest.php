@@ -17,6 +17,7 @@
 
 namespace MetaModels\Test\Attribute\Select;
 
+use MetaModels\Attribute\Select\MetaModelSelect;
 use MetaModels\Attribute\Select\Select;
 use MetaModels\IMetaModel;
 
@@ -64,9 +65,20 @@ class SelectTest extends \PHPUnit_Framework_TestCase
      *
      * @return void
      */
-    public function testInstantiation()
+    public function testInstantiationSelect()
     {
         $text = new Select($this->mockMetaModel('en', 'en'));
         $this->assertInstanceOf('MetaModels\Attribute\Select\Select', $text);
+    }
+
+    /**
+     * Test that the attribute can be instantiated.
+     *
+     * @return void
+     */
+    public function testInstantiationMetaModelSelect()
+    {
+        $text = new MetaModelSelect($this->mockMetaModel('en', 'en'));
+        $this->assertInstanceOf('MetaModels\Attribute\Select\MetaModelSelect', $text);
     }
 }

@@ -242,7 +242,7 @@ class MetaModelSelect extends AbstractSelect
         $filterSettings = FilterSettingFactory::byId($this->get('select_filter'));
         if ($filterSettings) {
             $values       = $_GET;
-            $presets      = (array)$this->get('select_filterparams');
+            $presets      = (array) $this->get('select_filterparams');
             $presetNames  = $filterSettings->getParameters();
             $filterParams = array_keys($filterSettings->getParameterFilterNames());
             $processed    = array();
@@ -430,5 +430,33 @@ class MetaModelSelect extends AbstractSelect
                 );
             }
         }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function convertValuesToValueIds($values)
+    {
+        $strColNameAlias = $this->getAliasColumn();
+
+        if ($strColNameAlias) {
+            /** @var MetaModelSelect $attribute */
+            $metaModel       = $this->getSelectMetaModel();
+            $sanitizedValues = array();
+            foreach ($values as $value) {
+                $valueIds = $metaModel->getAttribute($strColNameAlias)->searchFor($value);
+                if ($valueIds === null) {
+                    return null;
+                }
+
+                $sanitizedValues = array_merge($valueIds, $sanitizedValues);
+            }
+
+            return $sanitizedValues;
+        } else {
+            $values = array_map('intval', $values);
+        }
+
+        return $values;
     }
 }
