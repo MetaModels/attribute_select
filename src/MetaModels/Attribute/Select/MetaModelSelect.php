@@ -309,9 +309,9 @@ class MetaModelSelect extends AbstractSelect
      */
     public function getFilterOptions($arrIds, $usedOnly, &$arrCount = null)
     {
-        $strDisplayValue = $this->get('select_column');
-        $strSortingValue = $this->getSortingColumn();
-        $aliasColumn     = $this->getAliasColumn();
+        $strDisplayValue    = $this->getValueColumn();
+        $strSortingValue    = $this->getSortingColumn();
+        $strCurrentLanguage = null;
 
         if (!($this->getSelectMetaModel() && $strDisplayValue)) {
             return array();
@@ -342,7 +342,7 @@ class MetaModelSelect extends AbstractSelect
             $GLOBALS['TL_LANGUAGE'] = $strCurrentLanguage;
         }
 
-        return $this->convertItemsToFilterOptions($objItems, $strDisplayValue, $aliasColumn);
+        return $this->convertItemsToFilterOptions($objItems, $strDisplayValue, $this->getAliasColumn());
     }
 
     /**

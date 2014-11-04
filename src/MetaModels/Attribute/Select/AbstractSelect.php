@@ -79,9 +79,19 @@ abstract class AbstractSelect extends AbstractHybrid
      *
      * @return string
      */
+    protected function getIdColumn()
+    {
+        return $this->get('select_id') ?: 'id';
+    }
+
+    /**
+     * Determine the correct sorting column to use.
+     *
+     * @return string
+     */
     protected function getSortingColumn()
     {
-        return $this->get('select_sorting') ?: ($this->get('select_id') ?: 'id');
+        return $this->get('select_sorting') ?: $this->getIdColumn();
     }
 
     /**
@@ -101,7 +111,7 @@ abstract class AbstractSelect extends AbstractHybrid
      */
     protected function getAliasColumn()
     {
-        return $this->get('select_alias') ?: $this->get('select_id');
+        return $this->get('select_alias') ?: $this->getIdColumn();
     }
 
     /**

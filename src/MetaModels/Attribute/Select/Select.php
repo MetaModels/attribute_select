@@ -33,7 +33,7 @@ class Select extends AbstractSelect
     public function sortIds($arrIds, $strDirection)
     {
         $strTableName  = $this->getSelectSource();
-        $strColNameId  = $this->get('select_id');
+        $strColNameId  = $this->getIdColumn();
         $strSortColumn = $this->getSortingColumn();
         $arrIds        = $this->getDatabase()
             ->prepare(
@@ -76,7 +76,7 @@ class Select extends AbstractSelect
     {
         $strColNameAlias = $this->get('select_alias');
         if ($this->isTreePicker() || !$strColNameAlias) {
-            $strColNameAlias = $this->get('select_id');
+            $strColNameAlias = $this->getIdColumn();
         }
 
         return $varValue[$strColNameAlias];
@@ -88,14 +88,14 @@ class Select extends AbstractSelect
     public function widgetToValue($varValue, $intId)
     {
         $database        = $this->getDatabase();
-        $strColNameAlias = $this->get('select_alias');
-        $strColNameId    = $this->get('select_id');
-        if ($this->isTreePicker() || !$strColNameAlias) {
+        $strColNameAlias = $this->getAliasColumn();
+        $strColNameId    = $this->getIdColumn();
+        if ($this->isTreePicker()) {
             $strColNameAlias = $strColNameId;
         }
         // Lookup the id for this value.
         $objValue = $database
-            ->prepare(sprintf('SELECT %1$s.* FROM %1$s WHERE %2$s=?', $this->get('select_table'), $strColNameAlias))
+            ->prepare(sprintf('SELECT %1$s.* FROM %1$s WHERE %2$s=?', $this->getSelectSource(), $strColNameAlias))
             ->execute($varValue);
 
         return $objValue->row();
@@ -173,7 +173,7 @@ class Select extends AbstractSelect
                     ORDER BY %1$s.%6$s',
                 // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
                 $this->getSelectSource(),                                  // 1
-                $this->get('select_id'),                                   // 2
+                $this->getIdColumn(),                                      // 2
                 $this->getMetaModel()->getTableName(),                     // 3
                 $this->getColName(),                                       // 4
                 ($additionalWhere ? ' WHERE ('.$additionalWhere.')' : ''), // 5
@@ -191,7 +191,7 @@ class Select extends AbstractSelect
                 ORDER BY %1$s.%6$s',
             // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
             $this->getSelectSource(),                                  // 1
-            $this->get('select_id'),                                   // 2
+            $this->getIdColumn(),                                      // 2
             $this->getMetaModel()->getTableName(),                     // 3
             $this->getColName(),                                       // 4
             ($additionalWhere ? ' WHERE ('.$additionalWhere.')' : ''), // 5
@@ -213,7 +213,7 @@ class Select extends AbstractSelect
         }
 
         $tableName = $this->getSelectSource();
-        $idColumn  = $this->get('select_id');
+        $idColumn  = $this->getIdColumn();
 
         if (empty($tableName) || empty($idColumn)) {
             return array();
@@ -257,7 +257,7 @@ class Select extends AbstractSelect
     {
         $objDB          = \Database::getInstance();
         $strTableNameId = $this->getSelectSource();
-        $strColNameId   = $this->get('select_id');
+        $strColNameId   = $this->getIdColumn();
         $arrReturn      = array();
 
         if ($strTableNameId && $strColNameId) {
@@ -295,7 +295,7 @@ class Select extends AbstractSelect
     public function setDataFor($arrValues)
     {
         $strTableName = $this->getSelectSource();
-        $strColNameId = $this->get('select_id');
+        $strColNameId = $this->getIdColumn();
         if ($strTableName && $strColNameId) {
             $strQuery = sprintf(
                 'UPDATE %1$s SET %2$s=? WHERE %1$s.id=?',
@@ -316,7 +316,7 @@ class Select extends AbstractSelect
     public function convertValuesToValueIds($values)
     {
         $strTableNameId  = $this->getSelectSource();
-        $strColNameId    = $this->get('select_id');
+        $strColNameId    = $this->getIdColumn();
         $strColNameAlias = $this->getAliasColumn();
 
         if ($strColNameAlias) {
