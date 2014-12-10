@@ -107,20 +107,13 @@ class Subscriber extends BaseSubscriber
     /**
      * Retrieve all database table names.
      *
-     * @param GetPropertyOptionsEvent $event The event.
-     *
-     * @return void
+     * @return array
      *
      * @SuppressWarnings(PHPMD.Superglobals)
      * @SuppressWarnings(PHPMD.CamelCaseVariableName)
      */
-    public function getTableNames(GetPropertyOptionsEvent $event)
+    public function getTableAndMetaModelsList()
     {
-        if (($event->getEnvironment()->getDataDefinition()->getName() !== 'tl_metamodel_attribute')
-            || ($event->getPropertyName() !== 'select_table')) {
-            return;
-        }
-
         $database     = $this->getServiceContainer()->getDatabase();
         $sqlTable     = $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_table_type']['sql-table'];
         $translated   = $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_table_type']['translated'];
@@ -146,7 +139,24 @@ class Subscriber extends BaseSubscriber
             asort($result[$sqlTable]);
         }
 
-        $event->setOptions($result);
+        return $result;
+    }
+
+    /**
+     * Retrieve all database table names.
+     *
+     * @param GetPropertyOptionsEvent $event The event.
+     *
+     * @return void
+     */
+    public function getTableNames(GetPropertyOptionsEvent $event)
+    {
+        if (($event->getEnvironment()->getDataDefinition()->getName() !== 'tl_metamodel_attribute')
+            || ($event->getPropertyName() !== 'select_table')) {
+            return;
+        }
+
+        $event->setOptions($this->getTableAndMetaModelsList());
     }
 
     /**
