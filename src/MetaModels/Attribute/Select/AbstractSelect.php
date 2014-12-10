@@ -42,7 +42,7 @@ abstract class AbstractSelect extends AbstractHybrid
      */
     protected function getDatabase()
     {
-        return \Database::getInstance();
+        return $this->getMetaModel()->getServiceContainer()->getDatabase();
     }
 
     /**

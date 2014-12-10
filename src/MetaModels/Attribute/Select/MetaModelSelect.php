@@ -19,12 +19,10 @@ namespace MetaModels\Attribute\Select;
 
 use MetaModels\Filter\IFilter;
 use MetaModels\Filter\Rules\StaticIdList;
-use MetaModels\Filter\Setting\Factory as FilterSettingFactory;
 use MetaModels\IItem;
 use MetaModels\IItems;
 use MetaModels\IMetaModel;
-use MetaModels\Render\Template as MetaModelTemplate;
-use MetaModels\Factory as MetaModelFactory;
+use MetaModels\Render\Template;
 
 /**
  * This is the MetaModelAttribute class for handling select attributes on MetaModels.
@@ -56,7 +54,11 @@ class MetaModelSelect extends AbstractSelect
     protected function getSelectMetaModel()
     {
         if (empty($this->objSelectMetaModel)) {
-            $this->objSelectMetaModel = MetaModelFactory::byTableName($this->getSelectSource());
+            $this->objSelectMetaModel = $this
+                ->getMetaModel()
+                ->getServiceContainer()
+                ->getFactory()
+                ->getMetaModel($this->getSelectSource());
         }
 
         return $this->objSelectMetaModel;
@@ -65,7 +67,7 @@ class MetaModelSelect extends AbstractSelect
     /**
      * {@inheritdoc}
      */
-    protected function prepareTemplate(MetaModelTemplate $objTemplate, $arrRowData, $objSettings = null)
+    protected function prepareTemplate(Template $objTemplate, $arrRowData, $objSettings = null)
     {
         parent::prepareTemplate($objTemplate, $arrRowData, $objSettings);
 
@@ -239,7 +241,12 @@ class MetaModelSelect extends AbstractSelect
     public function buildFilterRulesForFilterSetting($filter)
     {
         // Set Filter and co.
-        $filterSettings = FilterSettingFactory::byId($this->get('select_filter'));
+        $filterSettings = $this
+            ->getMetaModel()
+            ->getServiceContainer()
+            ->getFilterFactory()
+            ->createCollection($this->get('select_filter'));
+
         if ($filterSettings) {
             $values       = $_GET;
             $presets      = (array) $this->get('select_filterparams');

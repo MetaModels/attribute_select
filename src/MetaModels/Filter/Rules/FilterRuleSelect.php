@@ -64,8 +64,8 @@ class FilterRuleSelect extends FilterRule
             return $arrValues;
         }
 
-        $objDB      = \Database::getInstance();
-        $objMatches = $objDB->executeUncached(sprintf(
+        $objDB      = $this->objAttribute->getMetaModel()->getServiceContainer()->getDatabase();
+        $objMatches = $objDB->execute(sprintf(
             'SELECT id FROM %s WHERE %s IN (%s)',
             $this->objAttribute->getMetaModel()->getTableName(),
             $this->objAttribute->getColName(),
