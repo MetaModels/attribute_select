@@ -179,7 +179,7 @@ class Subscriber extends BaseSubscriber
      *
      * @return string[]
      */
-    protected function getColumnNamesFrom($tableName)
+    protected function getColumnNamesFromMetaModel($tableName)
     {
         $database = $this->getServiceContainer()->getDatabase();
 
@@ -199,14 +199,50 @@ class Subscriber extends BaseSubscriber
     }
 
     /**
+     * Retrieve all column names for the given table.
+     *
+     * @param string $table The table name.
+     *
+     * @return array
+     *
+     * @SuppressWarnings(PHPMD.Superglobals)
+     * @SuppressWarnings(PHPMD.CamelCaseVariableName)
+     */
+    public function getColumnNamesFrom($table)
+    {
+        if (substr($table, 0, 3) === 'mm_') {
+            $attributes = $this->getAttributeNamesFrom($table);
+            asort($attributes);
+
+            return
+                array
+                (
+                    $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_column_type']['sql']
+                        => array_diff_key(
+                            $this->getColumnNamesFromMetaModel($table),
+                            array_flip(array_keys($attributes))
+                        ),
+                    $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_column_type']['attribute']
+                        => $attributes
+                );
+        }
+
+        $result = $this->getColumnNamesFrom($table);
+
+        if (!empty($result)) {
+            asort($result);
+            return $result;
+        }
+
+        return array();
+    }
+
+    /**
      * Retrieve all column names for the current selected table.
      *
      * @param GetPropertyOptionsEvent $event The event.
      *
      * @return void
-     *
-     * @SuppressWarnings(PHPMD.Superglobals)
-     * @SuppressWarnings(PHPMD.CamelCaseVariableName)
      */
     public function getColumnNames(GetPropertyOptionsEvent $event)
     {
@@ -220,27 +256,7 @@ class Subscriber extends BaseSubscriber
             return;
         }
 
-        $model = $event->getModel();
-        $table = $model->getProperty('select_table');
-
-        if (substr($table, 0, 3) === 'mm_') {
-            $attributes = self::getAttributeNamesFrom($table);
-            asort($attributes);
-
-            $event->setOptions(
-                array
-                (
-                    $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_column_type']['sql']
-                        => array_diff_key($this->getColumnNamesFrom($table), array_flip(array_keys($attributes))),
-                    $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_column_type']['attribute']
-                        => $attributes
-                )
-            );
-
-            return;
-        }
-
-        $result = $this->getColumnNamesFrom($table);
+        $result = $this->getColumnNamesFrom($event->getModel()->getProperty('select_table'));
 
         if (!empty($result)) {
             asort($result);
@@ -413,7 +429,7 @@ class Subscriber extends BaseSubscriber
                             $condition->addCondition(new NotCondition(new PropertyValueCondition('type', 'select')));
                         }
 
-                        self::addCondition($property, $condition);
+                        $this->addCondition($property, $condition);
                     }
                 }
             }
