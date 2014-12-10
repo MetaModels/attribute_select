@@ -15,11 +15,17 @@
  * @filesource
  */
 
-$GLOBALS['TL_EVENTS'][\ContaoCommunityAlliance\Contao\EventDispatcher\Event\CreateEventDispatcherEvent::NAME][] =
-    'MetaModels\DcGeneral\Events\Table\Attribute\Select\PropertyAttribute::registerEvents';
-
-$GLOBALS['TL_EVENTS'][\ContaoCommunityAlliance\Contao\EventDispatcher\Event\CreateEventDispatcherEvent::NAME][] =
-    'MetaModels\DcGeneral\Events\Table\Attribute\Select\PropertySelectWhere::registerEvents';
-
-$GLOBALS['TL_EVENT_SUBSCRIBERS'][] = 'MetaModels\Attribute\Select\AttributeTypeFactory';
 $GLOBALS['TL_EVENT_SUBSCRIBERS'][] = 'MetaModels\DcGeneral\Events\MetaModels\Select\BackendSubscriber';
+
+$GLOBALS['TL_EVENTS'][\MetaModels\MetaModelsEvents::SUBSYSTEM_BOOT_BACKEND][] = function (
+    MetaModels\Events\MetaModelsBootEvent $event
+) {
+    new MetaModels\DcGeneral\Events\Table\Attribute\Select\Subscriber($event->getServiceContainer());
+};
+
+$GLOBALS['TL_EVENTS'][\MetaModels\Attribute\Events\CreateAttributeFactoryEvent::NAME][] = function (
+    \MetaModels\Attribute\Events\CreateAttributeFactoryEvent $event
+) {
+    $factory = $event->getFactory();
+    $factory->addTypeFactory(new MetaModels\Attribute\Select\AttributeTypeFactory());
+};

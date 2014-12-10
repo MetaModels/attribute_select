@@ -17,38 +17,13 @@
 
 namespace MetaModels\Attribute\Select;
 
-use MetaModels\Attribute\Events\CreateAttributeFactoryEvent;
 use MetaModels\Attribute\IAttributeTypeFactory;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * Attribute type factory for select attributes.
  */
-class AttributeTypeFactory implements EventSubscriberInterface, IAttributeTypeFactory
+class AttributeTypeFactory implements IAttributeTypeFactory
 {
-    /**
-     * {@inheritDoc}
-     */
-    public static function getSubscribedEvents()
-    {
-        return array(
-            CreateAttributeFactoryEvent::NAME => 'registerLegacyAttributeFactoryEvents'
-        );
-    }
-
-    /**
-     * Register all legacy factories and all types defined via the legacy array as a factory.
-     *
-     * @param CreateAttributeFactoryEvent $event The event.
-     *
-     * @return void
-     */
-    public static function registerLegacyAttributeFactoryEvents(CreateAttributeFactoryEvent $event)
-    {
-        $factory = $event->getFactory();
-        $factory->addTypeFactory(new static());
-    }
-
     /**
      * {@inheritdoc}
      */
