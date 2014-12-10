@@ -9,6 +9,7 @@
  * @package     MetaModels
  * @subpackage  AttributeSelect
  * @author      Christian Schiffler <c.schiffler@cyberspectrum.de>
+ * @author      Andreas Isaak <andy.jared@googlemail.com>
  * @copyright   The MetaModels team.
  * @license     LGPL.
  * @filesource

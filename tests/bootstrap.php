@@ -31,9 +31,3 @@ if (
         'php composer.phar install'.PHP_EOL;
     exit(1);
 }
-
-if (is_dir(__DIR__ . '/../vendor/metamodels/core/tests')) {
-    $loader->add('MetaModels\Test', realpath(__DIR__ . '/../vendor/metamodels/core/tests'));
-} elseif (is_dir(__DIR__.'/../../../metamodels/core/tests')) {
-    $loader->add('MetaModels\Test', realpath(__DIR__.'/../../../metamodels/core/tests'));
-}
