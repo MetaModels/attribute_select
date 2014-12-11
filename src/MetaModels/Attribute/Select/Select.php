@@ -170,7 +170,7 @@ class Select extends AbstractSelect
         $additionalWhere = $this->getAdditionalWhere();
         $sortColumn      = $this->getSortingColumn();
         if ($usedOnly) {
-            return \Database::getInstance()->executeUncached(sprintf(
+            return $this->getDatabase()->execute(sprintf(
                 'SELECT COUNT(%1$s.%2$s) as mm_count, %1$s.*
                     FROM %1$s
                     RIGHT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
@@ -188,7 +188,7 @@ class Select extends AbstractSelect
             ));
         }
 
-        return \Database::getInstance()->executeUncached(sprintf(
+        return $this->getDatabase()->execute(sprintf(
             'SELECT COUNT(%3$s.%4$s) as mm_count, %1$s.*
                 FROM %1$s
                 LEFT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
@@ -228,7 +228,7 @@ class Select extends AbstractSelect
         $strSortColumn   = $this->getSortingColumn();
         $strColNameWhere = $this->getAdditionalWhere();
 
-        $objDB = \Database::getInstance();
+        $objDB = $this->getDatabase();
         if ($arrIds) {
             $objValue = $objDB
                 ->prepare(sprintf(
@@ -261,7 +261,7 @@ class Select extends AbstractSelect
      */
     public function getDataFor($arrIds)
     {
-        $objDB          = \Database::getInstance();
+        $objDB          = $this->getDatabase();
         $strTableNameId = $this->getSelectSource();
         $strColNameId   = $this->getIdColumn();
         $arrReturn      = array();
@@ -309,7 +309,7 @@ class Select extends AbstractSelect
                 $this->getColName()
             );
 
-            $objDB = \Database::getInstance();
+            $objDB = $this->getDatabase();
             foreach ($arrValues as $intItemId => $arrValue) {
                 $objDB->prepare($strQuery)->execute($arrValue[$strColNameId], $intItemId);
             }
@@ -334,7 +334,7 @@ class Select extends AbstractSelect
                     $strColNameAlias,
                     implode(',', array_fill(0, count($values), '?'))
                 ))
-                ->executeUncached($values);
+                ->execute($values);
 
             $values = $objSelectIds->fetchEach($strColNameId);
         } else {
