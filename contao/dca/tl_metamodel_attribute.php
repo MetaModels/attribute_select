@@ -11,6 +11,7 @@
  * @author      Christian Schiffler <c.schiffler@cyberspectrum.de>
  * @author      Christian de la Haye <service@delahaye.de>
  * @author      Stefan heimes <stefan_heimes@hotmail.com>
+ * @author      Andreas Isaak <info@andreas-isaak.de>
  * @copyright   The MetaModels team.
  * @license     LGPL.
  * @filesource

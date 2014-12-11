@@ -80,6 +80,7 @@ abstract class AbstractSelect extends AbstractHybrid
      */
     protected function getIdColumn()
     {
+        // FIXME: ensure that select_id is valid.
         return $this->get('select_id') ?: 'id';
     }
 
