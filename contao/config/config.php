@@ -24,7 +24,7 @@ $GLOBALS['TL_EVENTS'][\MetaModels\MetaModelsEvents::SUBSYSTEM_BOOT_BACKEND][] = 
     new MetaModels\DcGeneral\Events\Table\Attribute\Select\Subscriber($event->getServiceContainer());
 };
 
-$GLOBALS['TL_EVENTS'][\MetaModels\Attribute\Events\CreateAttributeFactoryEvent::NAME][] = function (
+$GLOBALS['TL_EVENTS'][\MetaModels\MetaModelsEvents::ATTRIBUTE_FACTORY_CREATE][] = function (
     \MetaModels\Attribute\Events\CreateAttributeFactoryEvent $event
 ) {
     $factory = $event->getFactory();
