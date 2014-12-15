@@ -451,9 +451,17 @@ class MetaModelSelect extends AbstractSelect
             $metaModel       = $this->getSelectMetaModel();
             $sanitizedValues = array();
             foreach ($values as $value) {
-                $valueIds = $metaModel->getAttribute($strColNameAlias)->searchFor($value);
-                if ($valueIds === null) {
-                    return null;
+
+                // fix #32
+                $objAttribute = $metaModel->getAttribute($strColNameAlias);
+
+                if(!$objAttribute){
+                    $valueIds = $this->searchForNonAttributeField($values);
+                }else{
+                    $valueIds = $objAttribute->searchFor($value);
+                    if ($valueIds === null) {
+                        return null;
+                    }
                 }
 
                 $sanitizedValues = array_merge($valueIds, $sanitizedValues);
@@ -465,5 +473,31 @@ class MetaModelSelect extends AbstractSelect
         }
 
         return $values;
+    }
+
+    /**
+     * Use the id lookup from the normal select field to search for the default fields
+     *
+     * @param string[] $values The values to convert.
+     *
+     * @return array[]
+     */
+    protected function searchForNonAttributeField($values)
+    {
+        $strColNameAlias = $this->getAliasColumn();
+        $strTableNameId  = $this->getSelectSource();
+        $strColNameId    = $this->getIdColumn();
+
+        $objSelectIds = $this->getDatabase()
+            ->prepare(sprintf(
+                'SELECT %s FROM %s WHERE %s IN (%s)',
+                $strColNameId,
+                $strTableNameId,
+                $strColNameAlias,
+                implode(',', array_fill(0, count($values), '?'))
+            ))
+            ->execute($values);
+
+        return $objSelectIds->fetchEach($strColNameId);
     }
 }
