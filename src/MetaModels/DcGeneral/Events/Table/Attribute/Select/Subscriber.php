@@ -220,11 +220,7 @@ class Subscriber extends BaseSubscriber
      */
     public function getColumnNamesFrom($table)
     {
-        // Return empty array if $table is empty (needed for first creation of an select attribute).
-        if(!$table){
-            return array();
-        }
-        
+
         if (substr($table, 0, 3) === 'mm_') {
             $attributes = $this->getAttributeNamesFrom($table);
             asort($attributes);
@@ -242,9 +238,13 @@ class Subscriber extends BaseSubscriber
                 );
         }
 
-        // Instead of using the same function whats causing an infinite loop 
-        // use the database getFieldNames Method for tables who are not an mm table.
-        $result = $this->getServiceContainer()->getDatabase()->getFieldNames($table);
+        $database = $this->getServiceContainer()->getDatabase();
+
+        if($database->tableExists($table)){
+            // Instead of using the same function whats causing an infinite loop
+            // use the database getFieldNames method for tables who are not an mm table.
+            $result = $database->getFieldNames($table);
+        }
 
         if (!empty($result)) {
             asort($result);
