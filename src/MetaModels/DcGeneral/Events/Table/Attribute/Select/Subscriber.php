@@ -242,8 +242,15 @@ class Subscriber extends BaseSubscriber
 
         if($database->tableExists($table)){
             // Instead of using the same function whats causing an infinite loop
-            // use the database getFieldNames method for tables who are not an mm table.
-            $result = $database->getFieldNames($table);
+            // use listFields with an foreach instead of getFieldNames cause fields
+            // of the type index are also exists
+            $result = array();
+            foreach($database->listFields($table) AS $arrInfo){
+                if ($arrInfo['type'] != 'index')
+                {
+                    $result[] = $arrInfo['name'];
+                }
+            }
         }
 
         if (!empty($result)) {
