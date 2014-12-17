@@ -59,19 +59,23 @@ class FilterRuleSelect extends FilterRule
      */
     public function getMatchingIds()
     {
-        $arrValues = $this->objAttribute->convertValuesToValueIds(explode(',', $this->value));
-        if (empty($arrValues)) {
-            return $arrValues;
+        $values = $this->objAttribute->convertValuesToValueIds(explode(',', $this->value));
+        if (empty($values)) {
+            return $values;
         }
 
-        $objDB      = $this->objAttribute->getMetaModel()->getServiceContainer()->getDatabase();
-        $objMatches = $objDB->execute(sprintf(
-            'SELECT id FROM %s WHERE %s IN (%s)',
-            $this->objAttribute->getMetaModel()->getTableName(),
-            $this->objAttribute->getColName(),
-            implode(',', $arrValues)
-        ));
+        $database = $this->objAttribute->getMetaModel()->getServiceContainer()->getDatabase();
+        $matches  = $database
+            ->prepare(
+                sprintf(
+                    'SELECT id FROM %s WHERE %s IN (%s)',
+                    $this->objAttribute->getMetaModel()->getTableName(),
+                    $this->objAttribute->getColName(),
+                    implode(',', array_fill(0, count($values), '?'))
+                )
+            )
+        ->execute($values);
 
-        return $objMatches->fetchEach('id');
+        return $matches->fetchEach('id');
     }
 }

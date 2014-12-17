@@ -201,24 +201,24 @@ class MetaModelSelect extends AbstractSelect
             $query = sprintf(
             // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
                 'SELECT %2$s FROM %1$s GROUP BY %2$s',
-                $this->getMetaModel()->getTableName(),  // 1
-                $this->getColName()                     // 2
+                $this->getMetaModel()->getTableName(), // 1
+                $this->getColName()                    // 2
             // @codingStandardsIgnoreEnd
             );
         } else {
             $query = sprintf(
             // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
-                'SELECT %2$s FROM %1$s WHERE id IN (\'%3$s\') GROUP BY %2$s',
-                $this->getMetaModel()->getTableName(),  // 1
-                $this->getColName(),                    // 2
-                implode("', '", $idList)                // 3
+                'SELECT %2$s FROM %1$s WHERE id IN (%3$s) GROUP BY %2$s',
+                $this->getMetaModel()->getTableName(), // 1
+                $this->getColName(),                   // 2
+                $this->parameterMask($idList)          // 3
             // @codingStandardsIgnoreEnd
             );
         }
 
         $arrUsedValues = $this->getDatabase()
             ->prepare($query)
-            ->execute()
+            ->execute($idList)
             ->fetchEach($this->getColName());
 
         $arrUsedValues = array_filter(
@@ -372,12 +372,12 @@ class MetaModelSelect extends AbstractSelect
                     'SELECT %2$s, id FROM %1$s WHERE id IN (%3$s)',
                     // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following
                     // lines.
-                    $this->getMetaModel()->getTableName(),     // 1
-                    $valueColumn,                              // 2
-                    implode(',', array_map('intval', $arrIds)) // 3
+                    $this->getMetaModel()->getTableName(), // 1
+                    $valueColumn,                          // 2
+                    $this->parameterMask($arrIds)          // 3
                 // @codingStandardsIgnoreEnd
                 )
-            )->execute();
+            )->execute($arrIds);
 
             $valueIds = array();
             while ($rows->next()) {
@@ -450,37 +450,35 @@ class MetaModelSelect extends AbstractSelect
     {
         $strColNameAlias = $this->getAliasColumn();
 
-        if ($strColNameAlias) {
-            /** @var MetaModelSelect $attribute */
-            $metaModel       = $this->getSelectMetaModel();
-            $sanitizedValues = array();
-            foreach ($values as $value) {
-
-                // fix #32
-                $objAttribute = $metaModel->getAttribute($strColNameAlias);
-
-                if (!$objAttribute) {
-                    $valueIds = $this->searchForNonAttributeField($values);
-                } else {
-                    $valueIds = $objAttribute->searchFor($value);
-                    if ($valueIds === null) {
-                        return null;
-                    }
-                }
-
-                $sanitizedValues = array_merge($valueIds, $sanitizedValues);
-            }
-
-            return $sanitizedValues;
-        } else {
-            $values = array_map('intval', $values);
+        if (!$strColNameAlias) {
+            return $values;
         }
 
-        return $values;
+        /** @var MetaModelSelect $attribute */
+        $metaModel       = $this->getSelectMetaModel();
+        $sanitizedValues = array();
+        foreach ($values as $value) {
+
+            // fix #32
+            $objAttribute = $metaModel->getAttribute($strColNameAlias);
+
+            if (!$objAttribute) {
+                $valueIds = $this->searchForNonAttributeField($values);
+            } else {
+                $valueIds = $objAttribute->searchFor($value);
+                if ($valueIds === null) {
+                    return null;
+                }
+            }
+
+            $sanitizedValues = array_merge($valueIds, $sanitizedValues);
+        }
+
+        return $sanitizedValues;
     }
 
     /**
-     * Use the id lookup from the normal select field to search for the default fields
+     * Use the id lookup from the normal select field to search for the default fields.
      *
      * @param string[] $values The values to convert.
      *
@@ -498,7 +496,7 @@ class MetaModelSelect extends AbstractSelect
                 $strColNameId,
                 $strTableNameId,
                 $strColNameAlias,
-                implode(',', array_fill(0, count($values), '?'))
+                $this->parameterMask($values)
             ))
             ->execute($values);
 

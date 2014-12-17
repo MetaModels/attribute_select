@@ -53,13 +53,13 @@ class Select extends AbstractSelect
                     $this->getColName(),                   // 2
                     $strTableName,                         // 3
                     $strColNameId,                         // 4
-                    implode(',', $arrIds),                 // 5
+                    $this->parameterMask($arrIds),         // 5
                     $strSortColumn,                        // 6
                     $strDirection                          // 7
                     // @codingStandardsIgnoreEnd
                 )
             )
-            ->execute()
+            ->execute($arrIds)
             ->fetchEach('id');
         return $arrIds;
     }
@@ -149,6 +149,7 @@ class Select extends AbstractSelect
         $arrReturn = array();
         while ($values->next()) {
             if (is_array($count)) {
+                /** @noinspection PhpUndefinedFieldInspection */
                 $count[$values->$aliasColumn] = $values->mm_count;
             }
 
@@ -243,12 +244,12 @@ class Select extends AbstractSelect
                     $idColumn,                                               // 2
                     $this->getMetaModel()->getTableName(),                   // 3
                     $this->getColName(),                                     // 4
-                    implode(',', $arrIds),                                   // 5
+                    $this->parameterMask($arrIds),                           // 5
                     ($strColNameWhere ? ' AND ('.$strColNameWhere.')' : ''), // 6
                     $strSortColumn                                           // 7
                     // @codingStandardsIgnoreEnd
                 ))
-                ->execute($this->get('id'));
+                ->execute($arrIds);
         } else {
             $objValue = $this->getFilterOptionsForUsedOnly($usedOnly);
         }
@@ -278,15 +279,15 @@ class Select extends AbstractSelect
                     LEFT JOIN %2$s ON (sourceTable.%4$s=%2$s.%5$s)
                     WHERE %2$s.id IN (%6$s)',
                     // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
-                    $strTableNameId,          // 1
-                    $strMetaModelTableName,   // 2
-                    $strMetaModelTableNameId, // 3
-                    $strColNameId,            // 4
-                    $this->getColName(),      // 5
-                    implode(',', $arrIds)     // 6
+                    $strTableNameId,              // 1
+                    $strMetaModelTableName,       // 2
+                    $strMetaModelTableNameId,     // 3
+                    $strColNameId,                // 4
+                    $this->getColName(),          // 5
+                    $this->parameterMask($arrIds) // 6
                     // @codingStandardsIgnoreEnd
                 ))
-                ->execute();
+                ->execute($arrIds);
 
             while ($objValue->next()) {
                 $arrReturn[$objValue->$strMetaModelTableNameId] = $objValue->row();
@@ -332,13 +333,11 @@ class Select extends AbstractSelect
                     $strColNameId,
                     $strTableNameId,
                     $strColNameAlias,
-                    implode(',', array_fill(0, count($values), '?'))
+                    $this->parameterMask($values)
                 ))
                 ->execute($values);
 
             $values = $objSelectIds->fetchEach($strColNameId);
-        } else {
-            $values = array_map('intval', $values);
         }
 
         return $values;
