@@ -377,7 +377,7 @@ class MetaModelSelect extends AbstractSelect
                     implode(',', array_map('intval', $arrIds)) // 3
                 // @codingStandardsIgnoreEnd
                 )
-            )->executeUncached();
+            )->execute();
 
             $valueIds = array();
             while ($rows->next()) {
@@ -459,9 +459,9 @@ class MetaModelSelect extends AbstractSelect
                 // fix #32
                 $objAttribute = $metaModel->getAttribute($strColNameAlias);
 
-                if(!$objAttribute){
+                if (!$objAttribute) {
                     $valueIds = $this->searchForNonAttributeField($values);
-                }else{
+                } else {
                     $valueIds = $objAttribute->searchFor($value);
                     if ($valueIds === null) {
                         return null;
