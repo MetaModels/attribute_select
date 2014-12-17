@@ -71,7 +71,7 @@ class MetaModelSelect extends AbstractSelect
     protected function prepareTemplate(Template $objTemplate, $arrRowData, $objSettings = null)
     {
         parent::prepareTemplate($objTemplate, $arrRowData, $objSettings);
-
+        /** @noinspection PhpUndefinedFieldInspection */
         $objTemplate->displayValue = $this->getValueColumn();
     }
 
@@ -172,9 +172,11 @@ class MetaModelSelect extends AbstractSelect
                     )
                     ->execute($varValue);
 
+                /** @noinspection PhpUndefinedFieldInspection */
                 if (!$result->numRows) {
                     throw new \RuntimeException('Could not translate value ' . var_export($varValue, true));
                 }
+                /** @noinspection PhpUndefinedFieldInspection */
                 $valueId = $result->id;
             }
         }
@@ -379,6 +381,7 @@ class MetaModelSelect extends AbstractSelect
 
             $valueIds = array();
             while ($rows->next()) {
+                /** @noinspection PhpUndefinedFieldInspection */
                 $valueIds[$rows->id] = $rows->$valueColumn;
             }
 
