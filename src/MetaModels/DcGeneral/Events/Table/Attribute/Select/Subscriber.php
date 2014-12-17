@@ -240,14 +240,13 @@ class Subscriber extends BaseSubscriber
 
         $database = $this->getServiceContainer()->getDatabase();
 
-        if($database->tableExists($table)){
+        if ($database->tableExists($table)) {
             // Instead of using the same function whats causing an infinite loop
             // use listFields with an foreach instead of getFieldNames cause fields
             // of the type index are also exists
             $result = array();
-            foreach($database->listFields($table) AS $arrInfo){
-                if ($arrInfo['type'] != 'index')
-                {
+            foreach ($database->listFields($table) as $arrInfo) {
+                if ($arrInfo['type'] != 'index') {
                     $result[] = $arrInfo['name'];
                 }
             }
@@ -315,6 +314,7 @@ class Subscriber extends BaseSubscriber
 
             $result = array();
             while ($filter->next()) {
+                /** @noinspection PhpUndefinedFieldInspection */
                 $result[$filter->id] = $filter->name;
             }
 
