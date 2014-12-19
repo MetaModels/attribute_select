@@ -248,7 +248,7 @@ class Subscriber extends BaseSubscriber
             $result = array();
             foreach ($database->listFields($table) as $arrInfo) {
                 if ($arrInfo['type'] != 'index') {
-                    $result[] = $arrInfo['name'];
+                    $result[$arrInfo['name']] = $arrInfo['name'];
                 }
             }
         }
