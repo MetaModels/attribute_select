@@ -41,7 +41,10 @@ class Select extends AbstractSelect
         $strTableName  = $this->getSelectSource();
         $strColNameId  = $this->getIdColumn();
         $strSortColumn = $this->getSortingColumn();
-        $arrIds        = $this->getDatabase()
+        $arrIds        = $this
+            ->getMetaModel()
+            ->getServiceContainer()
+            ->getDatabase()
             ->prepare(
                 sprintf(
                     'SELECT %1$s.id FROM %1$s
@@ -93,7 +96,10 @@ class Select extends AbstractSelect
      */
     public function widgetToValue($varValue, $intId)
     {
-        $database        = $this->getDatabase();
+        $database        = $this
+            ->getMetaModel()
+            ->getServiceContainer()
+            ->getDatabase();
         $strColNameAlias = $this->getAliasColumn();
         $strColNameId    = $this->getIdColumn();
         if ($this->isTreePicker()) {
@@ -171,7 +177,11 @@ class Select extends AbstractSelect
         $additionalWhere = $this->getAdditionalWhere();
         $sortColumn      = $this->getSortingColumn();
         if ($usedOnly) {
-            return $this->getDatabase()->execute(sprintf(
+            return $this
+                ->getMetaModel()
+                ->getServiceContainer()
+                ->getDatabase()
+                ->execute(sprintf(
                 'SELECT COUNT(%1$s.%2$s) as mm_count, %1$s.*
                     FROM %1$s
                     RIGHT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
@@ -189,7 +199,11 @@ class Select extends AbstractSelect
             ));
         }
 
-        return $this->getDatabase()->execute(sprintf(
+        return $this
+            ->getMetaModel()
+            ->getServiceContainer()
+            ->getDatabase()
+            ->execute(sprintf(
             'SELECT COUNT(%3$s.%4$s) as mm_count, %1$s.*
                 FROM %1$s
                 LEFT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
@@ -229,7 +243,11 @@ class Select extends AbstractSelect
         $strSortColumn   = $this->getSortingColumn();
         $strColNameWhere = $this->getAdditionalWhere();
 
-        $objDB = $this->getDatabase();
+        $objDB = $this
+            ->getMetaModel()
+            ->getServiceContainer()
+            ->getDatabase();
+
         if ($arrIds) {
             $objValue = $objDB
                 ->prepare(sprintf(
@@ -262,7 +280,10 @@ class Select extends AbstractSelect
      */
     public function getDataFor($arrIds)
     {
-        $objDB          = $this->getDatabase();
+        $objDB          = $this
+            ->getMetaModel()
+            ->getServiceContainer()
+            ->getDatabase();
         $strTableNameId = $this->getSelectSource();
         $strColNameId   = $this->getIdColumn();
         $arrReturn      = array();
@@ -310,7 +331,11 @@ class Select extends AbstractSelect
                 $this->getColName()
             );
 
-            $objDB = $this->getDatabase();
+            $objDB = $this
+                ->getMetaModel()
+                ->getServiceContainer()
+                ->getDatabase();
+
             foreach ($arrValues as $intItemId => $arrValue) {
                 $objDB->prepare($strQuery)->execute($arrValue[$strColNameId], $intItemId);
             }
@@ -327,7 +352,10 @@ class Select extends AbstractSelect
         $strColNameAlias = $this->getAliasColumn();
 
         if ($strColNameAlias) {
-            $objSelectIds = $this->getDatabase()
+            $objSelectIds = $this
+                ->getMetaModel()
+                ->getServiceContainer()
+                ->getDatabase()
                 ->prepare(sprintf(
                     'SELECT %s FROM %s WHERE %s IN (%s)',
                     $strColNameId,

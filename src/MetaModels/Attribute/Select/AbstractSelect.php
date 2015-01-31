@@ -181,7 +181,11 @@ abstract class AbstractSelect extends AbstractHybrid
             $this->getColName(),
             implode(',', $arrIds)
         );
-        $this->getDatabase()->execute($strQuery);
+
+        $this->getMetaModel()
+            ->getServiceContainer()
+            ->getDatabase()
+            ->execute($strQuery);
     }
 
     /**
