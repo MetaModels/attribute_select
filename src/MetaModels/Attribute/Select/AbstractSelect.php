@@ -153,9 +153,7 @@ abstract class AbstractSelect extends AbstractHybrid
                 'mandatory',
                 'chosen',
                 'filterable',
-                'searchable',
-                'sortable',
-                'flag'
+                'searchable'
             )
         );
     }
