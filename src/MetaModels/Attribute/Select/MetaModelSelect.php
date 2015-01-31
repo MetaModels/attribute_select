@@ -162,11 +162,7 @@ class MetaModelSelect extends AbstractSelect
             if ($alias === 'id') {
                 $valueId = $varValue;
             } else {
-
-                $result = $this
-                    ->getMetaModel()
-                    ->getServiceContainer()
-                    ->getDatabase()
+                $result = $this->getDatabase()
                     ->prepare(
                         sprintf(
                             'SELECT v.id FROM %1$s AS v WHERE v.%2$s=?',
@@ -220,10 +216,7 @@ class MetaModelSelect extends AbstractSelect
             );
         }
 
-        $arrUsedValues = $this
-            ->getMetaModel()
-            ->getServiceContainer()
-            ->getDatabase()
+        $arrUsedValues = $this->getDatabase()
             ->prepare($query)
             ->execute($idList)
             ->fetchEach($this->getColName());
@@ -374,11 +367,7 @@ class MetaModelSelect extends AbstractSelect
         if ($this->getSelectSource() && $metaModel && $displayValue) {
             $valueColumn = $this->getColName();
             // First pass, load database rows.
-            $rows = $this
-                ->getMetaModel()
-                ->getServiceContainer()
-                ->getDatabase()
-                ->prepare(
+            $rows = $this->getDatabase()->prepare(
                 sprintf(
                     'SELECT %2$s, id FROM %1$s WHERE id IN (%3$s)',
                     // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following
@@ -438,7 +427,7 @@ class MetaModelSelect extends AbstractSelect
         // @codingStandardsIgnoreEnd
         );
 
-        $database = $this->getMetaModel()->getServiceContainer()->getDatabase();
+        $database = $this->getDatabase();
         foreach ($arrValues as $itemId => $value) {
             if (is_array($value) && isset($value[self::SELECT_RAW]['id'])) {
                 $database->prepare($query)->execute($value[self::SELECT_RAW]['id'], $itemId);
