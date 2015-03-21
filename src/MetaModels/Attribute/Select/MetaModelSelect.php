@@ -124,14 +124,14 @@ class MetaModelSelect extends AbstractSelect
     {
         if (isset($varValue[$this->getAliasColumn()])) {
             // Hope the best that this is unique...
-            return $varValue[$this->getAliasColumn()];
+            return (string) $varValue[$this->getAliasColumn()];
         }
 
         if (isset($varValue[self::SELECT_RAW]['id'])) {
-            return $varValue[self::SELECT_RAW]['id'];
+            return (string) $varValue[self::SELECT_RAW]['id'];
         }
 
-        return null;
+        return '';
     }
 
     /**
