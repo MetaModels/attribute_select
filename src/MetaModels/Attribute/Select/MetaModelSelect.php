@@ -250,6 +250,10 @@ class MetaModelSelect extends AbstractSelect
      */
     public function buildFilterRulesForFilterSetting($filter)
     {
+        if (!$this->get('select_filter')) {
+            return;
+        }
+
         // Set Filter and co.
         $filterSettings = $this
             ->getMetaModel()
