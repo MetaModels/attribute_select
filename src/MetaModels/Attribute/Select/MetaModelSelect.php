@@ -412,6 +412,10 @@ class MetaModelSelect extends AbstractSelect
             }
 
             foreach ($valueIds as $itemId => $valueId) {
+                if (empty($valueIds[$itemId])) {
+                    $result[$itemId] = null;
+                    continue;
+                }
                 $result[$itemId] = $values[$valueIds[$itemId]];
             }
         }
