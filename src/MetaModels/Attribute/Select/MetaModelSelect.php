@@ -68,7 +68,7 @@ class MetaModelSelect extends AbstractSelect
     /**
      * {@inheritdoc}
      */
-    protected function prepareTemplate(Template $objTemplate, $arrRowData, $objSettings = null)
+    protected function prepareTemplate(Template $objTemplate, $arrRowData, $objSettings)
     {
         parent::prepareTemplate($objTemplate, $arrRowData, $objSettings);
         /** @noinspection PhpUndefinedFieldInspection */
@@ -92,7 +92,7 @@ class MetaModelSelect extends AbstractSelect
     /**
      * Retrieve the values with the given ids.
      *
-     * @param int[] $valueIds The ids of the values to retrieve.
+     * @param string[] $valueIds The ids of the values to retrieve.
      *
      * @return array
      */
@@ -139,7 +139,7 @@ class MetaModelSelect extends AbstractSelect
      *
      * @throws \RuntimeException when the value is invalid.
      */
-    public function widgetToValue($varValue, $intId)
+    public function widgetToValue($varValue, $itemId)
     {
         $model     = $this->getSelectMetaModel();
         $alias     = $this->getAliasColumn();
@@ -317,7 +317,7 @@ class MetaModelSelect extends AbstractSelect
      * @SuppressWarnings(PHPMD.Superglobals)
      * @SuppressWarnings(PHPMD.CamelCaseVariableName)
      */
-    public function getFilterOptions($arrIds, $usedOnly, &$arrCount = null)
+    public function getFilterOptions($idList, $usedOnly, &$arrCount = null)
     {
         $strDisplayValue    = $this->getValueColumn();
         $strSortingValue    = $this->getSortingColumn();
@@ -341,8 +341,8 @@ class MetaModelSelect extends AbstractSelect
         if ($usedOnly) {
             $this->buildFilterRulesForUsedOnly($filter);
 
-        } elseif ($arrIds && is_array($arrIds)) {
-            $filter->addFilterRule(new StaticIdList($arrIds));
+        } elseif ($idList && is_array($idList)) {
+            $filter->addFilterRule(new StaticIdList($idList));
         }
 
         $objItems = $this->getSelectMetaModel()->findByFilter($filter, $strSortingValue);

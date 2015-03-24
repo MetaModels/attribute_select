@@ -36,12 +36,12 @@ class Select extends AbstractSelect
     /**
      * {@inheritdoc}
      */
-    public function sortIds($arrIds, $strDirection)
+    public function sortIds($idList, $strDirection)
     {
         $strTableName  = $this->getSelectSource();
         $strColNameId  = $this->getIdColumn();
         $strSortColumn = $this->getSortingColumn();
-        $arrIds        = $this->getDatabase()
+        $idList        = $this->getDatabase()
             ->prepare(
                 sprintf(
                     'SELECT %1$s.id FROM %1$s
@@ -53,15 +53,15 @@ class Select extends AbstractSelect
                     $this->getColName(),                   // 2
                     $strTableName,                         // 3
                     $strColNameId,                         // 4
-                    $this->parameterMask($arrIds),         // 5
+                    $this->parameterMask($idList),         // 5
                     $strSortColumn,                        // 6
                     $strDirection                          // 7
                     // @codingStandardsIgnoreEnd
                 )
             )
-            ->execute($arrIds)
+            ->execute($idList)
             ->fetchEach('id');
-        return $arrIds;
+        return $idList;
     }
 
     /**
@@ -91,7 +91,7 @@ class Select extends AbstractSelect
     /**
      * {@inheritdoc}
      */
-    public function widgetToValue($varValue, $intId)
+    public function widgetToValue($varValue, $itemId)
     {
         $database        = $this->getDatabase();
         $strColNameAlias = $this->getAliasColumn();
@@ -213,9 +213,9 @@ class Select extends AbstractSelect
      * Fetch filter options from foreign table.
      *
      */
-    public function getFilterOptions($arrIds, $usedOnly, &$arrCount = null)
+    public function getFilterOptions($idList, $usedOnly, &$arrCount = null)
     {
-        if (($arrIds !== null) && empty($arrIds)) {
+        if (($idList !== null) && empty($idList)) {
             return array();
         }
 
@@ -230,7 +230,7 @@ class Select extends AbstractSelect
         $strColNameWhere = $this->getAdditionalWhere();
 
         $objDB = $this->getDatabase();
-        if ($arrIds) {
+        if ($idList) {
             $objValue = $objDB
                 ->prepare(sprintf(
                     'SELECT COUNT(%1$s.%2$s) as mm_count, %1$s.*
@@ -244,12 +244,12 @@ class Select extends AbstractSelect
                     $idColumn,                                               // 2
                     $this->getMetaModel()->getTableName(),                   // 3
                     $this->getColName(),                                     // 4
-                    $this->parameterMask($arrIds),                           // 5
+                    $this->parameterMask($idList),                           // 5
                     ($strColNameWhere ? ' AND ('.$strColNameWhere.')' : ''), // 6
                     $strSortColumn                                           // 7
                     // @codingStandardsIgnoreEnd
                 ))
-                ->execute($arrIds);
+                ->execute($idList);
         } else {
             $objValue = $this->getFilterOptionsForUsedOnly($usedOnly);
         }
