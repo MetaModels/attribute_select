@@ -152,7 +152,14 @@ class MetaModelSelect extends AbstractSelect
                 $valueId = 0;
             } else {
                 if (count($ids) > 1) {
-                    throw new \RuntimeException('Multiple values found for ' . var_export($varValue, true));
+                    throw new \RuntimeException(
+                        sprintf(
+                            'Multiple values found for %s, are there obsolete values for %s.%s (att_id: %s)?',
+                            var_export($varValue, true),
+                            $model->getTableName(),
+                            $this->getColName()
+                        )
+                    );
                 }
                 $valueId = array_shift($ids);
             }
