@@ -90,19 +90,14 @@ class MetaModelSelect extends AbstractSelect
     }
 
     /**
-     * Retrieve the values with the given ids.
+     * Convert the item list to values.
      *
-     * @param string[] $valueIds The ids of the values to retrieve.
+     * @param IItems $items The items to convert.
      *
      * @return array
      */
-    protected function getValuesById($valueIds)
+    protected function itemsToValues(IItems $items)
     {
-        $metaModel = $this->getSelectMetaModel();
-        $filter    = $metaModel->getEmptyFilter();
-        $filter->addFilterRule(new StaticIdList($valueIds));
-
-        $items  = $metaModel->findByFilter($filter, 'id');
         $values = array();
         foreach ($items as $item) {
             $valueId    = $item->get('id');
@@ -115,6 +110,22 @@ class MetaModelSelect extends AbstractSelect
         }
 
         return $values;
+    }
+
+    /**
+     * Retrieve the values with the given ids.
+     *
+     * @param string[] $valueIds The ids of the values to retrieve.
+     *
+     * @return array
+     */
+    protected function getValuesById($valueIds)
+    {
+        $metaModel = $this->getSelectMetaModel();
+        $filter    = $metaModel->getEmptyFilter();
+        $items     = $metaModel->findByFilter($filter->addFilterRule(new StaticIdList($valueIds)), 'id');
+
+        return $this->itemsToValues($items);
     }
 
     /**
@@ -400,23 +411,14 @@ class MetaModelSelect extends AbstractSelect
             $filter->addFilterRule(new StaticIdList($valueIds));
 
             $items  = $metaModel->findByFilter($filter, 'id');
-            $values = array();
-            foreach ($items as $item) {
-                $valueId    = $item->get('id');
-                $parsedItem = $item->parseValue();
-
-                $values[$valueId] = array_merge(
-                    array(self::SELECT_RAW => $parsedItem['raw']),
-                    $parsedItem['text']
-                );
-            }
+            $values = $this->itemsToValues($items);
 
             foreach ($valueIds as $itemId => $valueId) {
-                if (empty($valueIds[$itemId])) {
+                if (empty($valueId)) {
                     $result[$itemId] = null;
                     continue;
                 }
-                $result[$itemId] = $values[$valueIds[$itemId]];
+                $result[$itemId] = $values[$valueId];
             }
         }
 
