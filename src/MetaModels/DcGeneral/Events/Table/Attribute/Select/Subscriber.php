@@ -409,7 +409,7 @@ class Subscriber extends BaseSubscriber
     /**
      * Build the data definition palettes.
      *
-     * @param string[]                    $propertyNames The property names which shall be masked.
+     * @param array<string,bool>          $propertyNames The property names which shall be masked.
      *
      * @param PalettesDefinitionInterface $palettes      The palette definition.
      *
