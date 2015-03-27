@@ -186,11 +186,13 @@ class Subscriber extends BaseSubscriber
     /**
      * Retrieve all columns from a database table.
      *
-     * @param string $tableName The database table name.
+     * @param string     $tableName  The database table name.
+     *
+     * @param array|null $typeFilter Optional of types to filter for.
      *
      * @return string[]
      */
-    protected function getColumnNamesFromMetaModel($tableName)
+    protected function getColumnNamesFromMetaModel($tableName, $typeFilter = null)
     {
         $database = $this->getServiceContainer()->getDatabase();
 
@@ -201,9 +203,18 @@ class Subscriber extends BaseSubscriber
         $result = array();
 
         foreach ($database->listFields($tableName) as $arrInfo) {
-            if ($arrInfo['type'] != 'index') {
+            if ($arrInfo['type'] == 'index') {
+                continue;
+            }
+
+            if (($typeFilter === null) || in_array($arrInfo['type'], $typeFilter)) {
                 $result[$arrInfo['name']] = $arrInfo['name'];
             }
+        }
+
+        if (!empty($result)) {
+            asort($result);
+            return $result;
         }
 
         return $result;
@@ -221,7 +232,6 @@ class Subscriber extends BaseSubscriber
      */
     public function getColumnNamesFrom($table)
     {
-
         if (substr($table, 0, 3) === 'mm_') {
             $attributes = $this->getAttributeNamesFrom($table);
             asort($attributes);
@@ -239,26 +249,7 @@ class Subscriber extends BaseSubscriber
                 );
         }
 
-        $database = $this->getServiceContainer()->getDatabase();
-
-        if ($database->tableExists($table)) {
-            // Instead of using the same function whats causing an infinite loop
-            // use listFields with an foreach instead of getFieldNames cause fields
-            // of the type index are also exists
-            $result = array();
-            foreach ($database->listFields($table) as $arrInfo) {
-                if ($arrInfo['type'] != 'index') {
-                    $result[$arrInfo['name']] = $arrInfo['name'];
-                }
-            }
-        }
-
-        if (!empty($result)) {
-            asort($result);
-            return $result;
-        }
-
-        return array();
+        return $this->getColumnNamesFromMetaModel($table);
     }
 
     /**
@@ -383,13 +374,7 @@ class Subscriber extends BaseSubscriber
             return;
         }
 
-        $result = array();
-
-        foreach ($database->listFields($table) as $arrInfo) {
-            if ($arrInfo['type'] != 'index' && $arrInfo['type'] == 'int') {
-                $result[$arrInfo['name']] = $arrInfo['name'];
-            }
-        }
+        $result = $this->getColumnNamesFromMetaModel($table, array('int'));
 
         $event->setOptions($result);
     }
