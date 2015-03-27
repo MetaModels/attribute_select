@@ -46,19 +46,27 @@ class BackendSubscriber extends BaseSubscriber
      */
     public function getPropertyOptions(GetPropertyOptionsEvent $event)
     {
-        if (substr($event->getModel()->getProviderName(), 0, 3) !== 'mm_') {
+        if ($event->getOptions() !== null) {
             return;
         }
 
-        /** @var Model $model */
-        $model     = $event->getModel();
-        $item      = $model->getItem();
-        $attribute = $item->getMetaModel()->getAttribute($event->getPropertyName());
+        $model = $event->getModel();
+
+        if (!($model instanceof Model)) {
+            return;
+        }
+        $attribute = $model->getItem()->getAttribute($event->getPropertyName());
 
         if (!($attribute instanceof AbstractSelect)) {
             return;
         }
 
-        $event->setOptions($attribute->getFilterOptions(null, false));
+        try {
+            $options = $attribute->getFilterOptions(null, false);
+        } catch (\Exception $exception) {
+            $options = array('Error: ' . $exception->getMessage());
+        }
+
+        $event->setOptions($options);
     }
 }
