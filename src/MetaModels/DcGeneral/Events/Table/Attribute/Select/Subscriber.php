@@ -184,6 +184,18 @@ class Subscriber extends BaseSubscriber
     }
 
     /**
+     * Check if a table exists in the database.
+     *
+     * @param string $table The table name.
+     *
+     * @return bool
+     */
+    private function tableExists($table)
+    {
+        return (!empty($table) && $this->getServiceContainer()->getDatabase()->tableExists($table));
+    }
+
+    /**
      * Retrieve all columns from a database table.
      *
      * @param string     $tableName  The database table name.
@@ -196,7 +208,7 @@ class Subscriber extends BaseSubscriber
     {
         $database = $this->getServiceContainer()->getDatabase();
 
-        if (!$tableName || !$database->tableExists($tableName)) {
+        if (!$this->tableExists($tableName)) {
             return array();
         }
 
@@ -366,15 +378,7 @@ class Subscriber extends BaseSubscriber
             return;
         }
 
-        $model    = $event->getModel();
-        $table    = $model->getProperty('select_table');
-        $database = $this->getServiceContainer()->getDatabase();
-
-        if (!$table || !$database->tableExists($table)) {
-            return;
-        }
-
-        $result = $this->getColumnNamesFromMetaModel($table, array('int'));
+        $result = $this->getColumnNamesFromMetaModel($event->getModel()->getProperty('select_table'), array('int'));
 
         $event->setOptions($result);
     }
