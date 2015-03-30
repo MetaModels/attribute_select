@@ -323,12 +323,15 @@ class MetaModelSelect extends AbstractSelect
     {
         $result = array();
         foreach ($items as $item) {
-            $parsed = $item->parseValue();
+            $parsedDisplay = $item->parseAttribute($displayValue);
+            $parsedAlias   = $item->parseAttribute($aliasColumn);
 
-            $textValue  = $parsed['text'][$displayValue];
-            $aliasValue = isset($parsed['text'][$aliasColumn])
-                ? $parsed['text'][$aliasColumn]
-                : $parsed['raw'][$aliasColumn];
+            $textValue  = isset($parsedDisplay['text'])
+                ? $parsedDisplay['text']
+                : $item->get($displayValue);
+            $aliasValue = isset($parsedAlias['text'])
+                ? $parsedAlias['text']
+                : $item->get($aliasColumn);
 
             $result[$aliasValue] = $textValue;
         }
