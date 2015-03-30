@@ -27,11 +27,6 @@ use MetaModels\Render\Template;
 
 /**
  * This is the MetaModelAttribute class for handling select attributes on MetaModels.
- *
- * @package    MetaModels
- * @subpackage AttributeSelect
- * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
- * @author     Christian de la Haye <service@delahaye.de>
  */
 class MetaModelSelect extends AbstractSelect
 {
@@ -121,9 +116,19 @@ class MetaModelSelect extends AbstractSelect
      */
     protected function getValuesById($valueIds)
     {
+        $recursionKey = $this->getMetaModel()->getTableName();
+
+        // Prevent recursion.
+        static $tables = array();
+        if (isset($tables[$recursionKey])) {
+            return array();
+        }
+        $tables[$recursionKey] = $recursionKey;
+
         $metaModel = $this->getSelectMetaModel();
-        $filter    = $metaModel->getEmptyFilter();
-        $items     = $metaModel->findByFilter($filter->addFilterRule(new StaticIdList($valueIds)), 'id');
+        $filter    = $metaModel->getEmptyFilter()->addFilterRule(new StaticIdList($valueIds));
+        $items     = $metaModel->findByFilter($filter, 'id');
+        unset($tables[$recursionKey]);
 
         return $this->itemsToValues($items);
     }
@@ -407,11 +412,7 @@ class MetaModelSelect extends AbstractSelect
                 $valueIds[$rows->id] = $rows->$valueColumn;
             }
 
-            $filter = $metaModel->getEmptyFilter();
-            $filter->addFilterRule(new StaticIdList($valueIds));
-
-            $items  = $metaModel->findByFilter($filter, 'id');
-            $values = $this->itemsToValues($items);
+            $values = $this->getValuesById($valueIds);
 
             foreach ($valueIds as $itemId => $valueId) {
                 if (empty($valueId)) {
