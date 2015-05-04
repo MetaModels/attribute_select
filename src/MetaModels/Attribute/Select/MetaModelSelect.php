@@ -11,6 +11,7 @@
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
  * @author     Stefan heimes <stefan_heimes@hotmail.com>
  * @author     Martin Treml <github@r2pi.net>
+ * @author     David Maack <david.maack@arcor.de>
  * @copyright  The MetaModels team.
  * @license    LGPL.
  * @filesource
@@ -369,7 +370,7 @@ class MetaModelSelect extends AbstractSelect
 
         // Add some more filter rules.
         if ($usedOnly) {
-            $this->buildFilterRulesForUsedOnly($filter);
+            $this->buildFilterRulesForUsedOnly($filter, $idList ?: array());
 
         } elseif ($idList && is_array($idList)) {
             $filter->addFilterRule(new StaticIdList($idList));
