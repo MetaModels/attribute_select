@@ -13,26 +13,8 @@
             "role":"Developer"
         },
         {
-            "name":"Andreas Isaak",
-            "email":"info@andreas-isaak.de",
-            "homepage":"http://www.andreas-isaak.de",
-            "role":"Developer"
-        },
-        {
             "name":"Stefan Heimes",
             "email":"stefan_heimes@hotmail.com",
-            "role":"Developer"
-        },
-        {
-            "name":"Christian de la Haye",
-            "email":"service@delahaye.de",
-            "homepage":"http://www.delahaye.de/",
-            "role":"Developer"
-        },
-        {
-            "name":"Oliver Hoff",
-            "email":"oliver@hofff.com",
-            "homepage":"http://www.hofff.com/",
             "role":"Developer"
         }
     ],
