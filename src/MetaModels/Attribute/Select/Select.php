@@ -327,6 +327,10 @@ class Select extends AbstractSelect
         $strColNameAlias = $this->getAliasColumn();
 
         if ($strColNameAlias) {
+            $values = array_unique(array_filter($values));
+            if (empty($values)) {
+                return array();
+            }
             $objSelectIds = $this->getDatabase()
                 ->prepare(sprintf(
                     'SELECT %s FROM %s WHERE %s IN (%s)',
