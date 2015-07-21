@@ -19,7 +19,14 @@
 /**
  * Fields
  */
-$GLOBALS['TL_LANG']['tl_metamodel_dcasetting']['select_as_radio'] = array('Display type', 'Select the desired display type.');
+$GLOBALS['TL_LANG']['tl_metamodel_dcasetting']['select_as_radio'][0] = 'Display type';
+$GLOBALS['TL_LANG']['tl_metamodel_dcasetting']['select_as_radio'][1] = 'Select the desired display type.';
+$GLOBALS['TL_LANG']['tl_metamodel_dcasetting']['select_minLevel'][0] = 'Minimum level in tree picker';
+$GLOBALS['TL_LANG']['tl_metamodel_dcasetting']['select_minLevel'][1] =
+    'If you pass a value >0 here, no item below this level will be selectable.';
+$GLOBALS['TL_LANG']['tl_metamodel_dcasetting']['select_maxLevel'][0] = 'Maximum level in tree picker';
+$GLOBALS['TL_LANG']['tl_metamodel_dcasetting']['select_maxLevel'][1] =
+    'If you pass a value >0 here, no item above this level will be selectable.';
 
 /**
  * Reference

@@ -28,4 +28,6 @@ CREATE TABLE `tl_metamodel_attribute` (
 
 CREATE TABLE `tl_metamodel_dcasetting` (
   `select_as_radio` varchar(1) NOT NULL default '0'
+  `select_minLevel` int(11) NOT NULL default '0',
+  `select_maxLevel` int(11) NOT NULL default '0'
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
