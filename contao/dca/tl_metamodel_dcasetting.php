@@ -35,6 +35,14 @@ $GLOBALS['TL_DCA']['tl_metamodel_dcasetting']['metasubselectpalettes']['attr_id'
     )
 );
 
+$GLOBALS['TL_DCA']['tl_metamodel_dcasetting']['palettes']['__selector__'][] = 'select_as_radio';
+
+$GLOBALS['TL_DCA']['tl_metamodel_dcasetting']['metasubselectpalettes']['select_as_radio'][2] = array(
+    'presentation after select_as_radio' => array(
+        'select_minLevel', 'select_maxLevel'
+    )
+);
+
 $GLOBALS['TL_DCA']['tl_metamodel_dcasetting']['fields']['select_as_radio'] = array
 (
     'label'                 => &$GLOBALS['TL_LANG']['tl_metamodel_dcasetting']['select_as_radio'],
@@ -45,5 +53,27 @@ $GLOBALS['TL_DCA']['tl_metamodel_dcasetting']['fields']['select_as_radio'] = arr
     'eval'                  => array
     (
         'tl_class'          => 'clr'
+    )
+);
+
+$GLOBALS['TL_DCA']['tl_metamodel_dcasetting']['fields']['select_minLevel'] = array
+(
+    'label'     => &$GLOBALS['TL_LANG']['tl_metamodel_dcasetting']['select_minLevel'],
+    'exclude'   => true,
+    'inputType' => 'text',
+    'eval'      => array
+    (
+        'tl_class' => 'clr w50'
+    )
+);
+
+$GLOBALS['TL_DCA']['tl_metamodel_dcasetting']['fields']['select_maxLevel'] = array
+(
+    'label'     => &$GLOBALS['TL_LANG']['tl_metamodel_dcasetting']['select_maxLevel'],
+    'exclude'   => true,
+    'inputType' => 'text',
+    'eval'      => array
+    (
+        'tl_class' => 'w50'
     )
 );

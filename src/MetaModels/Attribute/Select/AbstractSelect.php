@@ -127,6 +127,9 @@ abstract class AbstractSelect extends AbstractHybrid
             $arrFieldDef['eval']['sourceName'] = $this->getSelectSource();
             $arrFieldDef['eval']['fieldType']  = 'radio';
             $arrFieldDef['eval']['idProperty'] = $this->getAliasColumn();
+            $arrFieldDef['eval']['orderField'] = $this->getSortingColumn();
+            $arrFieldDef['eval']['minLevel']   = $arrOverrides['select_minLevel'];
+            $arrFieldDef['eval']['maxLevel']   = $arrOverrides['select_maxLevel'];
         } elseif ($this->widgetMode == 1) {
             // If select as radio is true, change the input type.
             $arrFieldDef['inputType'] = 'radio';

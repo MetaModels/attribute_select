@@ -174,7 +174,8 @@ class MetaModelSelect extends AbstractSelect
                             'Multiple values found for %s, are there obsolete values for %s.%s (att_id: %s)?',
                             var_export($varValue, true),
                             $model->getTableName(),
-                            $this->getColName()
+                            $this->getColName(),
+                            $this->get('id')
                         )
                     );
                 }
@@ -530,11 +531,9 @@ class MetaModelSelect extends AbstractSelect
         /** @var MetaModelSelect $attribute */
         $metaModel       = $this->getSelectMetaModel();
         $sanitizedValues = array();
+        // fix #32
+        $objAttribute = $metaModel->getAttribute($strColNameAlias);
         foreach ($values as $value) {
-
-            // fix #32
-            $objAttribute = $metaModel->getAttribute($strColNameAlias);
-
             if (!$objAttribute) {
                 $valueIds = $this->searchForNonAttributeField($values);
             } else {
