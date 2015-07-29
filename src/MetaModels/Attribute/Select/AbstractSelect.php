@@ -42,7 +42,7 @@ abstract class AbstractSelect extends AbstractHybrid
      *
      * @var bool
      */
-    protected $isProperlyConfigured;
+    private $isProperlyConfigured;
 
     /**
      * Retrieve the database instance.
