@@ -38,6 +38,13 @@ abstract class AbstractSelect extends AbstractHybrid
     protected $widgetMode;
 
     /**
+     * Local cached flag if the attribute has been properly configured.
+     *
+     * @var bool
+     */
+    protected $isProperlyConfigured;
+
+    /**
      * Retrieve the database instance.
      *
      * @return \Database
@@ -113,6 +120,34 @@ abstract class AbstractSelect extends AbstractHybrid
     protected function getAliasColumn()
     {
         return $this->get('select_alias') ?: $this->getIdColumn();
+    }
+
+    /**
+     * Ensure the attribute has been configured correctly.
+     *
+     * @return bool
+     */
+    protected function isProperlyConfigured()
+    {
+        if (isset($this->isProperlyConfigured)) {
+            return $this->isProperlyConfigured;
+        }
+
+        return $this->isProperlyConfigured = $this->checkConfiguration();
+    }
+
+    /**
+     * Check the configuration of the attribute.
+     *
+     * @return bool
+     */
+    protected function checkConfiguration()
+    {
+        return $this->getSelectSource()
+            && $this->getValueColumn()
+            && $this->getAliasColumn()
+            && $this->getIdColumn()
+            && $this->getSortingColumn();
     }
 
     /**

@@ -44,6 +44,15 @@ class MetaModelSelect extends AbstractSelect
     protected $objSelectMetaModel;
 
     /**
+     * {@inheritDoc}
+     */
+    protected function checkConfiguration()
+    {
+        return parent::checkConfiguration()
+            && (null !== $this->getSelectMetaModel());
+    }
+
+    /**
      * Retrieve the linked MetaModel instance.
      *
      * @return IMetaModel
@@ -402,13 +411,13 @@ class MetaModelSelect extends AbstractSelect
      */
     public function getFilterOptions($idList, $usedOnly, &$arrCount = null)
     {
+        if (!$this->isProperlyConfigured()) {
+            return array();
+        }
+
         $strDisplayValue    = $this->getValueColumn();
         $strSortingValue    = $this->getSortingColumn();
         $strCurrentLanguage = null;
-
-        if (!($this->getSelectMetaModel() && $strDisplayValue)) {
-            return array();
-        }
 
         // Change language.
         if (TL_MODE == 'BE') {
