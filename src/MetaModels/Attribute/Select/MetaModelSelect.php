@@ -532,55 +532,28 @@ class MetaModelSelect extends AbstractSelect
     public function convertValuesToValueIds($values)
     {
         $strColNameAlias = $this->getAliasColumn();
+        $strColNameId    = $this->getIdColumn();
 
-        if (!$strColNameAlias) {
+        if ($strColNameId === $strColNameAlias) {
             return $values;
         }
 
-        /** @var MetaModelSelect $attribute */
-        $metaModel       = $this->getSelectMetaModel();
+        $attribute = $this->getSelectMetaModel()->getAttribute($strColNameAlias);
+        if (!$attribute) {
+            // If not an attribute, perform plain SQL translation. See #32, 34.
+            return parent::convertValuesToValueIds($values);
+        }
+
         $sanitizedValues = array();
-        // fix #32
-        $objAttribute = $metaModel->getAttribute($strColNameAlias);
         foreach ($values as $value) {
-            if (!$objAttribute) {
-                $valueIds = $this->searchForNonAttributeField($values);
-            } else {
-                $valueIds = $objAttribute->searchFor($value);
-                if ($valueIds === null) {
-                    return null;
-                }
+            $valueIds = $attribute->searchFor($value);
+            if ($valueIds === null) {
+                return null;
             }
 
             $sanitizedValues = array_merge($valueIds, $sanitizedValues);
         }
 
-        return $sanitizedValues;
-    }
-
-    /**
-     * Use the id lookup from the normal select field to search for the default fields.
-     *
-     * @param string[] $values The values to convert.
-     *
-     * @return array[]
-     */
-    protected function searchForNonAttributeField($values)
-    {
-        $strColNameAlias = $this->getAliasColumn();
-        $strTableNameId  = $this->getSelectSource();
-        $strColNameId    = $this->getIdColumn();
-
-        $objSelectIds = $this->getDatabase()
-            ->prepare(sprintf(
-                'SELECT %s FROM %s WHERE %s IN (%s)',
-                $strColNameId,
-                $strTableNameId,
-                $strColNameAlias,
-                $this->parameterMask($values)
-            ))
-            ->execute($values);
-
-        return $objSelectIds->fetchEach($strColNameId);
+        return array_unique($sanitizedValues);
     }
 }

@@ -244,5 +244,30 @@ abstract class AbstractSelect extends AbstractHybrid
      *
      * @return int[]
      */
-    abstract public function convertValuesToValueIds($values);
+    public function convertValuesToValueIds($values)
+    {
+        $tableName   = $this->getSelectSource();
+        $idColumn    = $this->getIdColumn();
+        $aliasColumn = $this->getAliasColumn();
+
+        if ($idColumn === $aliasColumn) {
+            return $values;
+        }
+
+        $values = array_unique(array_filter($values));
+        if (empty($values)) {
+            return array();
+        }
+        $objSelectIds = $this->getDatabase()
+            ->prepare(sprintf(
+                'SELECT %s FROM %s WHERE %s IN (%s)',
+                $idColumn,
+                $tableName,
+                $aliasColumn,
+                $this->parameterMask($values)
+            ))
+            ->execute($values);
+
+        return $objSelectIds->fetchEach($idColumn);
+    }
 }
