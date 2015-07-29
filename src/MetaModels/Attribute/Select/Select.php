@@ -229,10 +229,7 @@ class Select extends AbstractSelect
      */
     public function getFilterOptions($idList, $usedOnly, &$arrCount = null)
     {
-        if (($idList !== null) && empty($idList)) {
-            return array();
-        }
-        if (!$this->isProperlyConfigured()) {
+        if (!$this->isFilterOptionRetrievingPossible($idList)) {
             return array();
         }
 

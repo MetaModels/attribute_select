@@ -411,7 +411,7 @@ class MetaModelSelect extends AbstractSelect
      */
     public function getFilterOptions($idList, $usedOnly, &$arrCount = null)
     {
-        if (!$this->isProperlyConfigured()) {
+        if (!$this->isFilterOptionRetrievingPossible($idList)) {
             return array();
         }
 

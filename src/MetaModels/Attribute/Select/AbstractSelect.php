@@ -151,6 +151,19 @@ abstract class AbstractSelect extends AbstractHybrid
     }
 
     /**
+     * Test that we can create the filter options.
+     *
+     * @param string[]|null $idList The ids of items that the values shall be fetched from
+     *                              (If empty or null, all items).
+     *
+     * @return bool
+     */
+    protected function isFilterOptionRetrievingPossible($idList)
+    {
+        return $this->isProperlyConfigured() && (($idList === null) || !empty($idList));
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function getFieldDefinition($arrOverrides = array())
