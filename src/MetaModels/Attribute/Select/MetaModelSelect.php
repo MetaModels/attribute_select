@@ -452,40 +452,39 @@ class MetaModelSelect extends AbstractSelect
      */
     public function getDataFor($arrIds)
     {
-        $displayValue = $this->getValueColumn();
-        $result       = array();
-        $metaModel    = $this->getSelectMetaModel();
+        if (!$this->isProperlyConfigured()) {
+            return array();
+        }
 
-        if ($this->getSelectSource() && $metaModel && $displayValue) {
-            $valueColumn = $this->getColName();
-            // First pass, load database rows.
-            $rows = $this->getDatabase()->prepare(
-                sprintf(
-                    'SELECT %2$s, id FROM %1$s WHERE id IN (%3$s)',
-                    // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following
-                    // lines.
-                    $this->getMetaModel()->getTableName(), // 1
-                    $valueColumn,                          // 2
-                    $this->parameterMask($arrIds)          // 3
-                // @codingStandardsIgnoreEnd
-                )
-            )->execute($arrIds);
+        $result      = array();
+        $valueColumn = $this->getColName();
+        // First pass, load database rows.
+        $rows = $this->getDatabase()->prepare(
+            sprintf(
+                'SELECT %2$s, id FROM %1$s WHERE id IN (%3$s)',
+                // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following
+                // lines.
+                $this->getMetaModel()->getTableName(), // 1
+                $valueColumn,                          // 2
+                $this->parameterMask($arrIds)          // 3
+            // @codingStandardsIgnoreEnd
+            )
+        )->execute($arrIds);
 
-            $valueIds = array();
-            while ($rows->next()) {
-                /** @noinspection PhpUndefinedFieldInspection */
-                $valueIds[$rows->id] = $rows->$valueColumn;
+        $valueIds = array();
+        while ($rows->next()) {
+            /** @noinspection PhpUndefinedFieldInspection */
+            $valueIds[$rows->id] = $rows->$valueColumn;
+        }
+
+        $values = $this->getValuesById($valueIds);
+
+        foreach ($valueIds as $itemId => $valueId) {
+            if (empty($valueId)) {
+                $result[$itemId] = null;
+                continue;
             }
-
-            $values = $this->getValuesById($valueIds);
-
-            foreach ($valueIds as $itemId => $valueId) {
-                if (empty($valueId)) {
-                    $result[$itemId] = null;
-                    continue;
-                }
-                $result[$itemId] = $values[$valueId];
-            }
+            $result[$itemId] = $values[$valueId];
         }
 
         return $result;
