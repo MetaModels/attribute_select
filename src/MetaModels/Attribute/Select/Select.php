@@ -34,10 +34,23 @@ namespace MetaModels\Attribute\Select;
 class Select extends AbstractSelect
 {
     /**
+     * {@inheritDoc}
+     */
+    protected function checkConfiguration()
+    {
+        return parent::checkConfiguration()
+            && $this->getDatabase()->tableExists($this->getSelectSource());
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function sortIds($idList, $strDirection)
     {
+        if (!$this->isProperlyConfigured()) {
+            return $idList;
+        }
+
         $strTableName  = $this->getSelectSource();
         $strColNameId  = $this->getIdColumn();
         $strSortColumn = $this->getSortingColumn();
@@ -61,6 +74,7 @@ class Select extends AbstractSelect
             )
             ->execute($idList)
             ->fetchEach('id');
+
         return $idList;
     }
 
@@ -215,17 +229,12 @@ class Select extends AbstractSelect
      */
     public function getFilterOptions($idList, $usedOnly, &$arrCount = null)
     {
-        if (($idList !== null) && empty($idList)) {
+        if (!$this->isFilterOptionRetrievingPossible($idList)) {
             return array();
         }
 
-        $tableName = $this->getSelectSource();
-        $idColumn  = $this->getIdColumn();
-
-        if (empty($tableName) || empty($idColumn)) {
-            return array();
-        }
-
+        $tableName       = $this->getSelectSource();
+        $idColumn        = $this->getIdColumn();
         $strSortColumn   = $this->getSortingColumn();
         $strColNameWhere = $this->getAdditionalWhere();
 
@@ -262,37 +271,40 @@ class Select extends AbstractSelect
      */
     public function getDataFor($arrIds)
     {
+        if (!$this->isProperlyConfigured()) {
+            return array();
+        }
+
         $objDB          = $this->getDatabase();
         $strTableNameId = $this->getSelectSource();
         $strColNameId   = $this->getIdColumn();
         $arrReturn      = array();
 
-        if ($strTableNameId && $strColNameId) {
-            $strMetaModelTableName   = $this->getMetaModel()->getTableName();
-            $strMetaModelTableNameId = $strMetaModelTableName.'_id';
+        $strMetaModelTableName   = $this->getMetaModel()->getTableName();
+        $strMetaModelTableNameId = $strMetaModelTableName.'_id';
 
-            // Using aliased join here to resolve issue #3 - SQL error for self referencing table.
-            $objValue = $objDB
-                ->prepare(sprintf(
-                    'SELECT sourceTable.*, %2$s.id AS %3$s
-                    FROM %1$s sourceTable
-                    LEFT JOIN %2$s ON (sourceTable.%4$s=%2$s.%5$s)
-                    WHERE %2$s.id IN (%6$s)',
-                    // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
-                    $strTableNameId,              // 1
-                    $strMetaModelTableName,       // 2
-                    $strMetaModelTableNameId,     // 3
-                    $strColNameId,                // 4
-                    $this->getColName(),          // 5
-                    $this->parameterMask($arrIds) // 6
-                    // @codingStandardsIgnoreEnd
-                ))
-                ->execute($arrIds);
+        // Using aliased join here to resolve issue #3 - SQL error for self referencing table.
+        $objValue = $objDB
+            ->prepare(sprintf(
+                'SELECT sourceTable.*, %2$s.id AS %3$s
+                FROM %1$s sourceTable
+                LEFT JOIN %2$s ON (sourceTable.%4$s=%2$s.%5$s)
+                WHERE %2$s.id IN (%6$s)',
+                // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
+                $strTableNameId,              // 1
+                $strMetaModelTableName,       // 2
+                $strMetaModelTableNameId,     // 3
+                $strColNameId,                // 4
+                $this->getColName(),          // 5
+                $this->parameterMask($arrIds) // 6
+                // @codingStandardsIgnoreEnd
+            ))
+            ->execute($arrIds);
 
-            while ($objValue->next()) {
-                $arrReturn[$objValue->$strMetaModelTableNameId] = $objValue->row();
-            }
+        while ($objValue->next()) {
+            $arrReturn[$objValue->$strMetaModelTableNameId] = $objValue->row();
         }
+
         return $arrReturn;
     }
 
@@ -301,6 +313,10 @@ class Select extends AbstractSelect
      */
     public function setDataFor($arrValues)
     {
+        if (!$this->isProperlyConfigured()) {
+            return;
+        }
+
         $strTableName = $this->getSelectSource();
         $strColNameId = $this->getIdColumn();
         if ($strTableName && $strColNameId) {
@@ -315,35 +331,5 @@ class Select extends AbstractSelect
                 $objDB->prepare($strQuery)->execute($arrValue[$strColNameId], $intItemId);
             }
         }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function convertValuesToValueIds($values)
-    {
-        $strTableNameId  = $this->getSelectSource();
-        $strColNameId    = $this->getIdColumn();
-        $strColNameAlias = $this->getAliasColumn();
-
-        if ($strColNameAlias) {
-            $values = array_unique(array_filter($values));
-            if (empty($values)) {
-                return array();
-            }
-            $objSelectIds = $this->getDatabase()
-                ->prepare(sprintf(
-                    'SELECT %s FROM %s WHERE %s IN (%s)',
-                    $strColNameId,
-                    $strTableNameId,
-                    $strColNameAlias,
-                    $this->parameterMask($values)
-                ))
-                ->execute($values);
-
-            $values = $objSelectIds->fetchEach($strColNameId);
-        }
-
-        return $values;
     }
 }

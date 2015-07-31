@@ -44,6 +44,15 @@ class MetaModelSelect extends AbstractSelect
     protected $objSelectMetaModel;
 
     /**
+     * {@inheritDoc}
+     */
+    protected function checkConfiguration()
+    {
+        return parent::checkConfiguration()
+            && (null !== $this->getSelectMetaModel());
+    }
+
+    /**
      * Retrieve the linked MetaModel instance.
      *
      * @return IMetaModel
@@ -402,13 +411,13 @@ class MetaModelSelect extends AbstractSelect
      */
     public function getFilterOptions($idList, $usedOnly, &$arrCount = null)
     {
+        if (!$this->isFilterOptionRetrievingPossible($idList)) {
+            return array();
+        }
+
         $strDisplayValue    = $this->getValueColumn();
         $strSortingValue    = $this->getSortingColumn();
         $strCurrentLanguage = null;
-
-        if (!($this->getSelectMetaModel() && $strDisplayValue)) {
-            return array();
-        }
 
         // Change language.
         if (TL_MODE == 'BE') {
@@ -443,40 +452,39 @@ class MetaModelSelect extends AbstractSelect
      */
     public function getDataFor($arrIds)
     {
-        $displayValue = $this->getValueColumn();
-        $result       = array();
-        $metaModel    = $this->getSelectMetaModel();
+        if (!$this->isProperlyConfigured()) {
+            return array();
+        }
 
-        if ($this->getSelectSource() && $metaModel && $displayValue) {
-            $valueColumn = $this->getColName();
-            // First pass, load database rows.
-            $rows = $this->getDatabase()->prepare(
-                sprintf(
-                    'SELECT %2$s, id FROM %1$s WHERE id IN (%3$s)',
-                    // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following
-                    // lines.
-                    $this->getMetaModel()->getTableName(), // 1
-                    $valueColumn,                          // 2
-                    $this->parameterMask($arrIds)          // 3
-                // @codingStandardsIgnoreEnd
-                )
-            )->execute($arrIds);
+        $result      = array();
+        $valueColumn = $this->getColName();
+        // First pass, load database rows.
+        $rows = $this->getDatabase()->prepare(
+            sprintf(
+                'SELECT %2$s, id FROM %1$s WHERE id IN (%3$s)',
+                // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following
+                // lines.
+                $this->getMetaModel()->getTableName(), // 1
+                $valueColumn,                          // 2
+                $this->parameterMask($arrIds)          // 3
+            // @codingStandardsIgnoreEnd
+            )
+        )->execute($arrIds);
 
-            $valueIds = array();
-            while ($rows->next()) {
-                /** @noinspection PhpUndefinedFieldInspection */
-                $valueIds[$rows->id] = $rows->$valueColumn;
+        $valueIds = array();
+        while ($rows->next()) {
+            /** @noinspection PhpUndefinedFieldInspection */
+            $valueIds[$rows->id] = $rows->$valueColumn;
+        }
+
+        $values = $this->getValuesById($valueIds);
+
+        foreach ($valueIds as $itemId => $valueId) {
+            if (empty($valueId)) {
+                $result[$itemId] = null;
+                continue;
             }
-
-            $values = $this->getValuesById($valueIds);
-
-            foreach ($valueIds as $itemId => $valueId) {
-                if (empty($valueId)) {
-                    $result[$itemId] = null;
-                    continue;
-                }
-                $result[$itemId] = $values[$valueId];
-            }
+            $result[$itemId] = $values[$valueId];
         }
 
         return $result;
@@ -523,55 +531,28 @@ class MetaModelSelect extends AbstractSelect
     public function convertValuesToValueIds($values)
     {
         $strColNameAlias = $this->getAliasColumn();
+        $strColNameId    = $this->getIdColumn();
 
-        if (!$strColNameAlias) {
+        if ($strColNameId === $strColNameAlias) {
             return $values;
         }
 
-        /** @var MetaModelSelect $attribute */
-        $metaModel       = $this->getSelectMetaModel();
+        $attribute = $this->getSelectMetaModel()->getAttribute($strColNameAlias);
+        if (!$attribute) {
+            // If not an attribute, perform plain SQL translation. See #32, 34.
+            return parent::convertValuesToValueIds($values);
+        }
+
         $sanitizedValues = array();
-        // fix #32
-        $objAttribute = $metaModel->getAttribute($strColNameAlias);
         foreach ($values as $value) {
-            if (!$objAttribute) {
-                $valueIds = $this->searchForNonAttributeField($values);
-            } else {
-                $valueIds = $objAttribute->searchFor($value);
-                if ($valueIds === null) {
-                    return null;
-                }
+            $valueIds = $attribute->searchFor($value);
+            if ($valueIds === null) {
+                return null;
             }
 
             $sanitizedValues = array_merge($valueIds, $sanitizedValues);
         }
 
-        return $sanitizedValues;
-    }
-
-    /**
-     * Use the id lookup from the normal select field to search for the default fields.
-     *
-     * @param string[] $values The values to convert.
-     *
-     * @return array[]
-     */
-    protected function searchForNonAttributeField($values)
-    {
-        $strColNameAlias = $this->getAliasColumn();
-        $strTableNameId  = $this->getSelectSource();
-        $strColNameId    = $this->getIdColumn();
-
-        $objSelectIds = $this->getDatabase()
-            ->prepare(sprintf(
-                'SELECT %s FROM %s WHERE %s IN (%s)',
-                $strColNameId,
-                $strTableNameId,
-                $strColNameAlias,
-                $this->parameterMask($values)
-            ))
-            ->execute($values);
-
-        return $objSelectIds->fetchEach($strColNameId);
+        return array_unique($sanitizedValues);
     }
 }

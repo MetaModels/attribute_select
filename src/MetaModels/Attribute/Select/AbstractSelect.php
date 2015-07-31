@@ -38,6 +38,13 @@ abstract class AbstractSelect extends AbstractHybrid
     protected $widgetMode;
 
     /**
+     * Local cached flag if the attribute has been properly configured.
+     *
+     * @var bool
+     */
+    private $isProperlyConfigured;
+
+    /**
      * Retrieve the database instance.
      *
      * @return \Database
@@ -113,6 +120,47 @@ abstract class AbstractSelect extends AbstractHybrid
     protected function getAliasColumn()
     {
         return $this->get('select_alias') ?: $this->getIdColumn();
+    }
+
+    /**
+     * Ensure the attribute has been configured correctly.
+     *
+     * @return bool
+     */
+    protected function isProperlyConfigured()
+    {
+        if (isset($this->isProperlyConfigured)) {
+            return $this->isProperlyConfigured;
+        }
+
+        return $this->isProperlyConfigured = $this->checkConfiguration();
+    }
+
+    /**
+     * Check the configuration of the attribute.
+     *
+     * @return bool
+     */
+    protected function checkConfiguration()
+    {
+        return $this->getSelectSource()
+            && $this->getValueColumn()
+            && $this->getAliasColumn()
+            && $this->getIdColumn()
+            && $this->getSortingColumn();
+    }
+
+    /**
+     * Test that we can create the filter options.
+     *
+     * @param string[]|null $idList The ids of items that the values shall be fetched from
+     *                              (If empty or null, all items).
+     *
+     * @return bool
+     */
+    protected function isFilterOptionRetrievingPossible($idList)
+    {
+        return $this->isProperlyConfigured() && (($idList === null) || !empty($idList));
     }
 
     /**
@@ -196,5 +244,30 @@ abstract class AbstractSelect extends AbstractHybrid
      *
      * @return int[]
      */
-    abstract public function convertValuesToValueIds($values);
+    public function convertValuesToValueIds($values)
+    {
+        $tableName   = $this->getSelectSource();
+        $idColumn    = $this->getIdColumn();
+        $aliasColumn = $this->getAliasColumn();
+
+        if ($idColumn === $aliasColumn) {
+            return $values;
+        }
+
+        $values = array_unique(array_filter($values));
+        if (empty($values)) {
+            return array();
+        }
+        $objSelectIds = $this->getDatabase()
+            ->prepare(sprintf(
+                'SELECT %s FROM %s WHERE %s IN (%s)',
+                $idColumn,
+                $tableName,
+                $aliasColumn,
+                $this->parameterMask($values)
+            ))
+            ->execute($values);
+
+        return $objSelectIds->fetchEach($idColumn);
+    }
 }
