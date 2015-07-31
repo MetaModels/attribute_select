@@ -449,6 +449,49 @@ class MetaModelSelect extends AbstractSelect
 
     /**
      * {@inheritdoc}
+     *
+     * This implementation does a complete sorting by the referenced MetaModel.
+     */
+    public function sortIds($idList, $strDirection)
+    {
+        $metaModel = $this->getSelectMetaModel();
+        $myColName = $this->getColName();
+        $values    = $this
+            ->getMetaModel()
+            ->getServiceContainer()
+            ->getDatabase()
+            ->prepare(
+                sprintf(
+                    'SELECT id,%1$s FROM %2$s WHERE id IN (%3$s) ORDER BY %1$s',
+                    $myColName,
+                    $this->getMetaModel()->getTableName(),
+                    $this->parameterMask($idList)
+                )
+            )
+            ->execute($idList);
+
+        $valueIds = array();
+        $valueMap = array();
+        while ($values->next()) {
+            $itemId             = $values->id;
+            $value              = $values->$myColName;
+            $valueIds[$itemId]  = $value;
+            $valueMap[$value][] = $itemId;
+        }
+
+        $filter = $metaModel->getEmptyFilter()->addFilterRule(new StaticIdList(array_unique(array_values($valueIds))));
+        $value  = $this->getValueColumn();
+        $items  = $metaModel->findByFilter($filter, $value, 0, 0, $strDirection, array($value));
+        $result = array();
+        foreach ($items as $item) {
+            $result = array_merge($result, $valueMap[$item->get('id')]);
+        }
+
+        return $result;
+    }
+
+    /**
+     * {@inheritdoc}
      */
     public function getDataFor($arrIds)
     {
