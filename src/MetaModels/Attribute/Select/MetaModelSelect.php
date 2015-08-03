@@ -376,13 +376,17 @@ class MetaModelSelect extends AbstractSelect
      */
     private function determineCount($items, &$count)
     {
-        $idList = array_map(
+        $idList = array_unique(array_filter(array_map(
             function ($item) {
                 /** @var IItem $item */
                 return $item->get('id');
             },
             iterator_to_array($items)
-        );
+        )));
+
+        if (empty($idList)) {
+            return;
+        }
 
         $valueCol = $this->getColName();
         $query    = $this->getDatabase()
