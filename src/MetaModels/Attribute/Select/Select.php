@@ -23,6 +23,8 @@
 
 namespace MetaModels\Attribute\Select;
 
+use MetaModels\Attribute\IAliasAware;
+
 /**
  * This is the MetaModelAttribute class for handling select attributes on plain SQL tables.
  *
@@ -31,7 +33,7 @@ namespace MetaModels\Attribute\Select;
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
  * @author     Christian de la Haye <service@delahaye.de>
  */
-class Select extends AbstractSelect
+class Select extends AbstractSelect implements IAliasAware
 {
     /**
      * {@inheritDoc}
@@ -331,5 +333,75 @@ class Select extends AbstractSelect
                 $objDB->prepare($strQuery)->execute($arrValue[$strColNameId], $intItemId);
             }
         }
+    }
+
+    /**
+     * Return the value of the alias.
+     *
+     * @param int $identifier The id for the data row.
+     *
+     * @return string
+     */
+    public function getAliasValue($identifier)
+    {
+        // Only run if we have a config.
+        if (!$this->isProperlyConfigured()) {
+            return '';
+        }
+
+        $objDB                   = $this->getDatabase();
+        $strTableNameId          = $this->getSelectSource();
+        $strAliasColNameId       = $this->getAliasColumn();
+        $strColNameId            = $this->getIdColumn();
+        $strMetaModelTableName   = $this->getMetaModel()->getTableName();
+        $strMetaModelTableNameId = $strMetaModelTableName . '_id';
+
+        // Using aliased join here to resolve issue #3 - SQL error for self referencing table.
+        $objValue = $objDB
+            ->prepare(sprintf(
+                'SELECT sourceTable.*, %2$s.id AS %3$s
+                FROM %1$s sourceTable
+                LEFT JOIN %2$s ON (sourceTable.%4$s=%2$s.%5$s)
+                WHERE %2$s.id = ?',
+                // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
+                $strTableNameId,              // 1
+                $strMetaModelTableName,       // 2
+                $strMetaModelTableNameId,     // 3
+                $strColNameId,                // 4
+                $this->getColName()          // 5
+            // @codingStandardsIgnoreEnd
+            ))
+            ->execute($identifier);
+
+        while ($objValue->next()) {
+            return  $objValue->$strAliasColNameId;
+        }
+
+        return '';
+    }
+
+    /**
+     * Check if the alias field is a metamodels attribute. If so we can handel it with some more options.
+     *
+     * @return bool True means we have a MetaModels attribute.
+     */
+    public function isAliasMetaModels()
+    {
+        return false;
+    }
+
+    /**
+     * If the alias is a MetaModels alias parse it.
+     *
+     * @param int    $identifier The id for the data row.
+     *
+     * @param string $format     The format for the parsing.
+     *
+     * @return array A array with the raw value and the chosen format.
+     */
+    public function parseAliasValue($identifier, $format = 'text')
+    {
+        $value = $this->getAliasValue($identifier);
+        return array('raw' => $value);
     }
 }

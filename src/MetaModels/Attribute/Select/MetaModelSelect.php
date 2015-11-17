@@ -19,6 +19,7 @@
 
 namespace MetaModels\Attribute\Select;
 
+use MetaModels\Attribute\IAliasAware;
 use MetaModels\Filter\IFilter;
 use MetaModels\Filter\Rules\StaticIdList;
 use MetaModels\IItem;
@@ -29,7 +30,7 @@ use MetaModels\Render\Template;
 /**
  * This is the MetaModelAttribute class for handling select attributes on MetaModels.
  */
-class MetaModelSelect extends AbstractSelect
+class MetaModelSelect extends AbstractSelect implements IAliasAware
 {
     /**
      * The key in the result array where the RAW values shall be stored.
@@ -601,5 +602,56 @@ class MetaModelSelect extends AbstractSelect
         }
 
         return array_unique($sanitizedValues);
+    }
+
+    /**
+     * Return the value of the alias.
+     *
+     * @param int $identifier The id for the data row.
+     *
+     * @return string
+     */
+    public function getAliasValue($identifier)
+    {
+        $parsedValue = $this->parseAliasValue($identifier, 'text');
+        return $parsedValue['text'];
+    }
+
+    /**
+     * Check if the alias field is a metamodels attribute. If so we can handel it with some more options.
+     *
+     * @return bool True means we have a MetaModels attribute.
+     */
+    public function isAliasMetaModels()
+    {
+        return true;
+    }
+
+    /**
+     * If the alias is a MetaModels alias parse it.
+     *
+     * @param int    $identifier The id for the data row.
+     *
+     * @param string $format     The format for the parsing.
+     *
+     * @return array A array with the raw value and the chosen format.
+     */
+    public function parseAliasValue($identifier, $format = 'text')
+    {
+        // Get the MetaModel name.
+        $recursionKey = $this->getMetaModel()->getTableName();
+
+        // Prevent recursion.
+        static $tables = array();
+        if (isset($tables[$recursionKey])) {
+            return array();
+        }
+        $tables[$recursionKey] = $recursionKey;
+
+        $metaModel = $this->getSelectMetaModel();
+        $item      = $metaModel->findById($identifier);
+        unset($tables[$recursionKey]);
+
+        return $item->parseAttribute($this->getAliasColumn(), $format);
     }
 }
