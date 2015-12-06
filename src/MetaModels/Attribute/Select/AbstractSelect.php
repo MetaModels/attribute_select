@@ -270,4 +270,18 @@ abstract class AbstractSelect extends AbstractHybrid
 
         return $objSelectIds->fetchEach($idColumn);
     }
+
+    /**
+     * Convert a native attribute value into a value to be used in a filter Url.
+     *
+     * This returns the value of the alias if any defined or the value of the id otherwise.
+     *
+     * @param mixed $varValue The source value.
+     *
+     * @return string
+     */
+    public function getFilterUrlValue($varValue)
+    {
+        return urlencode($varValue[$this->getAliasColumn()]);
+    }
 }
