@@ -93,12 +93,7 @@ class Select extends AbstractSelect
      */
     public function valueToWidget($varValue)
     {
-        $strColNameAlias = $this->get('select_alias');
-        if ($this->isTreePicker() || !$strColNameAlias) {
-            $strColNameAlias = $this->getIdColumn();
-        }
-
-        return $varValue[$strColNameAlias];
+        return $varValue[$this->getIdColumn()];
     }
 
     /**
@@ -106,18 +101,28 @@ class Select extends AbstractSelect
      */
     public function widgetToValue($varValue, $itemId)
     {
-        $database        = $this->getDatabase();
-        $strColNameAlias = $this->getAliasColumn();
-        $strColNameId    = $this->getIdColumn();
-        if ($this->isTreePicker()) {
-            $strColNameAlias = $strColNameId;
-        }
-        // Lookup the id for this value.
-        $objValue = $database
-            ->prepare(sprintf('SELECT %1$s.* FROM %1$s WHERE %2$s=?', $this->getSelectSource(), $strColNameAlias))
+        // Lookup the value.
+        $values = $this->getDatabase()
+            ->prepare(sprintf('SELECT %1$s.* FROM %1$s WHERE %2$s=?', $this->getSelectSource(), $this->getIdColumn()))
             ->execute($varValue);
 
-        return $objValue->row();
+        return $values->row();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @SuppressWarnings(PHPMD.Superglobals)
+     * @SuppressWarnings(PHPMD.CamelCaseVariableName)
+     */
+    public function getFilterOptionsForDcGeneral()
+    {
+        if (!$this->isFilterOptionRetrievingPossible(null)) {
+            return array();
+        }
+
+        $values = $this->getFilterOptionsForUsedOnly(false);
+        return $this->convertOptionsList($values, $this->getIdColumn(), $this->getValueColumn());
     }
 
     /**

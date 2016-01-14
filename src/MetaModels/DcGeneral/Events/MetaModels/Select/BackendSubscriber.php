@@ -61,7 +61,7 @@ class BackendSubscriber extends BaseSubscriber
         }
 
         try {
-            $options = $attribute->getFilterOptions(null, false);
+            $options = $attribute->getFilterOptionsForDcGeneral();
         } catch (\Exception $exception) {
             $options = array('Error: ' . $exception->getMessage());
         }

@@ -148,9 +148,9 @@ class MetaModelSelect extends AbstractSelect
      */
     public function valueToWidget($varValue)
     {
-        if (isset($varValue[$this->getAliasColumn()])) {
+        if (isset($varValue[$this->getIdColumn()])) {
             // Hope the best that this is unique...
-            return (string) $varValue[$this->getAliasColumn()];
+            return (string) $varValue[$this->getIdColumn()];
         }
 
         if (isset($varValue[self::SELECT_RAW]['id'])) {
@@ -168,7 +168,7 @@ class MetaModelSelect extends AbstractSelect
     public function widgetToValue($varValue, $itemId)
     {
         $model     = $this->getSelectMetaModel();
-        $alias     = $this->getAliasColumn();
+        $alias     = $this->getIdColumn();
         $attribute = $model->getAttribute($alias);
 
         if ($attribute) {
@@ -218,6 +218,32 @@ class MetaModelSelect extends AbstractSelect
         $value = $this->getValuesById(array($valueId));
 
         return $value[$valueId];
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @SuppressWarnings(PHPMD.Superglobals)
+     * @SuppressWarnings(PHPMD.CamelCaseVariableName)
+     */
+    public function getFilterOptionsForDcGeneral()
+    {
+        if (!$this->isFilterOptionRetrievingPossible(null)) {
+            return array();
+        }
+
+        $originalLanguage       = $GLOBALS['TL_LANGUAGE'];
+        $GLOBALS['TL_LANGUAGE'] = $this->getMetaModel()->getActiveLanguage();
+
+        $filter = $this->getSelectMetaModel()->getEmptyFilter();
+
+        $this->buildFilterRulesForFilterSetting($filter);
+
+        $objItems = $this->getSelectMetaModel()->findByFilter($filter, $this->getSortingColumn());
+
+        $GLOBALS['TL_LANGUAGE'] = $originalLanguage;
+
+        return $this->convertItemsToFilterOptions($objItems, $this->getValueColumn(), $this->getIdColumn());
     }
 
     /**

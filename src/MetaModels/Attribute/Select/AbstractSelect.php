@@ -162,6 +162,15 @@ abstract class AbstractSelect extends AbstractHybrid
     }
 
     /**
+     * Obtain the filter options with always the id being contained instead of the alias.
+     *
+     * This is being called from BackendSubscriber to circumvent problems when dealing with translated aliases.
+     *
+     * @return array
+     */
+    abstract public function getFilterOptionsForDcGeneral();
+
+    /**
      * {@inheritdoc}
      */
     public function getFieldDefinition($arrOverrides = array())
