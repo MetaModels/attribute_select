@@ -5,20 +5,19 @@
  * The Front-End modules allow you to build powerful listing and filtering of the
  * data in each collection.
  *
- * PHP version 5
- * @package     MetaModels
- * @subpackage  AttributeSelect
- * @author      Christian Schiffler <c.schiffler@cyberspectrum.de>
- * @author      Christian de la Haye <service@delahaye.de>
- * @author      Stefan heimes <stefan_heimes@hotmail.com>
- * @author      Andreas Isaak <info@andreas-isaak.de>
- * @copyright   The MetaModels team.
- * @license     LGPL.
+ * @package    MetaModels
+ * @subpackage AttributeSelect
+ * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
+ * @author     Christian de la Haye <service@delahaye.de>
+ * @author     Stefan heimes <stefan_heimes@hotmail.com>
+ * @author     Andreas Isaak <info@andreas-isaak.de>
+ * @copyright  2012-2016 The MetaModels team.
+ * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0
  * @filesource
  */
 
 /**
- * Table tl_metamodel_attribute 
+ * Table tl_metamodel_attribute
  */
 
 $GLOBALS['TL_DCA']['tl_metamodel_attribute']['metapalettes']['select extends _simpleattribute_'] = array

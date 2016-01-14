@@ -5,15 +5,14 @@
  * The Front-End modules allow you to build powerful listing and filtering of the
  * data in each collection.
  *
- * PHP version 5
  * @package    MetaModels
  * @subpackage AttributeSelect
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
  * @author     Stefan heimes <stefan_heimes@hotmail.com>
  * @author     Martin Treml <github@r2pi.net>
  * @author     David Maack <david.maack@arcor.de>
- * @copyright  The MetaModels team.
- * @license    LGPL.
+ * @copyright  2012-2016 The MetaModels team.
+ * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0
  * @filesource
  */
 
@@ -105,6 +104,7 @@ class MetaModelSelect extends AbstractSelect
     {
         $values = array();
         foreach ($items as $item) {
+            /** @var IItem $item */
             $valueId    = $item->get('id');
             $parsedItem = $item->parseValue();
 
@@ -163,7 +163,7 @@ class MetaModelSelect extends AbstractSelect
     /**
      * {@inheritdoc}
      *
-     * @throws \RuntimeException when the value is invalid.
+     * @throws \RuntimeException When the value is invalid.
      */
     public function widgetToValue($varValue, $itemId)
     {
@@ -540,7 +540,7 @@ class MetaModelSelect extends AbstractSelect
     /**
      * {@inheritdoc}
      *
-     * @throws \RuntimeException when invalid data is encountered.
+     * @throws \RuntimeException When invalid data is encountered.
      */
     public function setDataFor($arrValues)
     {

@@ -5,19 +5,18 @@
  * The Front-End modules allow you to build powerful listing and filtering of the
  * data in each collection.
  *
- * PHP version 5
- * @package     MetaModels
- * @subpackage  AttributeSelect
- * @author      Christian Schiffler <c.schiffler@cyberspectrum.de>
- * @author      Christian de la Haye <service@delahaye.de>
- * @author      Andreas Isaak <andy.jared@googlemail.com>
- * @author      David Maack <maack@men-at-work.de>
- * @author      Oliver Hoff <oliver@hofff.com>
- * @author      Paul Pflugradt <paulpflugradt@googlemail.com>
- * @author      Simon Kusterer <simon.kusterer@xamb.de>
- * @author      Stefan Heimes <stefan_heimes@hotmail.com>
- * @copyright   The MetaModels team.
- * @license     LGPL.
+ * @package    MetaModels
+ * @subpackage AttributeSelect
+ * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
+ * @author     Christian de la Haye <service@delahaye.de>
+ * @author     Andreas Isaak <andy.jared@googlemail.com>
+ * @author     David Maack <maack@men-at-work.de>
+ * @author     Oliver Hoff <oliver@hofff.com>
+ * @author     Paul Pflugradt <paulpflugradt@googlemail.com>
+ * @author     Simon Kusterer <simon.kusterer@xamb.de>
+ * @author     Stefan Heimes <stefan_heimes@hotmail.com>
+ * @copyright  2012-2016 The MetaModels team.
+ * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0
  * @filesource
  */
 
@@ -211,7 +210,6 @@ class Select extends AbstractSelect
      * {@inheritdoc}
      *
      * Fetch filter options from foreign table.
-     *
      */
     public function getFilterOptions($idList, $usedOnly, &$arrCount = null)
     {
