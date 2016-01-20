@@ -491,7 +491,8 @@ class MetaModelSelect extends AbstractSelect
             $result = array_merge($result, $valueMap[$item->get('id')]);
         }
 
-        return $result;
+        $diff = array_diff($idList, $result);
+        return array_merge($result, $diff);
     }
 
     /**
