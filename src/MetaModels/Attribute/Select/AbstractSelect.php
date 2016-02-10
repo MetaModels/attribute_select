@@ -5,14 +5,12 @@
  * The Front-End modules allow you to build powerful listing and filtering of the
  * data in each collection.
  *
- * PHP version 5
- *
- * @package     MetaModels
- * @subpackage  AttributeSelect
- * @author      Christian Schiffler <c.schiffler@cyberspectrum.de>
- * @author      Stefan Heimes <stefan_heimes@hotmail.com>
- * @copyright   The MetaModels team.
- * @license     LGPL.
+ * @package    MetaModels
+ * @subpackage AttributeSelect
+ * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
+ * @author     Stefan Heimes <stefan_heimes@hotmail.com>
+ * @copyright  2012-2016 The MetaModels team.
+ * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0
  * @filesource
  */
 
@@ -164,6 +162,15 @@ abstract class AbstractSelect extends AbstractHybrid
     }
 
     /**
+     * Obtain the filter options with always the id being contained instead of the alias.
+     *
+     * This is being called from BackendSubscriber to circumvent problems when dealing with translated aliases.
+     *
+     * @return array
+     */
+    abstract public function getFilterOptionsForDcGeneral();
+
+    /**
      * {@inheritdoc}
      */
     public function getFieldDefinition($arrOverrides = array())
@@ -214,7 +221,7 @@ abstract class AbstractSelect extends AbstractHybrid
     /**
      * {@inheritdoc}
      *
-     * search value in table
+     * Search value in table.
      */
     public function searchFor($strPattern)
     {

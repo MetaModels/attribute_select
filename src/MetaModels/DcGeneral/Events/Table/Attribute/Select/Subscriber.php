@@ -5,14 +5,13 @@
  * The Front-End modules allow you to build powerful listing and filtering of the
  * data in each collection.
  *
- * PHP version 5
  * @package    MetaModels
  * @subpackage Core
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
  * @author     Stefan Heimes <stefan_heimes@hotmail.com>
  * @author     Martin Treml <github@r2pi.net>
- * @copyright  The MetaModels team.
- * @license    LGPL.
+ * @copyright  2012-2016 The MetaModels team.
+ * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0
  * @filesource
  */
 
@@ -255,13 +254,11 @@ class Subscriber extends BaseSubscriber
             return
                 array
                 (
-                    $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_column_type']['sql']
-                        => array_diff_key(
-                            $this->getColumnNamesFromMetaModel($table),
-                            array_flip(array_keys($attributes))
-                        ),
-                    $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_column_type']['attribute']
-                        => $attributes
+                    $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_column_type'] => array_diff_key(
+                        $this->getColumnNamesFromMetaModel($table),
+                        array_flip(array_keys($attributes))
+                    ),
+                    $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_column_type'] => $attributes
                 );
         }
 

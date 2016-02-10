@@ -5,15 +5,14 @@
  * The Front-End modules allow you to build powerful listing and filtering of the
  * data in each collection.
  *
- * PHP version 5
  * @package    MetaModels
  * @subpackage AttributeSelect
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
  * @author     Stefan heimes <stefan_heimes@hotmail.com>
  * @author     Martin Treml <github@r2pi.net>
  * @author     David Maack <david.maack@arcor.de>
- * @copyright  The MetaModels team.
- * @license    LGPL.
+ * @copyright  2012-2016 The MetaModels team.
+ * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0
  * @filesource
  */
 
@@ -105,6 +104,7 @@ class MetaModelSelect extends AbstractSelect
     {
         $values = array();
         foreach ($items as $item) {
+            /** @var IItem $item */
             $valueId    = $item->get('id');
             $parsedItem = $item->parseValue();
 
@@ -148,9 +148,9 @@ class MetaModelSelect extends AbstractSelect
      */
     public function valueToWidget($varValue)
     {
-        if (isset($varValue[$this->getAliasColumn()])) {
+        if (isset($varValue[$this->getIdColumn()])) {
             // Hope the best that this is unique...
-            return (string) $varValue[$this->getAliasColumn()];
+            return (string) $varValue[$this->getIdColumn()];
         }
 
         if (isset($varValue[self::SELECT_RAW]['id'])) {
@@ -163,12 +163,12 @@ class MetaModelSelect extends AbstractSelect
     /**
      * {@inheritdoc}
      *
-     * @throws \RuntimeException when the value is invalid.
+     * @throws \RuntimeException When the value is invalid.
      */
     public function widgetToValue($varValue, $itemId)
     {
         $model     = $this->getSelectMetaModel();
-        $alias     = $this->getAliasColumn();
+        $alias     = $this->getIdColumn();
         $attribute = $model->getAttribute($alias);
 
         if ($attribute) {
@@ -218,6 +218,32 @@ class MetaModelSelect extends AbstractSelect
         $value = $this->getValuesById(array($valueId));
 
         return $value[$valueId];
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @SuppressWarnings(PHPMD.Superglobals)
+     * @SuppressWarnings(PHPMD.CamelCaseVariableName)
+     */
+    public function getFilterOptionsForDcGeneral()
+    {
+        if (!$this->isFilterOptionRetrievingPossible(null)) {
+            return array();
+        }
+
+        $originalLanguage       = $GLOBALS['TL_LANGUAGE'];
+        $GLOBALS['TL_LANGUAGE'] = $this->getMetaModel()->getActiveLanguage();
+
+        $filter = $this->getSelectMetaModel()->getEmptyFilter();
+
+        $this->buildFilterRulesForFilterSetting($filter);
+
+        $objItems = $this->getSelectMetaModel()->findByFilter($filter, $this->getSortingColumn());
+
+        $GLOBALS['TL_LANGUAGE'] = $originalLanguage;
+
+        return $this->convertItemsToFilterOptions($objItems, $this->getValueColumn(), $this->getIdColumn());
     }
 
     /**
@@ -541,7 +567,7 @@ class MetaModelSelect extends AbstractSelect
     /**
      * {@inheritdoc}
      *
-     * @throws \RuntimeException when invalid data is encountered.
+     * @throws \RuntimeException When invalid data is encountered.
      */
     public function setDataFor($arrValues)
     {
