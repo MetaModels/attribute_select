@@ -5,19 +5,18 @@
  * The Front-End modules allow you to build powerful listing and filtering of the
  * data in each collection.
  *
- * PHP version 5
- * @package     MetaModels
- * @subpackage  AttributeSelect
- * @author      Christian Schiffler <c.schiffler@cyberspectrum.de>
- * @author      Christian de la Haye <service@delahaye.de>
- * @author      Andreas Isaak <andy.jared@googlemail.com>
- * @author      David Maack <maack@men-at-work.de>
- * @author      Oliver Hoff <oliver@hofff.com>
- * @author      Paul Pflugradt <paulpflugradt@googlemail.com>
- * @author      Simon Kusterer <simon.kusterer@xamb.de>
- * @author      Stefan Heimes <stefan_heimes@hotmail.com>
- * @copyright   The MetaModels team.
- * @license     LGPL.
+ * @package    MetaModels
+ * @subpackage AttributeSelect
+ * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
+ * @author     Christian de la Haye <service@delahaye.de>
+ * @author     Andreas Isaak <andy.jared@googlemail.com>
+ * @author     David Maack <maack@men-at-work.de>
+ * @author     Oliver Hoff <oliver@hofff.com>
+ * @author     Paul Pflugradt <paulpflugradt@googlemail.com>
+ * @author     Simon Kusterer <simon.kusterer@xamb.de>
+ * @author     Stefan Heimes <stefan_heimes@hotmail.com>
+ * @copyright  2012-2016 The MetaModels team.
+ * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0
  * @filesource
  */
 
@@ -94,12 +93,7 @@ class Select extends AbstractSelect
      */
     public function valueToWidget($varValue)
     {
-        $strColNameAlias = $this->get('select_alias');
-        if ($this->isTreePicker() || !$strColNameAlias) {
-            $strColNameAlias = $this->getIdColumn();
-        }
-
-        return $varValue[$strColNameAlias];
+        return $varValue[$this->getIdColumn()];
     }
 
     /**
@@ -107,18 +101,28 @@ class Select extends AbstractSelect
      */
     public function widgetToValue($varValue, $itemId)
     {
-        $database        = $this->getDatabase();
-        $strColNameAlias = $this->getAliasColumn();
-        $strColNameId    = $this->getIdColumn();
-        if ($this->isTreePicker()) {
-            $strColNameAlias = $strColNameId;
-        }
-        // Lookup the id for this value.
-        $objValue = $database
-            ->prepare(sprintf('SELECT %1$s.* FROM %1$s WHERE %2$s=?', $this->getSelectSource(), $strColNameAlias))
+        // Lookup the value.
+        $values = $this->getDatabase()
+            ->prepare(sprintf('SELECT %1$s.* FROM %1$s WHERE %2$s=?', $this->getSelectSource(), $this->getIdColumn()))
             ->execute($varValue);
 
-        return $objValue->row();
+        return $values->row();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @SuppressWarnings(PHPMD.Superglobals)
+     * @SuppressWarnings(PHPMD.CamelCaseVariableName)
+     */
+    public function getFilterOptionsForDcGeneral()
+    {
+        if (!$this->isFilterOptionRetrievingPossible(null)) {
+            return array();
+        }
+
+        $values = $this->getFilterOptionsForUsedOnly(false);
+        return $this->convertOptionsList($values, $this->getIdColumn(), $this->getValueColumn());
     }
 
     /**
@@ -211,7 +215,6 @@ class Select extends AbstractSelect
      * {@inheritdoc}
      *
      * Fetch filter options from foreign table.
-     *
      */
     public function getFilterOptions($idList, $usedOnly, &$arrCount = null)
     {
