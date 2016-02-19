@@ -181,7 +181,7 @@ abstract class AbstractSelect extends AbstractHybrid
             $arrFieldDef['inputType']          = 'DcGeneralTreePicker';
             $arrFieldDef['eval']['sourceName'] = $this->getSelectSource();
             $arrFieldDef['eval']['fieldType']  = 'radio';
-            $arrFieldDef['eval']['idProperty'] = $this->getAliasColumn();
+            $arrFieldDef['eval']['idProperty'] = $this->getIdColumn();
             $arrFieldDef['eval']['orderField'] = $this->getSortingColumn();
             $arrFieldDef['eval']['minLevel']   = $arrOverrides['select_minLevel'];
             $arrFieldDef['eval']['maxLevel']   = $arrOverrides['select_maxLevel'];
