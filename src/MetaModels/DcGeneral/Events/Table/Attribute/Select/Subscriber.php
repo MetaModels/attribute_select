@@ -254,11 +254,11 @@ class Subscriber extends BaseSubscriber
             return
                 array
                 (
-                    $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_column_type'] => array_diff_key(
+                    $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_column_type']['sql'] => array_diff_key(
                         $this->getColumnNamesFromMetaModel($table),
                         array_flip(array_keys($attributes))
                     ),
-                    $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_column_type'] => $attributes
+                    $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_column_type']['attribute'] => $attributes
                 );
         }
 
