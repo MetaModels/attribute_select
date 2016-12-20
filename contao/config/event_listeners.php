@@ -22,10 +22,14 @@ use MetaModels\MetaModelsEvents;
 
 return array
 (
+    MetaModelsEvents::SUBSYSTEM_BOOT => array(
+        function (MetaModelsBootEvent $event) {
+            new BackendSubscriber($event->getServiceContainer());
+        }
+    ),
     MetaModelsEvents::SUBSYSTEM_BOOT_BACKEND => array(
         function (MetaModelsBootEvent $event) {
             new Subscriber($event->getServiceContainer());
-            new BackendSubscriber($event->getServiceContainer());
         }
     ),
     MetaModelsEvents::ATTRIBUTE_FACTORY_CREATE => array(
