@@ -1,9 +1,14 @@
 <?php
+
 /**
- * The MetaModels extension allows the creation of multiple collections of custom items,
- * each with its own unique set of selectable attributes, with attribute extendability.
- * The Front-End modules allow you to build powerful listing and filtering of the
- * data in each collection.
+ * This file is part of MetaModels/attribute_select.
+ *
+ * (c) 2012-2016 The MetaModels team.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * This project is provided in good faith and hope to be usable by anyone.
  *
  * @package    MetaModels
  * @subpackage AttributeSelect
@@ -16,6 +21,7 @@
 
 namespace MetaModels\Attribute\Select;
 
+use Contao\Database;
 use MetaModels\Attribute\AbstractHybrid;
 use MetaModels\Filter\Rules\FilterRuleSelect;
 
@@ -45,7 +51,7 @@ abstract class AbstractSelect extends AbstractHybrid
     /**
      * Retrieve the database instance.
      *
-     * @return \Database
+     * @return Database
      */
     protected function getDatabase()
     {
@@ -249,7 +255,7 @@ abstract class AbstractSelect extends AbstractHybrid
      *
      * @param string[] $values The values to convert.
      *
-     * @return int[]
+     * @return string[]
      */
     public function convertValuesToValueIds($values)
     {
