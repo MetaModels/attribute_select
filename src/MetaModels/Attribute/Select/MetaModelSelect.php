@@ -373,15 +373,8 @@ class MetaModelSelect extends AbstractSelect
 
         $result = array();
         foreach ($items as $item) {
-            $parsedDisplay = $item->parseAttribute($displayValue);
-            $parsedAlias   = $item->parseAttribute($aliasColumn);
-
-            $textValue  = isset($parsedDisplay['text'])
-                ? $parsedDisplay['text']
-                : $item->get($displayValue);
-            $aliasValue = isset($parsedAlias['text'])
-                ? $parsedAlias['text']
-                : $item->get($aliasColumn);
+            $textValue  = $this->tryParseAttribute($displayValue, $item);
+            $aliasValue = $this->tryParseAttribute($aliasColumn, $item);
 
             $result[$aliasValue] = $textValue;
 
@@ -393,6 +386,24 @@ class MetaModelSelect extends AbstractSelect
         }
 
         return $result;
+    }
+
+    /**
+     * Parse a column as text or return the native value if that failed.
+     *
+     * @param string $displayValue The attribute to parse.
+     * @param IITem  $item         The item to extract the value from.
+     *
+     * @return mixed
+     */
+    private function tryParseAttribute($displayValue, IItem $item)
+    {
+        $parsedValue = $item->parseAttribute($displayValue);
+        if (isset($parsedValue['text'])) {
+            return $parsedValue['text'];
+        }
+
+        return $item->get($displayValue);
     }
 
     /**
