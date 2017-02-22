@@ -1,9 +1,14 @@
 <?php
+
 /**
- * The MetaModels extension allows the creation of multiple collections of custom items,
- * each with its own unique set of selectable attributes, with attribute extendability.
- * The Front-End modules allow you to build powerful listing and filtering of the
- * data in each collection.
+ * This file is part of MetaModels/attribute_select.
+ *
+ * (c) 2012-2016 The MetaModels team.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * This project is provided in good faith and hope to be usable by anyone.
  *
  * @package    MetaModels
  * @subpackage AttributeSelect
@@ -368,27 +373,37 @@ class MetaModelSelect extends AbstractSelect
 
         $result = array();
         foreach ($items as $item) {
-            $parsedDisplay = $item->parseAttribute($displayValue);
-            $parsedAlias   = $item->parseAttribute($aliasColumn);
-
-            $textValue  = isset($parsedDisplay['text'])
-                ? $parsedDisplay['text']
-                : $item->get($displayValue);
-            $aliasValue = isset($parsedAlias['text'])
-                ? $parsedAlias['text']
-                : $item->get($aliasColumn);
+            $textValue  = $this->tryParseAttribute($displayValue, $item);
+            $aliasValue = $this->tryParseAttribute($aliasColumn, $item);
 
             $result[$aliasValue] = $textValue;
 
-            if (null !== $count) {
-                if (isset($count[$item->get('id')])) {
-                    $count[$aliasValue] = $count[$item->get('id')];
-                    unset($count[$item->get('id')]);
-                }
+            // Clean the count array if alias is different from id value.
+            if (null !== $count && isset($count[$item->get('id')]) && $aliasValue !== $item->get('id')) {
+                $count[$aliasValue] = $count[$item->get('id')];
+                unset($count[$item->get('id')]);
             }
         }
 
         return $result;
+    }
+
+    /**
+     * Parse a column as text or return the native value if that failed.
+     *
+     * @param string $displayValue The attribute to parse.
+     * @param IITem  $item         The item to extract the value from.
+     *
+     * @return mixed
+     */
+    private function tryParseAttribute($displayValue, IItem $item)
+    {
+        $parsedValue = $item->parseAttribute($displayValue);
+        if (isset($parsedValue['text'])) {
+            return $parsedValue['text'];
+        }
+
+        return $item->get($displayValue);
     }
 
     /**
@@ -462,7 +477,6 @@ class MetaModelSelect extends AbstractSelect
         // Add some more filter rules.
         if ($usedOnly) {
             $this->buildFilterRulesForUsedOnly($filter, $idList ?: array());
-
         } elseif ($idList && is_array($idList)) {
             $filter->addFilterRule(new StaticIdList($idList));
         }
