@@ -226,6 +226,33 @@ class Select extends AbstractSelect
         if (!$this->isFilterOptionRetrievingPossible($idList)) {
             return array();
         }
+        if (!$idList) {
+            //try get result from cache
+          if(!$objDatabase){
+               $objDatabase              = $this->getDatabase(); 
+            }
+            $objCache = $this->getMetaModel()->getServiceContainer()->getCache();
+            $arrRowsCount = $objDatabase->query("SHOW TABLE STATUS LIKE '".$this->getSelectSource()."'")->fetchEach("Rows");
+
+            $deleteTableCache  = false;
+            $cacheKeyRowsCount = $this->getSelectSource().'_lastcount';
+            $lastCount = ($objCache->contains($cacheKeyRowsCount) === true)? $objCache->fetch($cacheKeyRowsCount):false;
+
+            if($lastCount !== $arrRowsCount[0] && $lastCount !== false) {
+                    $deleteTableCache = true;
+                    $cacheKeyOfTagTableOld = $this->getMetaModel()->getTableName().$this->getSelectSource().'_selectalloptions_'.$_SESSION["BE_DATA"]["new_records"]["tl_user"][0].$lastCount;
+            }
+            if($lastCount !== $arrRowsCount[0]){
+                    $objCache->save($cacheKeyRowsCount,$arrRowsCount[0]); 
+            }
+         
+            $cacheKeyOfTagTable = $this->getMetaModel()->getTableName().$this->getSelectSource().'_selectalloptions_'.$_SESSION["BE_DATA"]["new_records"]["tl_user"][0].$arrRowsCount[0];
+      
+            if ($objCache->contains($cacheKeyOfTagTable) === true && $deleteTableCache === false) {
+               
+                return deserialize($objCache->fetch($cacheKeyOfTagTable));
+            }         
+        }
 
         $tableName       = $this->getSelectSource();
         $idColumn        = $this->getIdColumn();
@@ -257,7 +284,14 @@ class Select extends AbstractSelect
             $objValue = $this->getFilterOptionsForUsedOnly($usedOnly);
         }
 
-        return $this->convertOptionsList($objValue, $this->getAliasColumn(), $this->getValueColumn(), $arrCount);
+        $result = $this->convertOptionsList($objValue, $this->getAliasColumn(), $this->getValueColumn(), $arrCount);
+  
+        if (!$idList && $objCache->contains($cacheKeyOfTagTable) === false) {  
+              if($deleteTableCache === true && $objCache->contains($cacheKeyOfTagTableOld) === true){ $objCache->delete($cacheKeyOfTagTableOld);}
+               $objCache->save($cacheKeyOfTagTable,serialize($result));
+        }
+
+        return $result;
     }
 
     /**
