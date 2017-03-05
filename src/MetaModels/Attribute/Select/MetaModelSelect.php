@@ -53,7 +53,13 @@ class MetaModelSelect extends AbstractSelect
     protected function checkConfiguration()
     {
         return parent::checkConfiguration()
-            && (null !== $this->getSelectMetaModel());
+            && (null !== $this->
+                
+                
+                
+                
+                
+                SelectMetaModel());
     }
 
     /**
@@ -236,7 +242,32 @@ class MetaModelSelect extends AbstractSelect
         if (!$this->isFilterOptionRetrievingPossible(null)) {
             return array();
         }
+        //try get result from cache
+        if(!$objDatabase){
+           $objDatabase              = $this->getDatabase(); 
+        }
+        $objCache = $this->getMetaModel()->getServiceContainer()->getCache();
+        $arrRowsCount = $objDatabase->query("SHOW TABLE STATUS LIKE '".$this->getSelectSource()."'")->fetchEach("Rows");
 
+        $deleteTableCache  = false;
+        $cacheKeyRowsCount = $this->getSelectSource().'_lastcount';
+        $lastCount = ($objCache->contains($cacheKeyRowsCount) === true)? $objCache->fetch($cacheKeyRowsCount):false;
+
+        if($lastCount !== $arrRowsCount[0] && $lastCount !== false) {
+                $deleteTableCache = true;
+                $cacheKeyOfTagTableOld = $this->getMetaModel()->getTableName().$this->getSelectSource().'_selectalloptions_'.$_SESSION["BE_DATA"]["new_records"]["tl_user"][0].$lastCount;
+        }
+        if($lastCount !== $arrRowsCount[0]){
+                $objCache->save($cacheKeyRowsCount,$arrRowsCount[0]); 
+        }
+     
+        $cacheKeyOfTagTable = $this->getMetaModel()->getTableName().$this->getSelectSource().'_selectalloptions_'.$_SESSION["BE_DATA"]["new_records"]["tl_user"][0].$arrRowsCount[0];
+  
+        if ($objCache->contains($cacheKeyOfTagTable) === true && $deleteTableCache === false) {
+             
+            return deserialize($objCache->fetch($cacheKeyOfTagTable));
+        }       
+        
         $originalLanguage       = $GLOBALS['TL_LANGUAGE'];
         $GLOBALS['TL_LANGUAGE'] = $this->getMetaModel()->getActiveLanguage();
 
@@ -247,8 +278,13 @@ class MetaModelSelect extends AbstractSelect
         $objItems = $this->getSelectMetaModel()->findByFilter($filter, $this->getSortingColumn());
 
         $GLOBALS['TL_LANGUAGE'] = $originalLanguage;
+        $result = $this->convertItemsToFilterOptions($objItems, $this->getValueColumn(), $this->getIdColumn());
 
-        return $this->convertItemsToFilterOptions($objItems, $this->getValueColumn(), $this->getIdColumn());
+        if (!$idList && $objCache->contains($cacheKeyOfTagTable) === false) {  
+              if($deleteTableCache === true && $objCache->contains($cacheKeyOfTagTableOld) === true){ $objCache->delete($cacheKeyOfTagTableOld);}
+               $objCache->save($cacheKeyOfTagTable,serialize($result));
+        }
+        return $result;
     }
 
     /**
@@ -459,7 +495,33 @@ class MetaModelSelect extends AbstractSelect
         if (!$this->isFilterOptionRetrievingPossible($idList)) {
             return array();
         }
+        if (!$idList && !$this->get('select_filter')) {
+            //try get result from cache
+          if(!$objDatabase){
+               $objDatabase              = $this->getDatabase(); 
+            }
+            $objCache = $this->getMetaModel()->getServiceContainer()->getCache();
+            $arrRowsCount = $objDatabase->query("SHOW TABLE STATUS LIKE '".$this->getSelectSource()."'")->fetchEach("Rows");
 
+            $deleteTableCache  = false;
+            $cacheKeyRowsCount = $this->getSelectSource().'_lastcount';
+            $lastCount = ($objCache->contains($cacheKeyRowsCount) === true)? $objCache->fetch($cacheKeyRowsCount):false;
+
+            if($lastCount !== $arrRowsCount[0] && $lastCount !== false) {
+                    $deleteTableCache = true;
+                    $cacheKeyOfTagTableOld = $this->getMetaModel()->getTableName().$this->getSelectSource().'_selectoptions_'.$_SESSION["BE_DATA"]["new_records"]["tl_user"][0].$lastCount;
+            }
+            if($lastCount !== $arrRowsCount[0]){
+                    $objCache->save($cacheKeyRowsCount,$arrRowsCount[0]); 
+            }
+         
+            $cacheKeyOfTagTable = $this->getMetaModel()->getTableName().$this->getSelectSource().'_selectoptions_'.$_SESSION["BE_DATA"]["new_records"]["tl_user"][0].$arrRowsCount[0];
+      
+            if ($objCache->contains($cacheKeyOfTagTable) === true && $deleteTableCache === false) {
+                 
+                return deserialize($objCache->fetch($cacheKeyOfTagTable));
+            }          
+        }
         $strDisplayValue    = $this->getValueColumn();
         $strSortingValue    = $this->getSortingColumn();
         $strCurrentLanguage = null;
@@ -487,8 +549,15 @@ class MetaModelSelect extends AbstractSelect
         if (TL_MODE == 'BE') {
             $GLOBALS['TL_LANGUAGE'] = $strCurrentLanguage;
         }
+        
+        $result = $this->convertItemsToFilterOptions($objItems, $strDisplayValue, $this->getAliasColumn(), $arrCount);
+        
+        if (!$idList && !$this->get('select_filter') && $objCache->contains($cacheKeyOfTagTable) === false) {  
+              if($deleteTableCache === true && $objCache->contains($cacheKeyOfTagTableOld) === true){ $objCache->delete($cacheKeyOfTagTableOld);}
+               $objCache->save($cacheKeyOfTagTable,serialize($result));
+        }
 
-        return $this->convertItemsToFilterOptions($objItems, $strDisplayValue, $this->getAliasColumn(), $arrCount);
+        return $result;
     }
 
     /**
