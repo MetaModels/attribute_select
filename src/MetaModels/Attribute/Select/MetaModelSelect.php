@@ -475,7 +475,7 @@ class MetaModelSelect extends AbstractSelect
         $this->buildFilterRulesForFilterSetting($filter);
 
         // Add some more filter rules.
-        if ($usedOnly || ($idList && is_array($idList)) {
+        if ($usedOnly || ($idList && is_array($idList))) {
             $this->buildFilterRulesForUsedOnly($filter, $idList ?: array());
         }
 
