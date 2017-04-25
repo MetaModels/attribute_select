@@ -475,10 +475,8 @@ class MetaModelSelect extends AbstractSelect
         $this->buildFilterRulesForFilterSetting($filter);
 
         // Add some more filter rules.
-        if ($usedOnly) {
+        if ($usedOnly || ($idList && is_array($idList)) {
             $this->buildFilterRulesForUsedOnly($filter, $idList ?: array());
-        } elseif ($idList && is_array($idList)) {
-            $filter->addFilterRule(new StaticIdList($idList));
         }
 
         $objItems = $this->getSelectMetaModel()->findByFilter($filter, $strSortingValue);
