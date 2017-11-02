@@ -196,10 +196,11 @@ class MetaModelSelect extends AbstractSelect
      * Retrieve the values with the given ids.
      *
      * @param string[] $valueIds The ids of the values to retrieve.
+     * @param array    $attrOnly The attribute names to obtain.
      *
      * @return array
      */
-    protected function getValuesById($valueIds)
+    protected function getValuesById($valueIds, $attrOnly = [])
     {
         $recursionKey = $this->getMetaModel()->getTableName();
 
@@ -212,7 +213,7 @@ class MetaModelSelect extends AbstractSelect
 
         $metaModel = $this->getSelectMetaModel();
         $filter    = $metaModel->getEmptyFilter()->addFilterRule(new StaticIdList($valueIds));
-        $items     = $metaModel->findByFilter($filter, 'id');
+        $items     = $metaModel->findByFilter($filter, 'id', 0, 0, 'ASC', $attrOnly);
         unset($tables[$recursionKey]);
 
         return $this->itemsToValues($items);
@@ -242,6 +243,11 @@ class MetaModelSelect extends AbstractSelect
      */
     public function widgetToValue($varValue, $itemId)
     {
+        static $cache;
+        if (isset($cache[$this->get('id')][$varValue])) {
+            return $cache[$this->get('id')][$varValue];
+        }
+
         $model     = $this->getSelectMetaModel();
         $alias     = $this->getIdColumn();
         $attribute = $model->getAttribute($alias);
@@ -287,9 +293,12 @@ class MetaModelSelect extends AbstractSelect
             }
         }
 
-        $value = $this->getValuesById(array($valueId));
+        $value = $this->getValuesById(
+            [$valueId],
+            [$this->getAliasColumn(), $this->getValueColumn(), $this->getIdColumn(), $this->getSortingColumn()]
+        );
 
-        return $value[$valueId];
+        return $cache[$this->get('id')][$varValue] = $value[$valueId];
     }
 
     /**
