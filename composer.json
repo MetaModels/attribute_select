@@ -62,5 +62,13 @@
             "dev-master": "2.0.x-dev",
             "dev-feature/contao4": "2.1.x-dev"
         }
-    }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "git@gitlab.com:metamodels/core.git"
+        }
+    ]
 }
