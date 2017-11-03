@@ -24,8 +24,13 @@
 
 namespace MetaModels\AttributeSelectBundle\Attribute;
 
+use Contao\System;
+use Doctrine\DBAL\Connection;
 use MetaModels\Filter\IFilter;
 use MetaModels\Filter\Rules\StaticIdList;
+use MetaModels\Filter\Setting\IFilterSettingFactory;
+use MetaModels\Helper\TableManipulator;
+use MetaModels\IFactory;
 use MetaModels\IItem;
 use MetaModels\IItems;
 use MetaModels\IMetaModel;
@@ -49,6 +54,70 @@ class MetaModelSelect extends AbstractSelect
     protected $objSelectMetaModel;
 
     /**
+     * MetaModel factory.
+     *
+     * @var IFactory
+     */
+    private $factory;
+
+    /**
+     * Filter setting factory.
+     *
+     * @var IFilterSettingFactory
+     */
+    private $filterSettingFactory;
+
+    /**
+     * Instantiate an MetaModel attribute.
+     *
+     * Note that you should not use this directly but use the factory classes to instantiate attributes.
+     *
+     * @param IMetaModel                 $objMetaModel         The MetaModel instance this attribute belongs to.
+     *
+     * @param array $arrData                                   The information array, for attribute information, refer
+     *                                                         to documentation of table tl_metamodel_attribute and
+     *                                                         documentation of the certain attribute classes for
+     *                                                         information what values are understood.
+     *
+     * @param Connection                 $connection           The database connection.
+     *
+     * @param TableManipulator           $tableManipulator     Table manipulator instance.
+     *
+     * @param IFactory                   $factory              MetaModel factory.
+     *
+     * @param IFilterSettingFactory|null $filterSettingFactory Filter setting factory.
+     */
+    public function __construct(
+        IMetaModel $objMetaModel,
+        array $arrData = [],
+        Connection $connection = null,
+        TableManipulator $tableManipulator = null,
+        IFactory $factory = null,
+        IFilterSettingFactory $filterSettingFactory = null
+    ) {
+        parent::__construct($objMetaModel, $arrData, $connection, $tableManipulator);
+
+        if (null === $factory) {
+            @trigger_error(
+                'Factory is missing. It has to be passed in the constructor. Fallback will be dropped.',
+                E_USER_DEPRECATED
+            );
+            $factory = System::getContainer()->get('metamodels.factory');
+        }
+
+        if (null === $filterSettingFactory) {
+            @trigger_error(
+                'Filter setting factory is missing. It has to be passed in the constructor. Fallback will be dropped.',
+                E_USER_DEPRECATED
+            );
+            $filterSettingFactory = System::getContainer()->get('metamodels.filter_setting_factory');
+        }
+
+        $this->factory              = $factory;
+        $this->filterSettingFactory = $filterSettingFactory;
+    }
+
+    /**
      * {@inheritDoc}
      */
     protected function checkConfiguration()
@@ -65,11 +134,7 @@ class MetaModelSelect extends AbstractSelect
     protected function getSelectMetaModel()
     {
         if (empty($this->objSelectMetaModel)) {
-            $this->objSelectMetaModel = $this
-                ->getMetaModel()
-                ->getServiceContainer()
-                ->getFactory()
-                ->getMetaModel($this->getSelectSource());
+            $this->objSelectMetaModel = $this->factory->getMetaModel($this->getSelectSource());
         }
 
         return $this->objSelectMetaModel;
@@ -202,22 +267,19 @@ class MetaModelSelect extends AbstractSelect
             if ($alias === 'id') {
                 $valueId = $varValue;
             } else {
-                $result = $this->getDatabase()
-                    ->prepare(
-                        sprintf(
-                            'SELECT v.id FROM %1$s AS v WHERE v.%2$s=?',
-                            $this->getSelectSource(),
-                            $this->getAliasColumn()
-                        )
-                    )
-                    ->execute($varValue);
+                $result = $this->connection->createQueryBuilder()
+                    ->select('v.id')
+                    ->from($this->getSelectSource(), 'v')
+                    ->where('v.' . $this->getAliasColumn() . '=:value')
+                    ->setParameter('value', $varValue)
+                    ->execute();
+
+                $valueId = $result->fetch(\PDO::FETCH_COLUMN);
 
                 /** @noinspection PhpUndefinedFieldInspection */
-                if (!$result->numRows) {
+                if ($valueId === false) {
                     throw new \RuntimeException('Could not translate value ' . var_export($varValue, true));
                 }
-                /** @noinspection PhpUndefinedFieldInspection */
-                $valueId = $result->id;
             }
         }
 
@@ -263,30 +325,18 @@ class MetaModelSelect extends AbstractSelect
      */
     public function buildFilterRulesForUsedOnly($filter, $idList = array())
     {
-        if (empty($idList)) {
-            $query = sprintf(
-            // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
-                'SELECT %2$s FROM %1$s GROUP BY %2$s',
-                $this->getMetaModel()->getTableName(), // 1
-                $this->getColName()                    // 2
-            // @codingStandardsIgnoreEnd
-            );
-        } else {
-            $query = sprintf(
-            // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
-                'SELECT %2$s FROM %1$s WHERE id IN (%3$s) GROUP BY %2$s',
-                $this->getMetaModel()->getTableName(), // 1
-                $this->getColName(),                   // 2
-                $this->parameterMask($idList)          // 3
-            // @codingStandardsIgnoreEnd
-            );
+        $builder = $this->connection->createQueryBuilder()
+            ->select($this->getColName())
+            ->from($this->getMetaModel()->getTableName())
+            ->groupBy($this->getColName());
+
+        if (!empty($idList)) {
+            $builder
+                ->where('id IN (:ids)')
+                ->setParameter('ids', $idList, Connection::PARAM_INT_ARRAY);
         }
 
-        $arrUsedValues = $this->getDatabase()
-            ->prepare($query)
-            ->execute($idList)
-            ->fetchEach($this->getColName());
-
+        $arrUsedValues = $builder->execute()->fetchAll(\PDO::FETCH_COLUMN);
         $arrUsedValues = array_filter(
             $arrUsedValues,
             function ($value) {
@@ -314,11 +364,7 @@ class MetaModelSelect extends AbstractSelect
         }
 
         // Set Filter and co.
-        $filterSettings = $this
-            ->getMetaModel()
-            ->getServiceContainer()
-            ->getFilterFactory()
-            ->createCollection($this->get('select_filter'));
+        $filterSettings = $this->filterSettingFactory->createCollection($this->get('select_filter'));
 
         if ($filterSettings) {
             $values       = $_GET;
@@ -431,19 +477,17 @@ class MetaModelSelect extends AbstractSelect
         }
 
         $valueCol = $this->getColName();
-        $query    = $this->getDatabase()
-            ->prepare(
-                sprintf(
-                    'SELECT %2$s, COUNT(%2$s) AS count FROM %1$s WHERE %2$s IN (%3$s) GROUP BY %2$s',
-                    $this->getMetaModel()->getTableName(),
-                    $this->getColName(),
-                    $this->parameterMask($idList)
-                )
-            )
-            ->execute($idList);
+        $query    = $this->connection->createQueryBuilder()
+            ->select($this->getColName())
+            ->addSelect(sprintf('COUNT(%s) AS count', $this->getColName()))
+            ->from($this->getMetaModel()->getTableName())
+            ->where($this->getColName() . ' IN (:ids)')
+            ->groupBy($this->getColName())
+            ->setParameter('ids', $idList)
+            ->execute();
 
-        while ($query->next()) {
-            $count[$query->{$valueCol}] = $query->count;
+        while ($row = $query->fetch(\PDO::FETCH_ASSOC)) {
+            $count[$row->{$valueCol}] = $row->count;
         }
     }
 
@@ -499,23 +543,16 @@ class MetaModelSelect extends AbstractSelect
     {
         $metaModel = $this->getSelectMetaModel();
         $myColName = $this->getColName();
-        $values    = $this
-            ->getMetaModel()
-            ->getServiceContainer()
-            ->getDatabase()
-            ->prepare(
-                sprintf(
-                    'SELECT id,%1$s FROM %2$s WHERE id IN (%3$s) ORDER BY %1$s',
-                    $myColName,
-                    $this->getMetaModel()->getTableName(),
-                    $this->parameterMask($idList)
-                )
-            )
-            ->execute($idList);
+        $statement = $this->connection->createQueryBuilder()
+            ->select('id,' . $myColName)
+            ->from($this->getMetaModel()->getTableName())
+            ->where('id IN (:ids)')
+            ->setParameter('ids', $idList, Connection::PARAM_INT_ARRAY)
+            ->execute();
 
         $valueIds = array();
         $valueMap = array();
-        while ($values->next()) {
+        while ($values = $statement->fetch(\PDO::FETCH_OBJ)) {
             $itemId             = $values->id;
             $value              = $values->$myColName;
             $valueIds[$itemId]  = $value;
@@ -546,20 +583,15 @@ class MetaModelSelect extends AbstractSelect
         $result      = array();
         $valueColumn = $this->getColName();
         // First pass, load database rows.
-        $rows = $this->getDatabase()->prepare(
-            sprintf(
-                'SELECT %2$s, id FROM %1$s WHERE id IN (%3$s)',
-                // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following
-                // lines.
-                $this->getMetaModel()->getTableName(), // 1
-                $valueColumn,                          // 2
-                $this->parameterMask($arrIds)          // 3
-            // @codingStandardsIgnoreEnd
-            )
-        )->execute($arrIds);
+        $statement  = $this->connection->createQueryBuilder()
+            ->select($valueColumn . ', id')
+            ->from($this->getMetaModel()->getTableName())
+            ->where('id IN (:ids)')
+            ->setParameter('ids', $arrIds)
+            ->execute();
 
         $valueIds = array();
-        while ($rows->next()) {
+        while ($rows = $statement->fetch(\PDO::FETCH_OBJ)) {
             /** @noinspection PhpUndefinedFieldInspection */
             $valueIds[$rows->id] = $rows->$valueColumn;
         }
@@ -590,18 +622,17 @@ class MetaModelSelect extends AbstractSelect
 
         $query = sprintf(
         // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
-            'UPDATE %1$s SET %2$s=? WHERE %1$s.id=?',
+            'UPDATE %1$s SET %2$s=:val WHERE %1$s.id=:id',
             $this->getMetaModel()->getTableName(), // 1
             $this->getColName()                    // 2
         // @codingStandardsIgnoreEnd
         );
 
-        $database = $this->getDatabase();
         foreach ($arrValues as $itemId => $value) {
             if (is_array($value) && isset($value[self::SELECT_RAW]['id'])) {
-                $database->prepare($query)->execute($value[self::SELECT_RAW]['id'], $itemId);
+                $this->connection->prepare($query)->execute(['val' => $value[self::SELECT_RAW]['id'], 'id' => $itemId]);
             } elseif (is_numeric($itemId) && (is_numeric($value) || $value === null)) {
-                $database->prepare($query)->execute($value, $itemId);
+                $this->connection->prepare($query)->execute(['val' => $value, 'id' => $itemId]);
             } else {
                 throw new \RuntimeException(
                     'Invalid values encountered, itemId: ' .

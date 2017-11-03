@@ -3,8 +3,8 @@ services:
         class: MetaModels\AttributeSelectBundle\Attribute\AttributeTypeFactory
         arguments:
             - '@database_connection'
-            - '@router'
-            - '@session'
-            - '@cca.dc-general.scope-matcher'
+            - '@metamodels.table_manipulator'
+            - '@metamodels.factory'
+            - '@metamodels.filter_setting_factory'
         tags:
           - { name: metamodels.attribute_factory }

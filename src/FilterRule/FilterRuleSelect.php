@@ -22,7 +22,9 @@
 
 namespace MetaModels\AttributeSelectBundle\FilterRule;
 
-use MetaModels\Attribute\Select\AbstractSelect;
+use Contao\System;
+use Doctrine\DBAL\Connection;
+use MetaModels\AttributeSelectBundle\Attribute\AbstractSelect;
 use MetaModels\Filter\FilterRule;
 
 /**
@@ -49,14 +51,30 @@ class FilterRuleSelect extends FilterRule
     protected $value;
 
     /**
+     * Database connection.
+     *
+     * @var Connection
+     */
+    private $connection;
+
+    /**
      * {@inheritDoc}
      */
-    public function __construct(AbstractSelect $objAttribute, $strValue)
+    public function __construct(AbstractSelect $objAttribute, $strValue, Connection $connection = null)
     {
         parent::__construct();
 
+        if (null === $connection) {
+            @trigger_error(
+                'Connection is missing. It has to be passed in the constructor. Fallback will be dropped.',
+                E_USER_DEPRECATED
+            );
+            $connection = System::getContainer()->get('database_connection');
+        }
+
         $this->objAttribute = $objAttribute;
         $this->value        = $strValue;
+        $this->connection   = $connection;
     }
 
     /**
@@ -69,18 +87,13 @@ class FilterRuleSelect extends FilterRule
             return $values;
         }
 
-        $database = $this->objAttribute->getMetaModel()->getServiceContainer()->getDatabase();
-        $matches  = $database
-            ->prepare(
-                sprintf(
-                    'SELECT id FROM %s WHERE %s IN (%s)',
-                    $this->objAttribute->getMetaModel()->getTableName(),
-                    $this->objAttribute->getColName(),
-                    implode(',', array_fill(0, count($values), '?'))
-                )
-            )
-        ->execute($values);
+        $matches  = $this->connection->createQueryBuilder()
+            ->select('id')
+            ->from($this->objAttribute->getMetaModel()->getTableName())
+            ->where($this->objAttribute->getColName() . ' IN (:ids)')
+            ->setParameter('ids', $values)
+            ->execute();
 
-        return $matches->fetchEach('id');
+        return $matches->fetchAll(\PDO::FETCH_COLUMN);
     }
 }

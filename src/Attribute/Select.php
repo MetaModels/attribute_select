@@ -44,7 +44,7 @@ class Select extends AbstractSelect
     protected function checkConfiguration()
     {
         return parent::checkConfiguration()
-            && $this->getDatabase()->tableExists($this->getSelectSource());
+            && $this->connection->getSchemaManager()->tablesExist([$this->getSelectSource()]);
     }
 
     /**
@@ -59,26 +59,15 @@ class Select extends AbstractSelect
         $strTableName  = $this->getSelectSource();
         $strColNameId  = $this->getIdColumn();
         $strSortColumn = $this->getSortingColumn();
-        $idList        = $this->getDatabase()
-            ->prepare(
-                sprintf(
-                    'SELECT %1$s.id FROM %1$s
-                    LEFT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
-                    WHERE %1$s.id IN (%5$s)
-                    ORDER BY %3$s.%6$s %7$s',
-                    // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
-                    $this->getMetaModel()->getTableName(), // 1
-                    $this->getColName(),                   // 2
-                    $strTableName,                         // 3
-                    $strColNameId,                         // 4
-                    $this->parameterMask($idList),         // 5
-                    $strSortColumn,                        // 6
-                    $strDirection                          // 7
-                    // @codingStandardsIgnoreEnd
-                )
-            )
-            ->execute($idList)
-            ->fetchEach('id');
+        $idList        = $this->connection->createQueryBuilder()
+            ->select('m.id')
+            ->from($this->getMetaModel()->getTableName(), 'm')
+            ->leftJoin('m', $strTableName, 's', sprintf('s.%s = m.%s', $strColNameId, $this->getColName()))
+            ->where('m.id IN (:ids)')
+            ->orderBy('s.' . $strSortColumn, $strDirection)
+            ->setParameter('ids', $idList)
+            ->execute()
+            ->fetch(\PDO::FETCH_COLUMN);
 
         return $idList;
     }
@@ -108,11 +97,15 @@ class Select extends AbstractSelect
     public function widgetToValue($varValue, $itemId)
     {
         // Lookup the value.
-        $values = $this->getDatabase()
-            ->prepare(sprintf('SELECT %1$s.* FROM %1$s WHERE %2$s=?', $this->getSelectSource(), $this->getIdColumn()))
-            ->execute($varValue);
+        $values = $this->connection->createQueryBuilder()
+            ->select('*')
+            ->from($this->getSelectSource())
+            ->where($this->getIdColumn() . '=:id')
+            ->setParameter('id', $varValue)
+            ->execute()
+            ->fetch(\PDO::FETCH_ASSOC);
 
-        return $values->row();
+        return $values;
     }
 
     /**
@@ -181,7 +174,7 @@ class Select extends AbstractSelect
         $additionalWhere = $this->getAdditionalWhere();
         $sortColumn      = $this->getSortingColumn();
         if ($usedOnly) {
-            return $this->getDatabase()->execute(sprintf(
+            return $this->getMetaModel()->getServiceContainer()->getDatabase()->execute(sprintf(
                 'SELECT COUNT(%1$s.%2$s) as mm_count, %1$s.*
                     FROM %1$s
                     RIGHT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
@@ -199,7 +192,7 @@ class Select extends AbstractSelect
             ));
         }
 
-        return $this->getDatabase()->execute(sprintf(
+        return $this->getMetaModel()->getServiceContainer()->getDatabase()->execute(sprintf(
             'SELECT COUNT(%3$s.%4$s) as mm_count, %1$s.*
                 FROM %1$s
                 LEFT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
@@ -233,7 +226,7 @@ class Select extends AbstractSelect
         $strSortColumn   = $this->getSortingColumn();
         $strColNameWhere = $this->getAdditionalWhere();
 
-        $objDB = $this->getDatabase();
+        $objDB = $this->getMetaModel()->getServiceContainer()->getDatabase();
         if ($idList) {
             $objValue = $objDB
                 ->prepare(sprintf(
@@ -270,7 +263,7 @@ class Select extends AbstractSelect
             return array();
         }
 
-        $objDB          = $this->getDatabase();
+        $objDB          = $this->getMetaModel()->getServiceContainer()->getDatabase();
         $strTableNameId = $this->getSelectSource();
         $strColNameId   = $this->getIdColumn();
         $arrReturn      = array();
@@ -321,7 +314,7 @@ class Select extends AbstractSelect
                 $this->getColName()
             );
 
-            $objDB = $this->getDatabase();
+            $objDB = $this->getMetaModel()->getServiceContainer()->getDatabase();
             foreach ($arrValues as $intItemId => $arrValue) {
                 $objDB->prepare($strQuery)->execute($arrValue[$strColNameId], $intItemId);
             }

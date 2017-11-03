@@ -22,7 +22,7 @@
 
 namespace MetaModels\AttributeSelectBundle\Attribute;
 
-use Contao\Database;
+use Doctrine\DBAL\Connection;
 use MetaModels\Attribute\AbstractHybrid;
 use MetaModels\AttributeSelectBundle\FilterRule\FilterRuleSelect;
 
@@ -48,16 +48,6 @@ abstract class AbstractSelect extends AbstractHybrid
      * @var bool
      */
     private $isProperlyConfigured;
-
-    /**
-     * Retrieve the database instance.
-     *
-     * @return Database
-     */
-    protected function getDatabase()
-    {
-        return $this->getMetaModel()->getServiceContainer()->getDatabase();
-    }
 
     /**
      * {@inheritdoc}
@@ -232,7 +222,7 @@ abstract class AbstractSelect extends AbstractHybrid
      */
     public function searchFor($strPattern)
     {
-        $objFilterRule = new FilterRuleSelect($this, $strPattern);
+        $objFilterRule = new FilterRuleSelect($this, $strPattern, $this->connection);
 
         return $objFilterRule->getMatchingIds();
     }
@@ -242,13 +232,12 @@ abstract class AbstractSelect extends AbstractHybrid
      */
     public function unsetDataFor($arrIds)
     {
-        $strQuery = sprintf(
-            'UPDATE %1$s SET %2$s=0 WHERE %1$s.id IN (%3$s)',
-            $this->getMetaModel()->getTableName(),
-            $this->getColName(),
-            implode(',', $arrIds)
-        );
-        $this->getDatabase()->execute($strQuery);
+        $this->connection->createQueryBuilder()
+            ->update($this->getMetaModel()->getTableName())
+            ->set($this->getColName(), 0)
+            ->where('id IN (:ids)')
+            ->setParameter('ids', $arrIds, Connection::PARAM_INT_ARRAY)
+            ->execute();
     }
 
     /**
@@ -272,17 +261,14 @@ abstract class AbstractSelect extends AbstractHybrid
         if (empty($values)) {
             return array();
         }
-        $objSelectIds = $this->getDatabase()
-            ->prepare(sprintf(
-                'SELECT %s FROM %s WHERE %s IN (%s)',
-                $idColumn,
-                $tableName,
-                $aliasColumn,
-                $this->parameterMask($values)
-            ))
-            ->execute($values);
 
-        return $objSelectIds->fetchEach($idColumn);
+        return $this->connection->createQueryBuilder()
+            ->select($idColumn)
+            ->from($tableName)
+            ->where($aliasColumn . ' IN (:values)')
+            ->setParameter('values', $values, Connection::PARAM_INT_ARRAY)
+            ->execute()
+            ->fetch(\PDO::FETCH_COLUMN);
     }
 
     /**

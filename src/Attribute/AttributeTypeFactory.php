@@ -23,7 +23,9 @@ namespace MetaModels\AttributeSelectBundle\Attribute;
 
 use Doctrine\DBAL\Connection;
 use MetaModels\Attribute\IAttributeTypeFactory;
+use MetaModels\Filter\Setting\IFilterSettingFactory;
 use MetaModels\Helper\TableManipulator;
+use MetaModels\IFactory;
 
 /**
  * Attribute type factory for select attributes.
@@ -45,15 +47,37 @@ class AttributeTypeFactory implements IAttributeTypeFactory
     protected $tableManipulator;
 
     /**
+     * MetaModels factory
+     *
+     * @var IFactory
+     */
+    protected $factory;
+
+    /**
+     * Filter setting factory.
+     *
+     * @var IFilterSettingFactory
+     */
+    protected $filterSettingFactory;
+
+    /**
      * Construct.
      *
-     * @param Connection       $connection       Database connection.
-     * @param TableManipulator $tableManipulator Table manipulator.
+     * @param Connection            $connection           Database connection.
+     * @param TableManipulator      $tableManipulator     Table manipulator.
+     * @param IFactory              $factory              MetaModels factory.
+     * @param IFilterSettingFactory $filterSettingFactory Filter setting factory.
      */
-    public function __construct(Connection $connection, TableManipulator $tableManipulator)
-    {
-        $this->connection       = $connection;
-        $this->tableManipulator = $tableManipulator;
+    public function __construct(
+        Connection $connection,
+        TableManipulator $tableManipulator,
+        IFactory $factory,
+        IFilterSettingFactory $filterSettingFactory
+    ) {
+        $this->connection           = $connection;
+        $this->tableManipulator     = $tableManipulator;
+        $this->factory              = $factory;
+        $this->filterSettingFactory = $filterSettingFactory;
     }
 
     /**
@@ -78,7 +102,14 @@ class AttributeTypeFactory implements IAttributeTypeFactory
     public function createInstance($information, $metaModel)
     {
         if (substr($information['select_table'], 0, 3) === 'mm_') {
-            return new MetaModelSelect($metaModel, $information, $this->connection, $this->tableManipulator);
+            return new MetaModelSelect(
+                $metaModel,
+                $information,
+                $this->connection,
+                $this->tableManipulator,
+                $this->factory,
+                $this->filterSettingFactory
+            );
         }
 
         return new Select($metaModel, $information, $this->connection, $this->tableManipulator);
