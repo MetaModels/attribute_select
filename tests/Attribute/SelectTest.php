@@ -21,14 +21,17 @@
 
 namespace MetaModels\AttributeSelectBundle\Test\Attribute;
 
-use MetaModels\Attribute\Select\MetaModelSelect;
-use MetaModels\Attribute\Select\Select;
+use Doctrine\DBAL\Connection;
+use MetaModels\AttributeSelectBundle\Attribute\MetaModelSelect;
+use MetaModels\AttributeSelectBundle\Attribute\Select;
+use MetaModels\Helper\TableManipulator;
 use MetaModels\IMetaModel;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Unit tests to test class Select.
  */
-class SelectTest extends \PHPUnit_Framework_TestCase
+class SelectTest extends TestCase
 {
     /**
      * Mock a MetaModel.
@@ -40,11 +43,7 @@ class SelectTest extends \PHPUnit_Framework_TestCase
      */
     protected function mockMetaModel($language, $fallbackLanguage)
     {
-        $metaModel = $this->getMock(
-            'MetaModels\MetaModel',
-            array(),
-            array(array())
-        );
+        $metaModel = $this->getMockForAbstractClass('MetaModels\IMetaModel');
 
         $metaModel
             ->expects($this->any())
@@ -65,14 +64,43 @@ class SelectTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * Mock the database connection.
+     *
+     * @return \PHPUnit_Framework_MockObject_MockObject|Connection
+     */
+    private function mockConnection()
+    {
+        return $this->getMockBuilder(Connection::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+    }
+
+    /**
+     * Mock the table manipulator.
+     *
+     * @param Connection $connection The database connection mock.
+     *
+     * @return TableManipulator|\PHPUnit_Framework_MockObject_MockObject
+     */
+    private function mockTableManipulator(Connection $connection)
+    {
+        return $this->getMockBuilder(TableManipulator::class)
+            ->setConstructorArgs([$connection, []])
+            ->getMock();
+    }
+
+    /**
      * Test that the attribute can be instantiated.
      *
      * @return void
      */
     public function testInstantiationSelect()
     {
-        $text = new Select($this->mockMetaModel('en', 'en'));
-        $this->assertInstanceOf('MetaModels\Attribute\Select\Select', $text);
+        $connection  = $this->mockConnection();
+        $manipulator = $this->mockTableManipulator($connection);
+
+        $text = new Select($this->mockMetaModel('en', 'en'), [], $connection, $manipulator);
+        $this->assertInstanceOf('MetaModels\AttributeSelectBundle\Attribute\Select', $text);
     }
 
     /**
@@ -82,7 +110,10 @@ class SelectTest extends \PHPUnit_Framework_TestCase
      */
     public function testInstantiationMetaModelSelect()
     {
-        $text = new MetaModelSelect($this->mockMetaModel('en', 'en'));
-        $this->assertInstanceOf('MetaModels\Attribute\Select\MetaModelSelect', $text);
+        $connection  = $this->mockConnection();
+        $manipulator = $this->mockTableManipulator($connection);
+
+        $text = new MetaModelSelect($this->mockMetaModel('en', 'en'), [], $connection, $manipulator);
+        $this->assertInstanceOf('MetaModels\AttributeSelectBundle\Attribute\MetaModelSelect', $text);
     }
 }

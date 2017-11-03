@@ -37,8 +37,8 @@ class DeprecatedAutoloaderTest extends TestCase
      * @var array
      */
     private static $classes = [
-        'MetaModels\Attribute\Select\Select' => Select::class,
-        'MetaModels\Attribute\Select\AttributeTypeFactory' => AttributeTypeFactory::class
+        'MetaModels\AttributeSelectBundle\Attribute\Select' => Select::class,
+        'MetaModels\AttributeSelectBundle\Attribute\AttributeTypeFactory' => AttributeTypeFactory::class
     ];
 
     /**

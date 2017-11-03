@@ -21,17 +21,19 @@
 
 namespace MetaModels\AttributeSelectBundle\Test\Attribute;
 
+use Doctrine\DBAL\Connection;
 use MetaModels\Attribute\IAttributeTypeFactory;
-use MetaModels\Attribute\Select\AttributeTypeFactory;
+use MetaModels\AttributeSelectBundle\Attribute\AttributeTypeFactory;
+use MetaModels\Helper\TableManipulator;
 use MetaModels\IMetaModel;
-use MetaModels\Test\Attribute\AttributeTypeFactoryTest;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Test the attribute factory.
  *
  * @package MetaModels\Test\Filter\Setting
  */
-class SelectAttributeTypeFactoryTest extends AttributeTypeFactoryTest
+class SelectAttributeTypeFactoryTest extends TestCase
 {
     /**
      * Mock a MetaModel.
@@ -46,11 +48,7 @@ class SelectAttributeTypeFactoryTest extends AttributeTypeFactoryTest
      */
     protected function mockMetaModel($tableName, $language, $fallbackLanguage)
     {
-        $metaModel = $this->getMock(
-            'MetaModels\MetaModel',
-            array(),
-            array(array())
-        );
+        $metaModel = $this->getMockForAbstractClass('MetaModels\IMetaModel');
 
         $metaModel
             ->expects($this->any())
@@ -71,13 +69,42 @@ class SelectAttributeTypeFactoryTest extends AttributeTypeFactoryTest
     }
 
     /**
+     * Mock the database connection.
+     *
+     * @return \PHPUnit_Framework_MockObject_MockObject|Connection
+     */
+    private function mockConnection()
+    {
+        return $this->getMockBuilder(Connection::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+    }
+
+    /**
+     * Mock the table manipulator.
+     *
+     * @param Connection $connection The database connection mock.
+     *
+     * @return TableManipulator|\PHPUnit_Framework_MockObject_MockObject
+     */
+    private function mockTableManipulator(Connection $connection)
+    {
+        return $this->getMockBuilder(TableManipulator::class)
+            ->setConstructorArgs([$connection, []])
+            ->getMock();
+    }
+
+    /**
      * Override the method to run the tests on the attribute factories to be tested.
      *
      * @return IAttributeTypeFactory[]
      */
     protected function getAttributeFactories()
     {
-        return array(new AttributeTypeFactory());
+        $connection  = $this->mockConnection();
+        $manipulator = $this->mockTableManipulator($connection);
+
+        return array(new AttributeTypeFactory($connection, $manipulator));
     }
 
     /**
@@ -87,7 +114,10 @@ class SelectAttributeTypeFactoryTest extends AttributeTypeFactoryTest
      */
     public function testCreateSelect()
     {
-        $factory   = new AttributeTypeFactory();
+        $connection  = $this->mockConnection();
+        $manipulator = $this->mockTableManipulator($connection);
+
+        $factory   = new AttributeTypeFactory($connection, $manipulator);
         $values    = array(
             'select_table'  => 'tl_page',
             'select_column' => 'pid',
@@ -98,7 +128,7 @@ class SelectAttributeTypeFactoryTest extends AttributeTypeFactoryTest
             $this->mockMetaModel('mm_test', 'de', 'en')
         );
 
-        $this->assertInstanceOf('MetaModels\Attribute\Select\Select', $attribute);
+        $this->assertInstanceOf('MetaModels\AttributeSelectBundle\Attribute\Select', $attribute);
 
         foreach ($values as $key => $value) {
             $this->assertEquals($value, $attribute->get($key), $key);
@@ -112,7 +142,10 @@ class SelectAttributeTypeFactoryTest extends AttributeTypeFactoryTest
      */
     public function testCreateMetaModelSelect()
     {
-        $factory   = new AttributeTypeFactory();
+        $connection  = $this->mockConnection();
+        $manipulator = $this->mockTableManipulator($connection);
+
+        $factory   = new AttributeTypeFactory($connection, $manipulator);
         $values    = array(
             'select_table'  => 'mm_page',
             'select_column' => 'pid',
@@ -123,7 +156,7 @@ class SelectAttributeTypeFactoryTest extends AttributeTypeFactoryTest
             $this->mockMetaModel('mm_test', 'de', 'en')
         );
 
-        $this->assertInstanceOf('MetaModels\Attribute\Select\MetaModelSelect', $attribute);
+        $this->assertInstanceOf('MetaModels\AttributeSelectBundle\Attribute\MetaModelSelect', $attribute);
 
         foreach ($values as $key => $value) {
             $this->assertEquals($value, $attribute->get($key), $key);

@@ -24,7 +24,7 @@ namespace MetaModels\AttributeSelectBundle\Attribute;
 
 use Contao\Database;
 use MetaModels\Attribute\AbstractHybrid;
-use MetaModels\Filter\Rules\FilterRuleSelect;
+use MetaModels\AttributeSelectBundle\FilterRule\FilterRuleSelect;
 
 /**
  * This is the abstract base class for handling select attributes.
