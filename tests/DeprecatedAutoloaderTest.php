@@ -22,6 +22,7 @@ namespace MetaModels\AttributeSelectBundle\Test;
 
 use MetaModels\AttributeSelectBundle\Attribute\Select;
 use MetaModels\AttributeSelectBundle\Attribute\AttributeTypeFactory;
+use MetaModels\AttributeSelectBundle\FilterRule\FilterRuleSelect;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -38,7 +39,8 @@ class DeprecatedAutoloaderTest extends TestCase
      */
     private static $classes = [
         'MetaModels\AttributeSelectBundle\Attribute\Select' => Select::class,
-        'MetaModels\AttributeSelectBundle\Attribute\AttributeTypeFactory' => AttributeTypeFactory::class
+        'MetaModels\AttributeSelectBundle\Attribute\AttributeTypeFactory' => AttributeTypeFactory::class,
+        'MetaModels\Filter\Rules\FilterRuleSelect' => FilterRuleSelect::class
     ];
 
     /**

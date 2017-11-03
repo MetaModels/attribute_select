@@ -20,13 +20,15 @@
 
 use MetaModels\AttributeSelectBundle\Attribute\AttributeTypeFactory;
 use MetaModels\AttributeSelectBundle\Attribute\Select;
+use MetaModels\AttributeSelectBundle\FilterRule\FilterRuleSelect;
 
 // This hack is to load the "old locations" of the classes.
 spl_autoload_register(
     function ($class) {
         static $classes = [
-            'MetaModels\Attribute\Select\Select' => Select::class,
-            'MetaModels\Attribute\Select\AttributeTypeFactory' => AttributeTypeFactory::class
+            'MetaModels\Attribute\Select\Select'               => Select::class,
+            'MetaModels\Attribute\Select\AttributeTypeFactory' => AttributeTypeFactory::class,
+            'MetaModels\Filter\Rules\FilterRuleSelect'         => FilterRuleSelect::class,
         ];
 
         if (isset($classes[$class])) {
