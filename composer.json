@@ -41,7 +41,10 @@
     "autoload": {
         "psr-4": {
             "MetaModels\\AttributeSelectBundle\\": "src"
-        }
+        },
+        "files": [
+            "src/deprecated-autoload.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

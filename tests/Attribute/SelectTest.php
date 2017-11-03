@@ -19,7 +19,7 @@
  * @filesource
  */
 
-namespace MetaModels\AttributeSelectBundle\Test;
+namespace MetaModels\AttributeSelectBundle\Test\Attribute;
 
 use MetaModels\Attribute\Select\MetaModelSelect;
 use MetaModels\Attribute\Select\Select;

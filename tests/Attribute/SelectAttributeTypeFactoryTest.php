@@ -19,7 +19,7 @@
  * @filesource
  */
 
-namespace MetaModels\AttributeSelectBundle\Test;
+namespace MetaModels\AttributeSelectBundle\Test\Attribute;
 
 use MetaModels\Attribute\IAttributeTypeFactory;
 use MetaModels\Attribute\Select\AttributeTypeFactory;

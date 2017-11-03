@@ -12,7 +12,7 @@
 		>
 	<testsuites>
 		<testsuite name="MetaModels attribute select tests">
-			<directory>./tests/MetaModels/</directory>
+			<directory>./tests/</directory>
 		</testsuite>
 	</testsuites>
 
@@ -24,7 +24,7 @@
 
 	<filter>
 		<whitelist>
-			<directory>./src/system/modules/metamodelsattribute_select/MetaModels/</directory>
+			<directory>./src/</directory>
 		</whitelist>
 	</filter>
 </phpunit>

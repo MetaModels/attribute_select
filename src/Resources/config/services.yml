@@ -1,0 +1,10 @@
+services:
+    metamodels.attribute_select.factory:
+        class: MetaModels\AttributeSelectBundle\Attribute\AttributeTypeFactory
+        arguments:
+            - '@database_connection'
+            - '@router'
+            - '@session'
+            - '@cca.dc-general.scope-matcher'
+        tags:
+          - { name: metamodels.attribute_factory }
