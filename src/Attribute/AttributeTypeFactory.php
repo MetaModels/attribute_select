@@ -41,7 +41,7 @@ class AttributeTypeFactory implements IAttributeTypeFactory
      */
     public function getTypeIcon()
     {
-        return 'system/modules/metamodelsattribute_select/html/select.png';
+        return 'bundles/metamodelsattributeselect/select.png';
     }
 
     /**
