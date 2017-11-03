@@ -23,6 +23,7 @@
 
 namespace MetaModels\AttributeSelectBundle\EventListener;
 
+use ContaoCommunityAlliance\DcGeneral\Contao\RequestScopeDeterminator;
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\BuildWidgetEvent;
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\EncodePropertyValueFromWidgetEvent;
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\GetPropertyOptionsEvent;
@@ -34,53 +35,74 @@ use ContaoCommunityAlliance\DcGeneral\DataDefinition\Palette\Condition\Property\
 use ContaoCommunityAlliance\DcGeneral\DataDefinition\Palette\Condition\Property\PropertyConditionChain;
 use ContaoCommunityAlliance\DcGeneral\DataDefinition\Palette\PropertyInterface;
 use ContaoCommunityAlliance\DcGeneral\Factory\Event\BuildDataDefinitionEvent;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Types\Type;
 use MetaModels\DcGeneral\DataDefinition\Palette\Condition\Property\ConditionTableNameIsMetaModel;
-use MetaModels\DcGeneral\Events\BaseSubscriber;
+use MetaModels\Filter\Setting\IFilterSettingFactory;
+use MetaModels\IFactory;
+use Symfony\Component\Translation\TranslatorInterface;
 
 /**
  * Handle events for tl_metamodel_attribute.alias_fields.attr_id.
  */
-class Subscriber extends BaseSubscriber
+class BackendEventsListener
 {
     /**
-     * Boot the system in the backend.
+     * Request scope determinator.
      *
-     * @return void
-     *
-     * @SuppressWarnings(PHPMD.Superglobals)
-     * @SuppressWarnings(PHPMD.CamelCaseVariableName)
+     * @var RequestScopeDeterminator
      */
-    protected function registerEventsInDispatcher()
-    {
-        $this
-            ->addListener(
-                GetPropertyOptionsEvent::NAME,
-                array($this, 'getTableNames')
-            )
-            ->addListener(
-                GetPropertyOptionsEvent::NAME,
-                array($this, 'getColumnNames')
-            )
-            ->addListener(
-                GetPropertyOptionsEvent::NAME,
-                array($this, 'getIntColumnNames')
-            )
-            ->addListener(
-                GetPropertyOptionsEvent::NAME,
-                array($this, 'getFilters')
-            )
-            ->addListener(
-                BuildWidgetEvent::NAME,
-                array($this, 'getFiltersParams')
-            )
-            ->addListener(
-                BuildDataDefinitionEvent::NAME,
-                array($this, 'buildPaletteRestrictions')
-            )
-            ->addListener(
-                EncodePropertyValueFromWidgetEvent::NAME,
-                array($this, 'checkQuery')
-            );
+    private $scopeMatcher;
+
+    /**
+     * Database connection.
+     *
+     * @var Connection
+     */
+    private $connection;
+
+    /**
+     * MetaModels factory.
+     *
+     * @var IFactory
+     */
+    private $factory;
+
+    /**
+     * Translator.
+     *
+     * @var TranslatorInterface
+     */
+    private $translator;
+
+    /**
+     * Filter setting factory.
+     *
+     * @var IFilterSettingFactory
+     */
+    private $filterSettingFactory;
+
+    /**
+     * EventListener constructor.
+     *
+     * @param RequestScopeDeterminator $scopeMatcher         Request scope determinator.
+     * @param Connection               $connection           Database connection.
+     * @param IFactory                 $factory              MetaModels factory.
+     * @param IFilterSettingFactory    $filterSettingFactory Filter setting factory.
+     * @param TranslatorInterface      $translator           Translator.
+     */
+    public function __construct(
+        RequestScopeDeterminator $scopeMatcher,
+        Connection $connection,
+        IFactory $factory,
+        IFilterSettingFactory $filterSettingFactory,
+        TranslatorInterface $translator
+    ) {
+        $this->scopeMatcher         = $scopeMatcher;
+        $this->connection           = $connection;
+        $this->factory              = $factory;
+        $this->translator           = $translator;
+        $this->filterSettingFactory = $filterSettingFactory;
     }
 
     /**
@@ -94,12 +116,11 @@ class Subscriber extends BaseSubscriber
      */
     private function getMetaModelTableNames($keyTranslated, $keyUntranslated)
     {
-        $factory = $this->getServiceContainer()->getFactory();
-        $result  = array();
-        $tables  = $factory->collectNames();
+        $result = array();
+        $tables = $this->factory->collectNames();
 
         foreach ($tables as $table) {
-            $metaModel = $factory->getMetaModel($table);
+            $metaModel = $this->factory->getMetaModel($table);
             if ($metaModel->isTranslated()) {
                 $result[$keyTranslated][$table] = sprintf('%s (%s)', $metaModel->get('name'), $table);
             } else {
@@ -120,14 +141,13 @@ class Subscriber extends BaseSubscriber
      */
     public function getTableAndMetaModelsList()
     {
-        $database     = $this->getServiceContainer()->getDatabase();
-        $sqlTable     = $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_table_type']['sql-table'];
-        $translated   = $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_table_type']['translated'];
-        $untranslated = $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_table_type']['untranslated'];
+        $sqlTable     = $this->translator->trans('select_table_type.sql-table', [], 'contao_tl_metamodel_attribute');
+        $translated   = $this->translator->trans('select_table_type.translated', [], 'contao_tl_metamodel_attribute');
+        $untranslated = $this->translator->trans('select_table_type.untranslated', [], 'contao_tl_metamodel_attribute');
 
         $result = $this->getMetaModelTableNames($translated, $untranslated);
 
-        foreach ($database->listTables() as $table) {
+        foreach ($this->connection->getSchemaManager()->listTableNames() as $table) {
             if ((substr($table, 0, 3) !== 'mm_')) {
                 $result[$sqlTable][$table] = $table;
             }
@@ -157,6 +177,10 @@ class Subscriber extends BaseSubscriber
      */
     public function getTableNames(GetPropertyOptionsEvent $event)
     {
+        if (!$this->scopeMatcher->currentScopeIsBackend()) {
+            return;
+        }
+
         if (($event->getEnvironment()->getDataDefinition()->getName() !== 'tl_metamodel_attribute')
             || ($event->getPropertyName() !== 'select_table')) {
             return;
@@ -174,7 +198,7 @@ class Subscriber extends BaseSubscriber
      */
     protected function getAttributeNamesFrom($metaModelName)
     {
-        $metaModel = $this->getServiceContainer()->getFactory()->getMetaModel($metaModelName);
+        $metaModel = $this->factory->getMetaModel($metaModelName);
         $result    = array();
 
         if (empty($metaModel)) {
@@ -201,7 +225,7 @@ class Subscriber extends BaseSubscriber
      */
     private function tableExists($table)
     {
-        return (!empty($table) && $this->getServiceContainer()->getDatabase()->tableExists($table));
+        return (!empty($table) && $this->connection->getSchemaManager()->tablesExist([$table]));
     }
 
     /**
@@ -215,21 +239,16 @@ class Subscriber extends BaseSubscriber
      */
     protected function getColumnNamesFromMetaModel($tableName, $typeFilter = null)
     {
-        $database = $this->getServiceContainer()->getDatabase();
-
         if (!$this->tableExists($tableName)) {
             return array();
         }
 
-        $result = array();
+        $result    = [];
+        $fieldList = $this->connection->getSchemaManager()->listTableColumns($tableName);
 
-        foreach ($database->listFields($tableName) as $arrInfo) {
-            if ($arrInfo['type'] == 'index') {
-                continue;
-            }
-
-            if (($typeFilter === null) || in_array($arrInfo['type'], $typeFilter)) {
-                $result[$arrInfo['name']] = $arrInfo['name'];
+        foreach ($fieldList as $column) {
+            if (($typeFilter === null) || in_array($column->getType()->getName(), $typeFilter)) {
+                $result[$column->getName()] = $column->getName();
             }
         }
 
@@ -260,11 +279,13 @@ class Subscriber extends BaseSubscriber
             return
                 array
                 (
-                    $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_column_type']['sql'] => array_diff_key(
-                        $this->getColumnNamesFromMetaModel($table),
-                        array_flip(array_keys($attributes))
-                    ),
-                    $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_column_type']['attribute'] => $attributes
+                    $this->translator->trans('select_column_type.sql', [], 'contao_tl_metamodel_attribute') =>
+                        array_diff_key(
+                            $this->getColumnNamesFromMetaModel($table),
+                            array_flip(array_keys($attributes))
+                        ),
+                    $this->translator->trans('select_column_type.attribute', [], 'contao_tl_metamodel_attribute') =>
+                        $attributes
                 );
         }
 
@@ -280,6 +301,10 @@ class Subscriber extends BaseSubscriber
      */
     public function getColumnNames(GetPropertyOptionsEvent $event)
     {
+        if (!$this->scopeMatcher->currentScopeIsBackend()) {
+            return;
+        }
+
         if (($event->getEnvironment()->getDataDefinition()->getName() !== 'tl_metamodel_attribute')
             || (
                 ($event->getPropertyName() !== 'select_column')
@@ -307,6 +332,10 @@ class Subscriber extends BaseSubscriber
      */
     public function getFilters(GetPropertyOptionsEvent $event)
     {
+        if (!$this->scopeMatcher->currentScopeIsBackend()) {
+            return;
+        }
+
         if (($event->getEnvironment()->getDataDefinition()->getName() !== 'tl_metamodel_attribute')
             || ($event->getPropertyName() !== 'select_filter')
         ) {
@@ -314,19 +343,18 @@ class Subscriber extends BaseSubscriber
         }
 
         $model     = $event->getModel();
-        $metaModel = $this->getServiceContainer()->getFactory()->getMetaModel($model->getProperty('select_table'));
+        $metaModel = $this->factory->getMetaModel($model->getProperty('select_table'));
 
         if ($metaModel) {
-            $filter = $this
-                ->getServiceContainer()
-                ->getDatabase()
-                ->prepare('SELECT id,name FROM tl_metamodel_filter WHERE pid=? ORDER BY name')
-                ->execute($metaModel->get('id'));
+            $statement = $this->connection
+                ->prepare('SELECT id,name FROM tl_metamodel_filter WHERE pid=:pid ORDER BY name');
+
+            $statement->execute(['pid' => $metaModel->get('id')]);
 
             $result = array();
-            while ($filter->next()) {
+            while ($row = $statement->fetch(\PDO::FETCH_OBJ)) {
                 /** @noinspection PhpUndefinedFieldInspection */
-                $result[$filter->id] = $filter->name;
+                $result[$row->id] = $row->name;
             }
 
             $event->setOptions($result);
@@ -342,6 +370,10 @@ class Subscriber extends BaseSubscriber
      */
     public function getFiltersParams(BuildWidgetEvent $event)
     {
+        if (!$this->scopeMatcher->currentScopeIsBackend()) {
+            return;
+        }
+
         if (($event->getEnvironment()->getDataDefinition()->getName() !== 'tl_metamodel_attribute')
             || ($event->getProperty()->getName() !== 'select_filterparams')
         ) {
@@ -360,7 +392,7 @@ class Subscriber extends BaseSubscriber
 
         // Get the filter with the given id and check if we got it.
         // If not return.
-        $filterSettings = $this->getServiceContainer()->getFilterFactory()->createCollection($filterId);
+        $filterSettings = $this->filterSettingFactory->createCollection($filterId);
         if ($filterSettings == null) {
             return;
         }
@@ -379,13 +411,20 @@ class Subscriber extends BaseSubscriber
      */
     public function getIntColumnNames(GetPropertyOptionsEvent $event)
     {
+        if (!$this->scopeMatcher->currentScopeIsBackend()) {
+            return;
+        }
+
         if (($event->getEnvironment()->getDataDefinition()->getName() !== 'tl_metamodel_attribute')
             || ($event->getPropertyName() !== 'select_id')
         ) {
             return;
         }
 
-        $result = $this->getColumnNamesFromMetaModel($event->getModel()->getProperty('select_table'), array('int'));
+        $result = $this->getColumnNamesFromMetaModel(
+            $event->getModel()->getProperty('select_table'),
+            array(Type::INTEGER, Type::BIGINT, Type::SMALLINT)
+        );
 
         $event->setOptions($result);
     }
@@ -428,6 +467,10 @@ class Subscriber extends BaseSubscriber
      */
     public function buildConditions($propertyNames, PalettesDefinitionInterface $palettes)
     {
+        if (!$this->scopeMatcher->currentScopeIsBackend()) {
+            return;
+        }
+
         foreach ($palettes->getPalettes() as $palette) {
             foreach ($propertyNames as $propertyName => $mask) {
                 foreach ($palette->getProperties() as $property) {
@@ -466,6 +509,10 @@ class Subscriber extends BaseSubscriber
      */
     public function buildPaletteRestrictions(BuildDataDefinitionEvent $event)
     {
+        if (!$this->scopeMatcher->currentScopeIsBackend()) {
+            return;
+        }
+
         if ($event->getContainer()->getName() !== 'tl_metamodel_attribute') {
             return;
         }
@@ -496,6 +543,10 @@ class Subscriber extends BaseSubscriber
      */
     public function checkQuery(EncodePropertyValueFromWidgetEvent $event)
     {
+        if (!$this->scopeMatcher->currentScopeIsBackend()) {
+            return;
+        }
+
         if (($event->getEnvironment()->getDataDefinition()->getName() !== 'tl_metamodel_attribute')
             || ($event->getProperty() !== 'select_where')
         ) {
@@ -506,8 +557,6 @@ class Subscriber extends BaseSubscriber
         $values = $event->getPropertyValueBag();
 
         if ($where) {
-            $objDB = \Database::getInstance();
-
             $strTableName  = $values->getPropertyValue('select_table');
             $strColNameId  = $values->getPropertyValue('select_id');
             $strSortColumn = $values->getPropertyValue('select_sorting') ?: $strColNameId;
@@ -524,14 +573,12 @@ class Subscriber extends BaseSubscriber
             );
 
             try {
-                $objDB
-                    ->prepare($query)
-                    ->execute();
+                $this->connection->exec($query);
             } catch (\Exception $e) {
                 throw new \RuntimeException(
                     sprintf(
                         '%s %s',
-                        $GLOBALS['TL_LANG']['tl_metamodel_attribute']['sql_error'],
+                        $this->translator->trans('sql_error', [], 'contao_tl_metamodel_attribute'),
                         $e->getMessage()
                     )
                 );

@@ -56,7 +56,7 @@ class MetaModelsAttributeSelectExtensionTest extends TestCase
         $container = $this->getMockBuilder(ContainerBuilder::class)->getMock();
 
         $container
-            ->expects($this->exactly(1))
+            ->expects($this->atLeastOnce())
             ->method('setDefinition')
             ->withConsecutive(
                 [

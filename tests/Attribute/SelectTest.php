@@ -24,7 +24,9 @@ namespace MetaModels\AttributeSelectBundle\Test\Attribute;
 use Doctrine\DBAL\Connection;
 use MetaModels\AttributeSelectBundle\Attribute\MetaModelSelect;
 use MetaModels\AttributeSelectBundle\Attribute\Select;
+use MetaModels\Filter\Setting\IFilterSettingFactory;
 use MetaModels\Helper\TableManipulator;
+use MetaModels\IFactory;
 use MetaModels\IMetaModel;
 use PHPUnit\Framework\TestCase;
 
@@ -110,10 +112,20 @@ class SelectTest extends TestCase
      */
     public function testInstantiationMetaModelSelect()
     {
-        $connection  = $this->mockConnection();
-        $manipulator = $this->mockTableManipulator($connection);
+        $connection    = $this->mockConnection();
+        $manipulator   = $this->mockTableManipulator($connection);
+        $factory       = $this->getMockForAbstractClass(IFactory::class);
+        $filterFactory = $this->getMockForAbstractClass(IFilterSettingFactory::class);
 
-        $text = new MetaModelSelect($this->mockMetaModel('en', 'en'), [], $connection, $manipulator);
+        $text = new MetaModelSelect(
+            $this->mockMetaModel('en', 'en'),
+            [],
+            $connection,
+            $manipulator,
+            $factory,
+            $filterFactory
+        );
+
         $this->assertInstanceOf('MetaModels\AttributeSelectBundle\Attribute\MetaModelSelect', $text);
     }
 }

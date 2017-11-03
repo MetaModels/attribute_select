@@ -22,26 +22,14 @@
 namespace MetaModels\AttributeSelectBundle\EventListener;
 
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\GetPropertyOptionsEvent;
-use MetaModels\Attribute\Select\AbstractSelect;
+use MetaModels\AttributeSelectBundle\Attribute\AbstractSelect;
 use MetaModels\DcGeneral\Data\Model;
-use MetaModels\DcGeneral\Events\BaseSubscriber;
 
 /**
  * The subscriber for the get filter options call.
  */
-class BackendSubscriber extends BaseSubscriber
+class GetPropertyOptionsListener
 {
-    /**
-     * {@inheritDoc}
-     */
-    protected function registerEventsInDispatcher()
-    {
-        $this->addListener(
-            GetPropertyOptionsEvent::NAME,
-            array($this, 'getPropertyOptions')
-        );
-    }
-
     /**
      * Retrieve the property options.
      *
@@ -49,7 +37,7 @@ class BackendSubscriber extends BaseSubscriber
      *
      * @return void
      */
-    public function getPropertyOptions(GetPropertyOptionsEvent $event)
+    public static function getPropertyOptions(GetPropertyOptionsEvent $event)
     {
         if ($event->getOptions() !== null) {
             return;

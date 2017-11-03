@@ -98,18 +98,22 @@ class MetaModelSelect extends AbstractSelect
         parent::__construct($objMetaModel, $arrData, $connection, $tableManipulator);
 
         if (null === $factory) {
+            // @codingStandardsIgnoreStart Silencing errors is discouraged
             @trigger_error(
                 'Factory is missing. It has to be passed in the constructor. Fallback will be dropped.',
                 E_USER_DEPRECATED
             );
+            // @codingStandardIgnoreEnd
             $factory = System::getContainer()->get('metamodels.factory');
         }
 
         if (null === $filterSettingFactory) {
+            // @codingStandardsIgnoreStart Silencing errors is discouraged
             @trigger_error(
                 'Filter setting factory is missing. It has to be passed in the constructor. Fallback will be dropped.',
                 E_USER_DEPRECATED
             );
+            // @codingStandardIgnoreEnd
             $filterSettingFactory = System::getContainer()->get('metamodels.filter_setting_factory');
         }
 

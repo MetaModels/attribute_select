@@ -47,7 +47,7 @@ class AttributeTypeFactory implements IAttributeTypeFactory
     protected $tableManipulator;
 
     /**
-     * MetaModels factory
+     * MetaModels factory.
      *
      * @var IFactory
      */

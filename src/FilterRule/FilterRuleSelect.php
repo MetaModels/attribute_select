@@ -65,10 +65,12 @@ class FilterRuleSelect extends FilterRule
         parent::__construct();
 
         if (null === $connection) {
+            // @codingStandardsIgnoreStart Silencing errors is discouraged
             @trigger_error(
                 'Connection is missing. It has to be passed in the constructor. Fallback will be dropped.',
                 E_USER_DEPRECATED
             );
+            // @codingStandardIgnoreEnd
             $connection = System::getContainer()->get('database_connection');
         }
 
@@ -87,7 +89,7 @@ class FilterRuleSelect extends FilterRule
             return $values;
         }
 
-        $matches  = $this->connection->createQueryBuilder()
+        $matches = $this->connection->createQueryBuilder()
             ->select('id')
             ->from($this->objAttribute->getMetaModel()->getTableName())
             ->where($this->objAttribute->getColName() . ' IN (:ids)')

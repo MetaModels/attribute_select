@@ -24,7 +24,9 @@ namespace MetaModels\AttributeSelectBundle\Test\Attribute;
 use Doctrine\DBAL\Connection;
 use MetaModels\Attribute\IAttributeTypeFactory;
 use MetaModels\AttributeSelectBundle\Attribute\AttributeTypeFactory;
+use MetaModels\Filter\Setting\IFilterSettingFactory;
 use MetaModels\Helper\TableManipulator;
+use MetaModels\IFactory;
 use MetaModels\IMetaModel;
 use PHPUnit\Framework\TestCase;
 
@@ -101,10 +103,12 @@ class SelectAttributeTypeFactoryTest extends TestCase
      */
     protected function getAttributeFactories()
     {
-        $connection  = $this->mockConnection();
-        $manipulator = $this->mockTableManipulator($connection);
+        $connection    = $this->mockConnection();
+        $manipulator   = $this->mockTableManipulator($connection);
+        $factory       = $this->getMockForAbstractClass(IFactory::class);
+        $filterFactory = $this->getMockForAbstractClass(IFilterSettingFactory::class);
 
-        return array(new AttributeTypeFactory($connection, $manipulator));
+        return array(new AttributeTypeFactory($connection, $manipulator, $factory, $filterFactory));
     }
 
     /**
@@ -114,10 +118,12 @@ class SelectAttributeTypeFactoryTest extends TestCase
      */
     public function testCreateSelect()
     {
-        $connection  = $this->mockConnection();
-        $manipulator = $this->mockTableManipulator($connection);
+        $connection    = $this->mockConnection();
+        $manipulator   = $this->mockTableManipulator($connection);
+        $factory       = $this->getMockForAbstractClass(IFactory::class);
+        $filterFactory = $this->getMockForAbstractClass(IFilterSettingFactory::class);
 
-        $factory   = new AttributeTypeFactory($connection, $manipulator);
+        $factory   = new AttributeTypeFactory($connection, $manipulator, $factory, $filterFactory);
         $values    = array(
             'select_table'  => 'tl_page',
             'select_column' => 'pid',
@@ -142,10 +148,12 @@ class SelectAttributeTypeFactoryTest extends TestCase
      */
     public function testCreateMetaModelSelect()
     {
-        $connection  = $this->mockConnection();
-        $manipulator = $this->mockTableManipulator($connection);
+        $connection    = $this->mockConnection();
+        $manipulator   = $this->mockTableManipulator($connection);
+        $factory       = $this->getMockForAbstractClass(IFactory::class);
+        $filterFactory = $this->getMockForAbstractClass(IFilterSettingFactory::class);
 
-        $factory   = new AttributeTypeFactory($connection, $manipulator);
+        $factory   = new AttributeTypeFactory($connection, $manipulator, $factory, $filterFactory);
         $values    = array(
             'select_table'  => 'mm_page',
             'select_column' => 'pid',
