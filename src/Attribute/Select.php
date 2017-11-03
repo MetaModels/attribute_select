@@ -28,6 +28,9 @@
 
 namespace MetaModels\AttributeSelectBundle\Attribute;
 
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Statement;
+
 /**
  * This is the MetaModelAttribute class for handling select attributes on plain SQL tables.
  *
@@ -137,20 +140,20 @@ class Select extends AbstractSelect
     /**
      * Convert the database result into a proper result array.
      *
-     * @param \Database\Result $values      The database result.
+     * @param Statement $statement   The database result statement.
      *
-     * @param string           $aliasColumn The name of the alias column to be used.
+     * @param string    $aliasColumn The name of the alias column to be used.
      *
-     * @param string           $valueColumn The name of the value column.
+     * @param string    $valueColumn The name of the value column.
      *
-     * @param array            $count       The optional count array.
+     * @param array     $count       The optional count array.
      *
      * @return array
      */
-    protected function convertOptionsList($values, $aliasColumn, $valueColumn, &$count = null)
+    protected function convertOptionsList($statement, $aliasColumn, $valueColumn, &$count = null)
     {
         $arrReturn = array();
-        while ($values->next()) {
+        while ($values = $statement->fetch(\PDO::FETCH_OBJ)) {
             if (is_array($count)) {
                 /** @noinspection PhpUndefinedFieldInspection */
                 $count[$values->$aliasColumn] = $values->mm_count;
@@ -167,14 +170,14 @@ class Select extends AbstractSelect
      *
      * @param bool $usedOnly The flag if only used values shall be returned.
      *
-     * @return \Database\Result
+     * @return Statement
      */
     public function getFilterOptionsForUsedOnly($usedOnly)
     {
         $additionalWhere = $this->getAdditionalWhere();
         $sortColumn      = $this->getSortingColumn();
         if ($usedOnly) {
-            return $this->getMetaModel()->getServiceContainer()->getDatabase()->execute(sprintf(
+            $this->connection->query(sprintf(
                 'SELECT COUNT(%1$s.%2$s) as mm_count, %1$s.*
                     FROM %1$s
                     RIGHT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
@@ -188,11 +191,11 @@ class Select extends AbstractSelect
                 $this->getColName(),                                       // 4
                 ($additionalWhere ? ' WHERE ('.$additionalWhere.')' : ''), // 5
                 $sortColumn                                                // 6
-                // @codingStandardsIgnoreEnd
+            // @codingStandardsIgnoreEnd
             ));
         }
 
-        return $this->getMetaModel()->getServiceContainer()->getDatabase()->execute(sprintf(
+        return $this->connection->execute(sprintf(
             'SELECT COUNT(%3$s.%4$s) as mm_count, %1$s.*
                 FROM %1$s
                 LEFT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
@@ -226,32 +229,33 @@ class Select extends AbstractSelect
         $strSortColumn   = $this->getSortingColumn();
         $strColNameWhere = $this->getAdditionalWhere();
 
-        $objDB = $this->getMetaModel()->getServiceContainer()->getDatabase();
         if ($idList) {
-            $objValue = $objDB
-                ->prepare(sprintf(
+            $statement = $this->connection->prepare(
+                sprintf(
                     'SELECT COUNT(%1$s.%2$s) as mm_count, %1$s.*
                     FROM %1$s
                     RIGHT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
-                    WHERE (%3$s.id IN (%5$s)%6$s)
+                    WHERE (%3$s.id IN (:ids)%5$s)
                     GROUP BY %1$s.%2$s
-                    ORDER BY %1$s.%7$s',
+                    ORDER BY %1$s.%6$s',
                     // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
                     $tableName,                                              // 1
                     $idColumn,                                               // 2
                     $this->getMetaModel()->getTableName(),                   // 3
                     $this->getColName(),                                     // 4
-                    $this->parameterMask($idList),                           // 5
-                    ($strColNameWhere ? ' AND ('.$strColNameWhere.')' : ''), // 6
-                    $strSortColumn                                           // 7
+                    ($strColNameWhere ? ' AND ('.$strColNameWhere.')' : ''), // 5
+                    $strSortColumn                                           // 6
                     // @codingStandardsIgnoreEnd
-                ))
-                ->execute($idList);
+                )
+            );
+
+            $statement->bindValue('ids', $idList, Connection::PARAM_INT_ARRAY);
+            $statement->execute();
         } else {
-            $objValue = $this->getFilterOptionsForUsedOnly($usedOnly);
+            $statement = $this->getFilterOptionsForUsedOnly($usedOnly);
         }
 
-        return $this->convertOptionsList($objValue, $this->getAliasColumn(), $this->getValueColumn(), $arrCount);
+        return $this->convertOptionsList($statement, $this->getAliasColumn(), $this->getValueColumn(), $arrCount);
     }
 
     /**
@@ -263,7 +267,6 @@ class Select extends AbstractSelect
             return array();
         }
 
-        $objDB          = $this->getMetaModel()->getServiceContainer()->getDatabase();
         $strTableNameId = $this->getSelectSource();
         $strColNameId   = $this->getIdColumn();
         $arrReturn      = array();
@@ -272,8 +275,8 @@ class Select extends AbstractSelect
         $strMetaModelTableNameId = $strMetaModelTableName.'_id';
 
         // Using aliased join here to resolve issue #3 - SQL error for self referencing table.
-        $objValue = $objDB
-            ->prepare(sprintf(
+        $statement = $this->connection->prepare(
+            sprintf(
                 'SELECT sourceTable.*, %2$s.id AS %3$s
                 FROM %1$s sourceTable
                 LEFT JOIN %2$s ON (sourceTable.%4$s=%2$s.%5$s)
@@ -286,11 +289,14 @@ class Select extends AbstractSelect
                 $this->getColName(),          // 5
                 $this->parameterMask($arrIds) // 6
                 // @codingStandardsIgnoreEnd
-            ))
-            ->execute($arrIds);
+            )
+        );
 
-        while ($objValue->next()) {
-            $arrReturn[$objValue->$strMetaModelTableNameId] = $objValue->row();
+        $statement->bindValue('ids', $arrIds, Connection::PARAM_INT_ARRAY);
+        $statement->execute();
+
+        while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
+            $arrReturn[$row[$strMetaModelTableNameId]] = $row;
         }
 
         return $arrReturn;
@@ -308,15 +314,12 @@ class Select extends AbstractSelect
         $strTableName = $this->getSelectSource();
         $strColNameId = $this->getIdColumn();
         if ($strTableName && $strColNameId) {
-            $strQuery = sprintf(
-                'UPDATE %1$s SET %2$s=? WHERE %1$s.id=?',
-                $this->getMetaModel()->getTableName(),
-                $this->getColName()
-            );
-
-            $objDB = $this->getMetaModel()->getServiceContainer()->getDatabase();
             foreach ($arrValues as $intItemId => $arrValue) {
-                $objDB->prepare($strQuery)->execute($arrValue[$strColNameId], $intItemId);
+                $this->connection->update(
+                    $this->getMetaModel()->getTableName(),
+                    [$this->getColName() => $arrValue[$strColNameId]],
+                    ['id' => $intItemId]
+                );
             }
         }
     }
