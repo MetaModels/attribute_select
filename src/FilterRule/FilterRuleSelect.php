@@ -19,7 +19,7 @@
  * @filesource
  */
 
-namespace MetaModels\Filter\Rules;
+namespace MetaModels\AttributeSelectBundle\FilterRule;
 
 use MetaModels\Attribute\Select\AbstractSelect;
 use MetaModels\Filter\FilterRule;

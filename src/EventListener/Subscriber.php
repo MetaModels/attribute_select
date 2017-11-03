@@ -20,7 +20,7 @@
  * @filesource
  */
 
-namespace MetaModels\DcGeneral\Events\Table\Attribute\Select;
+namespace MetaModels\AttributeSelectBundle\EventListener;
 
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\BuildWidgetEvent;
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\EncodePropertyValueFromWidgetEvent;

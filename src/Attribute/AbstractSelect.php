@@ -19,7 +19,7 @@
  * @filesource
  */
 
-namespace MetaModels\Attribute\Select;
+namespace MetaModels\AttributeSelectBundle\Attribute;
 
 use Contao\Database;
 use MetaModels\Attribute\AbstractHybrid;

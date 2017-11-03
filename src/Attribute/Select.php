@@ -25,7 +25,7 @@
  * @filesource
  */
 
-namespace MetaModels\Attribute\Select;
+namespace MetaModels\AttributeSelectBundle\Attribute;
 
 /**
  * This is the MetaModelAttribute class for handling select attributes on plain SQL tables.

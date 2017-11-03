@@ -15,7 +15,7 @@
  * @filesource
  */
 
-namespace MetaModels\Test\Attribute\Select;
+namespace MetaModels\AttributeSelectBundle\Test;
 
 use MetaModels\Attribute\Select\MetaModelSelect;
 use MetaModels\Attribute\Select\Select;

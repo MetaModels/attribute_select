@@ -20,8 +20,8 @@
 
 use MetaModels\Attribute\Events\CreateAttributeFactoryEvent;
 use MetaModels\Attribute\Select\AttributeTypeFactory;
-use MetaModels\DcGeneral\Events\MetaModels\Select\BackendSubscriber;
-use MetaModels\DcGeneral\Events\Table\Attribute\Select\Subscriber;
+use MetaModels\AttributeSelectBundle\EventListener\BackendSubscriber;
+use MetaModels\AttributeSelectBundle\EventListener\Subscriber;
 use MetaModels\Events\MetaModelsBootEvent;
 use MetaModels\MetaModelsEvents;
 

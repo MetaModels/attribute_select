@@ -18,7 +18,7 @@
  * @filesource
  */
 
-namespace MetaModels\DcGeneral\Events\MetaModels\Select;
+namespace MetaModels\AttributeSelectBundle\EventListener;
 
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\GetPropertyOptionsEvent;
 use MetaModels\Attribute\Select\AbstractSelect;

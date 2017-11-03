@@ -21,7 +21,7 @@
  * @filesource
  */
 
-namespace MetaModels\Attribute\Select;
+namespace MetaModels\AttributeSelectBundle\Attribute;
 
 use MetaModels\Filter\IFilter;
 use MetaModels\Filter\Rules\StaticIdList;

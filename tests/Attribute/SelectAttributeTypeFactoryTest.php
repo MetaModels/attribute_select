@@ -14,7 +14,7 @@
  * @filesource
  */
 
-namespace MetaModels\Test\Attribute\Select;
+namespace MetaModels\AttributeSelectBundle\Test;
 
 use MetaModels\Attribute\IAttributeTypeFactory;
 use MetaModels\Attribute\Select\AttributeTypeFactory;
