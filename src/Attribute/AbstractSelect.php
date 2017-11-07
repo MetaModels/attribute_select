@@ -236,7 +236,7 @@ abstract class AbstractSelect extends AbstractHybrid
             ->update($this->getMetaModel()->getTableName())
             ->set($this->getColName(), 0)
             ->where('id IN (:ids)')
-            ->setParameter('ids', $arrIds, Connection::PARAM_INT_ARRAY)
+            ->setParameter('ids', $arrIds, Connection::PARAM_STR_ARRAY)
             ->execute();
     }
 
@@ -266,7 +266,7 @@ abstract class AbstractSelect extends AbstractHybrid
             ->select($idColumn)
             ->from($tableName)
             ->where($aliasColumn . ' IN (:values)')
-            ->setParameter('values', $values, Connection::PARAM_INT_ARRAY)
+            ->setParameter('values', $values, Connection::PARAM_STR_ARRAY)
             ->execute()
             ->fetch(\PDO::FETCH_COLUMN);
     }

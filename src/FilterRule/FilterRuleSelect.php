@@ -93,7 +93,7 @@ class FilterRuleSelect extends FilterRule
             ->select('id')
             ->from($this->objAttribute->getMetaModel()->getTableName())
             ->where($this->objAttribute->getColName() . ' IN (:ids)')
-            ->setParameter('ids', $values)
+            ->setParameter('ids', $values, Connection::PARAM_STR_ARRAY)
             ->execute();
 
         return $matches->fetchAll(\PDO::FETCH_COLUMN);
