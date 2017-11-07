@@ -14,6 +14,8 @@ services:
           - '@cca.dc-general.scope-matcher'
           - '@database_connection'
           - '@metamodels.factory'
+          - "@metamodels.filter_setting_factory"
+          - "@translator"
         tags:
           - {
               name: kernel.event_listener,
