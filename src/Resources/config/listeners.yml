@@ -3,8 +3,8 @@ services:
         class: MetaModels\AttributeSelectBundle\EventListener\GetPropertyOptionsListener
         tags:
           - {
-              name: kernel.event_listener
-              event: 'dc-general.view.contao2backend.get-property-options'
+              name: kernel.event_listener,
+              event: 'dc-general.view.contao2backend.get-property-options',
               method: getPropertyOptions
             }
 
