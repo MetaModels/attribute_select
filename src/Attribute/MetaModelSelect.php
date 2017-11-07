@@ -337,7 +337,7 @@ class MetaModelSelect extends AbstractSelect
         if (!empty($idList)) {
             $builder
                 ->where('id IN (:ids)')
-                ->setParameter('ids', $idList, Connection::PARAM_INT_ARRAY);
+                ->setParameter('ids', $idList, Connection::PARAM_STR_ARRAY);
         }
 
         $arrUsedValues = $builder->execute()->fetchAll(\PDO::FETCH_COLUMN);
@@ -487,7 +487,7 @@ class MetaModelSelect extends AbstractSelect
             ->from($this->getMetaModel()->getTableName())
             ->where($this->getColName() . ' IN (:ids)')
             ->groupBy($this->getColName())
-            ->setParameter('ids', $idList)
+            ->setParameter('ids', $idList, Connection::PARAM_STR_ARRAY)
             ->execute();
 
         while ($row = $query->fetch(\PDO::FETCH_ASSOC)) {
@@ -551,7 +551,7 @@ class MetaModelSelect extends AbstractSelect
             ->select('id,' . $myColName)
             ->from($this->getMetaModel()->getTableName())
             ->where('id IN (:ids)')
-            ->setParameter('ids', $idList, Connection::PARAM_INT_ARRAY)
+            ->setParameter('ids', $idList, Connection::PARAM_STR_ARRAY)
             ->execute();
 
         $valueIds = array();
@@ -591,7 +591,7 @@ class MetaModelSelect extends AbstractSelect
             ->select($valueColumn . ', id')
             ->from($this->getMetaModel()->getTableName())
             ->where('id IN (:ids)')
-            ->setParameter('ids', $arrIds)
+            ->setParameter('ids', $arrIds, Connection::PARAM_STR_ARRAY)
             ->execute();
 
         $valueIds = array();
