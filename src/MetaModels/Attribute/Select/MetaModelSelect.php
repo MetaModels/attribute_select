@@ -253,7 +253,14 @@ class MetaModelSelect extends AbstractSelect
 
         $this->buildFilterRulesForFilterSetting($filter);
 
-        $objItems = $this->getSelectMetaModel()->findByFilter($filter, $this->getSortingColumn());
+        $objItems = $this->getSelectMetaModel()->findByFilter(
+            $filter,
+            $this->getSortingColumn(),
+            0,
+            0,
+            'ASC',
+            [$this->getValueColumn(), $this->getIdColumn()]
+        );
 
         $GLOBALS['TL_LANGUAGE'] = $originalLanguage;
 
