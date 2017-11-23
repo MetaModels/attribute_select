@@ -29,15 +29,10 @@
 namespace MetaModels\AttributeSelectBundle\Attribute;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Statement;
+use Doctrine\DBAL\Driver\Statement;
 
 /**
  * This is the MetaModelAttribute class for handling select attributes on plain SQL tables.
- *
- * @package    MetaModels
- * @subpackage AttributeSelect
- * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
- * @author     Christian de la Haye <service@delahaye.de>
  */
 class Select extends AbstractSelect
 {
@@ -176,8 +171,9 @@ class Select extends AbstractSelect
     {
         $additionalWhere = $this->getAdditionalWhere();
         $sortColumn      = $this->getSortingColumn();
+
         if ($usedOnly) {
-            $this->connection->query(sprintf(
+            return $this->connection->query(sprintf(
                 'SELECT COUNT(%1$s.%2$s) as mm_count, %1$s.*
                     FROM %1$s
                     RIGHT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
@@ -195,7 +191,7 @@ class Select extends AbstractSelect
             ));
         }
 
-        return $this->connection->execute(sprintf(
+        return $this->connection->query(sprintf(
             'SELECT COUNT(%3$s.%4$s) as mm_count, %1$s.*
                 FROM %1$s
                 LEFT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
@@ -280,14 +276,13 @@ class Select extends AbstractSelect
                 'SELECT sourceTable.*, %2$s.id AS %3$s
                 FROM %1$s sourceTable
                 LEFT JOIN %2$s ON (sourceTable.%4$s=%2$s.%5$s)
-                WHERE %2$s.id IN (%6$s)',
+                WHERE %2$s.id IN (:ids)',
                 // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
                 $strTableNameId,              // 1
                 $strMetaModelTableName,       // 2
                 $strMetaModelTableNameId,     // 3
                 $strColNameId,                // 4
-                $this->getColName(),          // 5
-                $this->parameterMask($arrIds) // 6
+                $this->getColName()           // 5
                 // @codingStandardsIgnoreEnd
             )
         );
