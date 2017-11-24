@@ -226,27 +226,28 @@ class Select extends AbstractSelect
         $strColNameWhere = $this->getAdditionalWhere();
 
         if ($idList) {
-            $statement = $this->connection->prepare(
-                sprintf(
-                    'SELECT COUNT(%1$s.%2$s) as mm_count, %1$s.*
-                    FROM %1$s
-                    RIGHT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
-                    WHERE (%3$s.id IN (:ids)%5$s)
-                    GROUP BY %1$s.%2$s
-                    ORDER BY %1$s.%6$s',
-                    // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
-                    $tableName,                                              // 1
-                    $idColumn,                                               // 2
-                    $this->getMetaModel()->getTableName(),                   // 3
-                    $this->getColName(),                                     // 4
-                    ($strColNameWhere ? ' AND ('.$strColNameWhere.')' : ''), // 5
-                    $strSortColumn                                           // 6
-                    // @codingStandardsIgnoreEnd
-                )
+            $query = sprintf(
+                'SELECT COUNT(%1$s.%2$s) as mm_count, %1$s.*
+                FROM %1$s
+                RIGHT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
+                WHERE (%3$s.id IN (:ids)%5$s)
+                GROUP BY %1$s.%2$s
+                ORDER BY %1$s.%6$s',
+                // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
+                $tableName,                                              // 1
+                $idColumn,                                               // 2
+                $this->getMetaModel()->getTableName(),                   // 3
+                $this->getColName(),                                     // 4
+                ($strColNameWhere ? ' AND ('.$strColNameWhere.')' : ''), // 5
+                $strSortColumn                                           // 6
+                // @codingStandardsIgnoreEnd
             );
 
-            $statement->bindValue('ids', $idList, Connection::PARAM_INT_ARRAY);
-            $statement->execute();
+            $statement = $this->connection->executeQuery(
+                $query,
+                [$idList],
+                [Connection::PARAM_STR_ARRAY]
+            );
         } else {
             $statement = $this->getFilterOptionsForUsedOnly($usedOnly);
         }
@@ -271,24 +272,25 @@ class Select extends AbstractSelect
         $strMetaModelTableNameId = $strMetaModelTableName.'_id';
 
         // Using aliased join here to resolve issue #3 - SQL error for self referencing table.
-        $statement = $this->connection->prepare(
-            sprintf(
-                'SELECT sourceTable.*, %2$s.id AS %3$s
-                FROM %1$s sourceTable
-                LEFT JOIN %2$s ON (sourceTable.%4$s=%2$s.%5$s)
-                WHERE %2$s.id IN (:ids)',
-                // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
-                $strTableNameId,              // 1
-                $strMetaModelTableName,       // 2
-                $strMetaModelTableNameId,     // 3
-                $strColNameId,                // 4
-                $this->getColName()           // 5
-                // @codingStandardsIgnoreEnd
-            )
+        $query =  sprintf(
+            'SELECT sourceTable.*, %2$s.id AS %3$s
+            FROM %1$s sourceTable
+            LEFT JOIN %2$s ON (sourceTable.%4$s=%2$s.%5$s)
+            WHERE %2$s.id IN (:ids)',
+            // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
+            $strTableNameId,              // 1
+            $strMetaModelTableName,       // 2
+            $strMetaModelTableNameId,     // 3
+            $strColNameId,                // 4
+            $this->getColName()           // 5
+            // @codingStandardsIgnoreEnd
         );
 
-        $statement->bindValue('ids', $arrIds, Connection::PARAM_INT_ARRAY);
-        $statement->execute();
+        $statement = $this->connection->executeQuery(
+            $query,
+            [$arrIds],
+            [Connection::PARAM_STR_ARRAY]
+        );
 
         while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
             $arrReturn[$row[$strMetaModelTableNameId]] = $row;
