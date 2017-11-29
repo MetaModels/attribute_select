@@ -230,7 +230,7 @@ class Select extends AbstractSelect
                 'SELECT COUNT(%1$s.%2$s) as mm_count, %1$s.*
                 FROM %1$s
                 RIGHT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
-                WHERE (%3$s.id IN (:ids)%5$s)
+                WHERE (%3$s.id IN (?)%5$s)
                 GROUP BY %1$s.%2$s
                 ORDER BY %1$s.%6$s',
                 // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
@@ -276,7 +276,7 @@ class Select extends AbstractSelect
             'SELECT sourceTable.*, %2$s.id AS %3$s
             FROM %1$s sourceTable
             LEFT JOIN %2$s ON (sourceTable.%4$s=%2$s.%5$s)
-            WHERE %2$s.id IN (:ids)',
+            WHERE %2$s.id IN (?)',
             // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
             $strTableNameId,              // 1
             $strMetaModelTableName,       // 2
