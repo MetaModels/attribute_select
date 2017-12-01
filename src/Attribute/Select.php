@@ -21,6 +21,7 @@
  * @author     Simon Kusterer <simon.kusterer@xamb.de>
  * @author     Stefan Heimes <stefan_heimes@hotmail.com>
  * @author     David Molineus <david.molineus@netzmacht.de>
+ * @author     Ingolf Steinhardt <info@e-spin.de>
  * @copyright  2012-2017 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0
  * @filesource
@@ -173,40 +174,44 @@ class Select extends AbstractSelect
         $sortColumn      = $this->getSortingColumn();
 
         if ($usedOnly) {
-            return $this->connection->query(sprintf(
-                'SELECT COUNT(%1$s.%2$s) as mm_count, %1$s.*
-                    FROM %1$s
-                    RIGHT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
-                    %5$s
-                    GROUP BY %1$s.%2$s
-                    ORDER BY %1$s.%6$s',
-                // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
-                $this->getSelectSource(),                                  // 1
-                $this->getIdColumn(),                                      // 2
-                $this->getMetaModel()->getTableName(),                     // 3
-                $this->getColName(),                                       // 4
-                ($additionalWhere ? ' WHERE ('.$additionalWhere.')' : ''), // 5
-                $sortColumn                                                // 6
-            // @codingStandardsIgnoreEnd
-            ));
+            $builder = $this->connection->createQueryBuilder()
+                ->select('COUNT(sourceTable.' . $this->getIdColumn() . ') as mm_count')
+                ->addSelect('sourceTable.*')
+                ->from($this->getSelectSource(), 'sourceTable')
+                ->rightJoin(
+                    'sourceTable',
+                    $this->getMetaModel()->getTableName(),
+                    'modelTable',
+                    'modelTable.' . $this->getColName() . '=' . 'sourceTable.' . $this->getIdColumn()
+                )
+                ->addGroupBy('sourceTable.' . $this->getIdColumn())
+                ->addOrderBy('sourceTable.' . $sortColumn);
+
+            if($additionalWhere) {
+                $builder->andWhere($additionalWhere);
+            }
+
+            return $builder->execute();
         }
 
-        return $this->connection->query(sprintf(
-            'SELECT COUNT(%3$s.%4$s) as mm_count, %1$s.*
-                FROM %1$s
-                LEFT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
-                %5$s
-                GROUP BY %1$s.%2$s
-                ORDER BY %1$s.%6$s',
-            // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
-            $this->getSelectSource(),                                  // 1
-            $this->getIdColumn(),                                      // 2
-            $this->getMetaModel()->getTableName(),                     // 3
-            $this->getColName(),                                       // 4
-            ($additionalWhere ? ' WHERE ('.$additionalWhere.')' : ''), // 5
-            $sortColumn                                                // 6
-            // @codingStandardsIgnoreEnd
-        ));
+        $builder = $this->connection->createQueryBuilder()
+            ->select('COUNT(modelTable.' . $this->getColName() . ') as mm_count')
+            ->addSelect('sourceTable.*')
+            ->from($this->getSelectSource(), 'sourceTable')
+            ->leftJoin(
+                'sourceTable',
+                $this->getMetaModel()->getTableName(),
+                'modelTable',
+                'modelTable.' . $this->getColName() . '=' . 'sourceTable.' . $this->getIdColumn()
+            )
+            ->addGroupBy('sourceTable.' . $this->getIdColumn())
+            ->addOrderBy('sourceTable.' . $sortColumn);
+
+        if($additionalWhere) {
+            $builder->andWhere($additionalWhere);
+        }
+
+        return $builder->execute();
     }
 
     /**
@@ -226,28 +231,27 @@ class Select extends AbstractSelect
         $strColNameWhere = $this->getAdditionalWhere();
 
         if ($idList) {
-            $query = sprintf(
-                'SELECT COUNT(%1$s.%2$s) as mm_count, %1$s.*
-                FROM %1$s
-                RIGHT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
-                WHERE (%3$s.id IN (?)%5$s)
-                GROUP BY %1$s.%2$s
-                ORDER BY %1$s.%6$s',
-                // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
-                $tableName,                                              // 1
-                $idColumn,                                               // 2
-                $this->getMetaModel()->getTableName(),                   // 3
-                $this->getColName(),                                     // 4
-                ($strColNameWhere ? ' AND ('.$strColNameWhere.')' : ''), // 5
-                $strSortColumn                                           // 6
-                // @codingStandardsIgnoreEnd
-            );
+            $builder = $this->connection->createQueryBuilder()
+                ->select('COUNT(sourceTable.' . $idColumn . ') as mm_count')
+                ->addSelect('sourceTable.*')
+                ->from($tableName, 'sourceTable')
+                ->rightJoin(
+                    'sourceTable',
+                    $this->getMetaModel()->getTableName(),
+                    'modelTable',
+                    'modelTable.' . $this->getColName() . '=sourceTable.' . $idColumn
+                )
+                ->where('modelTable.id IN (:ids)')
+                ->setParameter('ids', $idList, Connection::PARAM_STR_ARRAY)
+                ->addGroupBy('sourceTable.' . $idColumn)
+                ->addOrderBy('sourceTable.' . $strSortColumn);
 
-            $statement = $this->connection->executeQuery(
-                $query,
-                [$idList],
-                [Connection::PARAM_STR_ARRAY]
-            );
+            if($strColNameWhere) {
+                $builder->andWhere($strColNameWhere);
+            }
+
+            $statement = $builder->execute();
+
         } else {
             $statement = $this->getFilterOptionsForUsedOnly($usedOnly);
         }
@@ -266,33 +270,26 @@ class Select extends AbstractSelect
 
         $strTableNameId = $this->getSelectSource();
         $strColNameId   = $this->getIdColumn();
-        $arrReturn      = array();
+        $arrReturn      = [];
 
         $strMetaModelTableName   = $this->getMetaModel()->getTableName();
         $strMetaModelTableNameId = $strMetaModelTableName.'_id';
 
-        // Using aliased join here to resolve issue #3 - SQL error for self referencing table.
-        $query =  sprintf(
-            'SELECT sourceTable.*, %2$s.id AS %3$s
-            FROM %1$s sourceTable
-            LEFT JOIN %2$s ON (sourceTable.%4$s=%2$s.%5$s)
-            WHERE %2$s.id IN (?)',
-            // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
-            $strTableNameId,              // 1
-            $strMetaModelTableName,       // 2
-            $strMetaModelTableNameId,     // 3
-            $strColNameId,                // 4
-            $this->getColName()           // 5
-            // @codingStandardsIgnoreEnd
-        );
+        $builder = $this->connection->createQueryBuilder()
+            ->select('sourceTable.*')
+            ->addselect('modelTable.id AS ' . $strMetaModelTableNameId)
+            ->from($strTableNameId, 'sourceTable')
+            ->leftJoin(
+                'sourceTable',
+                $strMetaModelTableName,
+                'modelTable',
+                'sourceTable.' . $strColNameId . '=modelTable.' . $this->getColName()
+            )
+            ->where('modelTable.id IN (:ids)')
+            ->setParameter('ids', $arrIds, Connection::PARAM_STR_ARRAY)
+            ->execute();
 
-        $statement = $this->connection->executeQuery(
-            $query,
-            [$arrIds],
-            [Connection::PARAM_STR_ARRAY]
-        );
-
-        while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
+        foreach ($builder->fetchAll(\PDO::FETCH_ASSOC) as $row) {
             $arrReturn[$row[$strMetaModelTableNameId]] = $row;
         }
 
