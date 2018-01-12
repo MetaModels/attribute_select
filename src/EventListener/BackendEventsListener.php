@@ -3,7 +3,7 @@
 /**
  * This file is part of MetaModels/attribute_select.
  *
- * (c) 2012-2017 The MetaModels team.
+ * (c) 2012-2018 The MetaModels team.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -16,7 +16,8 @@
  * @author     Stefan Heimes <stefan_heimes@hotmail.com>
  * @author     Martin Treml <github@r2pi.net>
  * @author     David Molineus <david.molineus@netzmacht.de>
- * @copyright  2012-2017 The MetaModels team.
+ * @author     Ingolf Steinhardt <info@e-spin.de>
+ * @copyright  2012-2018 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0
  * @filesource
  */
@@ -557,23 +558,14 @@ class BackendEventsListener
         $values = $event->getPropertyValueBag();
 
         if ($where) {
-            $strTableName  = $values->getPropertyValue('select_table');
-            $strColNameId  = $values->getPropertyValue('select_id');
-            $strSortColumn = $values->getPropertyValue('select_sorting') ?: $strColNameId;
-
-            $query = sprintf(
-                'SELECT %1$s.*
-                FROM %1$s%2$s
-                ORDER BY %1$s.%3$s',
-                // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
-                $strTableName,                            // 1
-                ($where ? ' WHERE ('.$where.')' : false), // 2
-                $strSortColumn                            // 3
-            // @codingStandardsIgnoreEnd
-            );
+            $query = $this->connection->createQueryBuilder()
+                ->select($values->getPropertyValue('select_table') . '.*')
+                ->from($values->getPropertyValue('select_table'))
+                ->where($where)
+                ->orderBy($values->getPropertyValue('select_sorting') ?: $values->getPropertyValue('select_id'));
 
             try {
-                $this->connection->exec($query);
+                $query->execute();
             } catch (\Exception $e) {
                 throw new \RuntimeException(
                     sprintf(
