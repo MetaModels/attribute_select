@@ -170,8 +170,7 @@ class Select extends AbstractSelect
      */
     public function getFilterOptionsForUsedOnly($usedOnly)
     {
-        $additionalWhere = $this->getAdditionalWhere();
-        $sortColumn      = $this->getSortingColumn();
+        $sortColumn = $this->getSortingColumn();
 
         if ($usedOnly) {
             $builder = $this->connection->createQueryBuilder()
@@ -187,7 +186,7 @@ class Select extends AbstractSelect
                 ->addGroupBy('sourceTable.' . $this->getIdColumn())
                 ->addOrderBy('sourceTable.' . $sortColumn);
 
-            if($additionalWhere) {
+            if($additionalWhere = $this->getAdditionalWhere()) {
                 $builder->andWhere($additionalWhere);
             }
 
@@ -207,7 +206,7 @@ class Select extends AbstractSelect
             ->addGroupBy('sourceTable.' . $this->getIdColumn())
             ->addOrderBy('sourceTable.' . $sortColumn);
 
-        if($additionalWhere) {
+        if($additionalWhere = $this->getAdditionalWhere()) {
             $builder->andWhere($additionalWhere);
         }
 
@@ -228,7 +227,6 @@ class Select extends AbstractSelect
         $tableName       = $this->getSelectSource();
         $idColumn        = $this->getIdColumn();
         $strSortColumn   = $this->getSortingColumn();
-        $strColNameWhere = $this->getAdditionalWhere();
 
         if ($idList) {
             $builder = $this->connection->createQueryBuilder()
@@ -246,8 +244,8 @@ class Select extends AbstractSelect
                 ->addGroupBy('sourceTable.' . $idColumn)
                 ->addOrderBy('sourceTable.' . $strSortColumn);
 
-            if($strColNameWhere) {
-                $builder->andWhere($strColNameWhere);
+            if($additionalWhere = $this->getAdditionalWhere()) {
+                $builder->andWhere($additionalWhere);
             }
 
             $statement = $builder->execute();
