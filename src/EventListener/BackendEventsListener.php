@@ -559,10 +559,10 @@ class BackendEventsListener
 
         if ($where) {
             $query = $this->connection->createQueryBuilder()
-                ->select($values->getPropertyValue('select_table') . '.*')
-                ->from($values->getPropertyValue('select_table'))
+                ->select('sourceTable.*')
+                ->from($values->getPropertyValue('select_table'), 'sourceTable')
                 ->where($where)
-                ->orderBy($values->getPropertyValue('select_sorting') ?: $values->getPropertyValue('select_id'));
+                ->orderBy('sourceTable.' . ($values->getPropertyValue('select_sorting') ?: $values->getPropertyValue('select_id')));
 
             try {
                 $query->execute();
