@@ -53,35 +53,35 @@ class BackendEventsListener
      *
      * @var RequestScopeDeterminator
      */
-    private $scopeMatcher;
+    protected $scopeMatcher;
 
     /**
      * Database connection.
      *
      * @var Connection
      */
-    private $connection;
+    protected $connection;
 
     /**
      * MetaModels factory.
      *
      * @var IFactory
      */
-    private $factory;
+    protected $factory;
 
     /**
      * Translator.
      *
      * @var TranslatorInterface
      */
-    private $translator;
+    protected $translator;
 
     /**
      * Filter setting factory.
      *
      * @var IFilterSettingFactory
      */
-    private $filterSettingFactory;
+    protected $filterSettingFactory;
 
     /**
      * EventListener constructor.
