@@ -3,7 +3,7 @@
 /**
  * This file is part of MetaModels/attribute_select.
  *
- * (c) 2012-2016 The MetaModels team.
+ * (c) 2012-2018 The MetaModels team.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -16,7 +16,8 @@
  * @author     Christian de la Haye <service@delahaye.de>
  * @author     Stefan Heimes <stefan_heimes@hotmail.com>
  * @author     Andreas Isaak <info@andreas-isaak.de>
- * @copyright  2012-2016 The MetaModels team.
+ * @author     Ingolf Steinhardt <info@e-spin.de>
+ * @copyright  2012-2018 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0
  * @filesource
  */
@@ -41,10 +42,11 @@ $GLOBALS['TL_DCA']['tl_metamodel_attribute']['metapalettes']['select extends _si
 
 $GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['select_table'] = array
 (
-    'label'                  => &$GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_table'],
-    'exclude'                => true,
-    'inputType'              => 'select',
-    'eval'                   => array
+    'label'     => &$GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_table'],
+    'exclude'   => true,
+    'inputType' => 'select',
+    'sql'       => 'varchar(255) NOT NULL default \'\'',
+    'eval'      => array
     (
         'includeBlankOption' => true,
         'mandatory'          => true,
@@ -57,10 +59,11 @@ $GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['select_table'] = array
 
 $GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['select_column'] = array
 (
-    'label'                  => &$GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_column'],
-    'exclude'                => true,
-    'inputType'              => 'select',
-    'eval'                   => array
+    'label'     => &$GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_column'],
+    'exclude'   => true,
+    'inputType' => 'select',
+    'sql'       => 'varchar(255) NOT NULL default \'\'',
+    'eval'      => array
     (
         'includeBlankOption' => true,
         'mandatory'          => true,
@@ -72,10 +75,11 @@ $GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['select_column'] = array
 
 $GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['select_id'] = array
 (
-    'label'                  => &$GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_id'],
-    'exclude'                => true,
-    'inputType'              => 'select',
-    'eval'                   => array
+    'label'     => &$GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_id'],
+    'exclude'   => true,
+    'inputType' => 'select',
+    'sql'       => 'varchar(255) NOT NULL default \'\'',
+    'eval'      => array
     (
         'includeBlankOption' => true,
         'mandatory'          => true,
@@ -87,10 +91,11 @@ $GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['select_id'] = array
 
 $GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['select_alias'] = array
 (
-    'label'                  => &$GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_alias'],
-    'exclude'                => true,
-    'inputType'              => 'select',
-    'eval'                   => array
+    'label'     => &$GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_alias'],
+    'exclude'   => true,
+    'inputType' => 'select',
+    'sql'       => 'varchar(255) NOT NULL default \'\'',
+    'eval'      => array
     (
         'includeBlankOption' => true,
         'mandatory'          => true,
@@ -102,10 +107,11 @@ $GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['select_alias'] = array
 
 $GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['select_sorting'] = array
 (
-    'label'                  => &$GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_sorting'],
-    'exclude'                => true,
-    'inputType'              => 'select',
-    'eval'                   => array
+    'label'     => &$GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_sorting'],
+    'exclude'   => true,
+    'inputType' => 'select',
+    'sql'       => 'varchar(255) NOT NULL default \'\'',
+    'eval'      => array
     (
         'includeBlankOption' => true,
         'mandatory'          => true,
@@ -117,23 +123,25 @@ $GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['select_sorting'] = array
 
 $GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['select_where'] = array
 (
-    'label'                  => &$GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_where'],
-    'exclude'                => true,
-    'inputType'              => 'textarea',
-    'eval'                   => array
+    'label'     => &$GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_where'],
+    'exclude'   => true,
+    'inputType' => 'textarea',
+    'sql'       => 'text NULL',
+    'eval'      => array
     (
-        'tl_class'           => 'clr',
-        'style'              => 'height: 4em;',
-        'decodeEntities'     => 'true'
+        'tl_class'       => 'clr',
+        'style'          => 'height: 4em;',
+        'decodeEntities' => 'true'
     )
 );
 
 $GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['select_filter'] = array
 (
-    'label'            => &$GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_filter'],
-    'exclude'          => true,
-    'inputType'        => 'select',
-    'eval'             => array
+    'label'     => &$GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_filter'],
+    'exclude'   => true,
+    'inputType' => 'select',
+    'sql'       => 'int(11) unsigned NOT NULL default \'0\'',
+    'eval'      => array
     (
         'includeBlankOption' => true,
         'alwaysSave'         => true,
@@ -148,8 +156,9 @@ $GLOBALS['TL_DCA']['tl_metamodel_attribute']['fields']['select_filterparams'] = 
     'label'     => &$GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_filterparams'],
     'exclude'   => true,
     'inputType' => 'mm_subdca',
+    'sql'       => 'text NULL',
     'eval'      => array
     (
-        'tl_class'   => 'clr m12'
+        'tl_class' => 'clr m12'
     )
 );
