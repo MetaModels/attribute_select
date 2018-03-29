@@ -8,7 +8,7 @@
  *
  * @license http://www.gnu.org/licenses/lgpl-3.0.html LGPL
  *
- * last-updated: 2015-07-11T08:12:44+02:00
+ * last-updated: 2018-03-29T15:31:35+02:00
  */
 
 $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_alias']['0']                 = 'Alias-Spalte';
@@ -33,5 +33,5 @@ $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_table_type']['untranslated
 $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_where']['0']                 = 'SQL';
 $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_where']['1']                 = 'Die Auswahlmöglichkeiten können per SQL eingeschränkt werden.';
 $GLOBALS['TL_LANG']['tl_metamodel_attribute']['sql_error']                         = 'Die SQL-Abfrage verursacht einen Fehler.';
-$GLOBALS['TL_LANG']['tl_metamodel_attribute']['typeOptions']['select']             = 'Auswahl';
+$GLOBALS['TL_LANG']['tl_metamodel_attribute']['typeOptions']['select']             = 'Einzelauswahl [select]';
 
