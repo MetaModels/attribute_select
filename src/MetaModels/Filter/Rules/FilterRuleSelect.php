@@ -38,7 +38,7 @@ class FilterRuleSelect extends FilterRule
      *
      * @var AbstractSelect
      */
-    protected $objAttribute = null;
+    protected $objAttribute;
 
     /**
      * The value to search.
