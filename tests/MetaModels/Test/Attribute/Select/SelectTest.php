@@ -22,11 +22,12 @@ use MetaModels\Attribute\Select\MetaModelSelect;
 use MetaModels\Attribute\Select\Select;
 use MetaModels\IMetaModel;
 use MetaModels\MetaModel;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Unit tests to test class Select.
  */
-class SelectTest extends \PHPUnit_Framework_TestCase
+class SelectTest extends TestCase
 {
     /**
      * Mock a MetaModel.
@@ -38,7 +39,7 @@ class SelectTest extends \PHPUnit_Framework_TestCase
      */
     protected function mockMetaModel($language, $fallbackLanguage)
     {
-        $metaModel = $this->getMock(MetaModel::class, [], [[]]);
+        $metaModel = $this->getMockBuilder(MetaModel::class)->setMethods([])->setConstructorArgs([[]])->getMock();
 
         $metaModel
             ->expects($this->any())
