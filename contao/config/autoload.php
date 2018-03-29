@@ -23,7 +23,7 @@
 /**
  * Register the templates
  */
-TemplateLoader::addFiles(
+\Contao\TemplateLoader::addFiles(
     [
         'mm_attr_select' => 'system/modules/metamodelsattribute_select/templates',
     ]

@@ -21,6 +21,9 @@ use MetaModels\Attribute\IAttributeTypeFactory;
 use MetaModels\Attribute\Select\AttributeTypeFactory;
 use MetaModels\IMetaModel;
 use MetaModels\Test\Attribute\AttributeTypeFactoryTest;
+use MetaModels\MetaModel;
+use MetaModels\Attribute\Select\Select;
+use MetaModels\Attribute\Select\MetaModelSelect;
 
 /**
  * Test the attribute factory.
@@ -42,7 +45,7 @@ class SelectAttributeTypeFactoryTest extends AttributeTypeFactoryTest
      */
     protected function mockMetaModel($tableName, $language, $fallbackLanguage)
     {
-        $metaModel = $this->getMock('MetaModels\MetaModel', [], [[]]);
+        $metaModel = $this->getMock(MetaModel::class, [], [[]]);
 
         $metaModel
             ->expects($this->any())
@@ -90,7 +93,7 @@ class SelectAttributeTypeFactoryTest extends AttributeTypeFactoryTest
             $this->mockMetaModel('mm_test', 'de', 'en')
         );
 
-        $this->assertInstanceOf('MetaModels\Attribute\Select\Select', $attribute);
+        $this->assertInstanceOf(Select::class, $attribute);
 
         foreach ($values as $key => $value) {
             $this->assertEquals($value, $attribute->get($key), $key);
@@ -115,7 +118,7 @@ class SelectAttributeTypeFactoryTest extends AttributeTypeFactoryTest
             $this->mockMetaModel('mm_test', 'de', 'en')
         );
 
-        $this->assertInstanceOf('MetaModels\Attribute\Select\MetaModelSelect', $attribute);
+        $this->assertInstanceOf(MetaModelSelect::class, $attribute);
 
         foreach ($values as $key => $value) {
             $this->assertEquals($value, $attribute->get($key), $key);

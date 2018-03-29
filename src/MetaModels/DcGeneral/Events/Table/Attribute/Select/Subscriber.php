@@ -23,6 +23,7 @@
 
 namespace MetaModels\DcGeneral\Events\Table\Attribute\Select;
 
+use Contao\Database;
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\BuildWidgetEvent;
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\EncodePropertyValueFromWidgetEvent;
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\GetPropertyOptionsEvent;
@@ -505,7 +506,7 @@ class Subscriber extends BaseSubscriber
         $values = $event->getPropertyValueBag();
 
         if ($where) {
-            $objDB = \Database::getInstance();
+            $objDB = Database::getInstance();
 
             $strTableName  = $values->getPropertyValue('select_table');
             $strColNameId  = $values->getPropertyValue('select_id');
