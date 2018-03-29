@@ -3,7 +3,7 @@
 /**
  * This file is part of MetaModels/attribute_select.
  *
- * (c) 2012-2017 The MetaModels team.
+ * (c) 2012-2018 The MetaModels team.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -17,7 +17,8 @@
  * @author     Martin Treml <github@r2pi.net>
  * @author     David Maack <david.maack@arcor.de>
  * @author     David Molineus <david.molineus@netzmacht.de>
- * @copyright  2012-2017 The MetaModels team.
+ * @author     Sven Baumann <baumann.sv@gmail.com>
+ * @copyright  2012-2018 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0
  * @filesource
  */
@@ -159,12 +160,12 @@ class MetaModelSelect extends AbstractSelect
      */
     public function getAttributeSettingNames()
     {
-        return array_merge(
+        return \array_merge(
             parent::getAttributeSettingNames(),
-            array(
+            [
                 'select_filter',
                 'select_filterparams',
-            )
+            ]
         );
     }
 
@@ -177,14 +178,14 @@ class MetaModelSelect extends AbstractSelect
      */
     protected function itemsToValues(IItems $items)
     {
-        $values = array();
+        $values = [];
         foreach ($items as $item) {
             /** @var IItem $item */
             $valueId    = $item->get('id');
             $parsedItem = $item->parseValue();
 
-            $values[$valueId] = array_merge(
-                array(self::SELECT_RAW => $parsedItem['raw']),
+            $values[$valueId] = \array_merge(
+                [self::SELECT_RAW => $parsedItem['raw']],
                 $parsedItem['text']
             );
         }
@@ -205,9 +206,9 @@ class MetaModelSelect extends AbstractSelect
         $recursionKey = $this->getMetaModel()->getTableName();
 
         // Prevent recursion.
-        static $tables = array();
+        static $tables = [];
         if (isset($tables[$recursionKey])) {
-            return array();
+            return [];
         }
         $tables[$recursionKey] = $recursionKey;
 
@@ -258,18 +259,18 @@ class MetaModelSelect extends AbstractSelect
             if (!$ids) {
                 $valueId = 0;
             } else {
-                if (count($ids) > 1) {
+                if (\count($ids) > 1) {
                     throw new \RuntimeException(
-                        sprintf(
+                        \sprintf(
                             'Multiple values found for %s, are there obsolete values for %s.%s (att_id: %s)?',
-                            var_export($varValue, true),
+                            \var_export($varValue, true),
                             $model->getTableName(),
                             $this->getColName(),
                             $this->get('id')
                         )
                     );
                 }
-                $valueId = array_shift($ids);
+                $valueId = \array_shift($ids);
             }
         } else {
             // Must be a system column then.
@@ -288,7 +289,7 @@ class MetaModelSelect extends AbstractSelect
 
                 /** @noinspection PhpUndefinedFieldInspection */
                 if ($valueId === false) {
-                    throw new \RuntimeException('Could not translate value ' . var_export($varValue, true));
+                    throw new \RuntimeException('Could not translate value ' . \var_export($varValue, true));
                 }
             }
         }
@@ -310,7 +311,7 @@ class MetaModelSelect extends AbstractSelect
     public function getFilterOptionsForDcGeneral()
     {
         if (!$this->isFilterOptionRetrievingPossible(null)) {
-            return array();
+            return [];
         }
 
         $originalLanguage       = $GLOBALS['TL_LANGUAGE'];
@@ -343,7 +344,7 @@ class MetaModelSelect extends AbstractSelect
      *
      * @return void
      */
-    public function buildFilterRulesForUsedOnly($filter, $idList = array())
+    public function buildFilterRulesForUsedOnly($filter, $idList = [])
     {
         $builder = $this->connection->createQueryBuilder()
             ->select($this->getColName())
@@ -357,7 +358,7 @@ class MetaModelSelect extends AbstractSelect
         }
 
         $arrUsedValues = $builder->execute()->fetchAll(\PDO::FETCH_COLUMN);
-        $arrUsedValues = array_filter(
+        $arrUsedValues = \array_filter(
             $arrUsedValues,
             function ($value) {
                 return !empty($value);
@@ -390,12 +391,12 @@ class MetaModelSelect extends AbstractSelect
             $values       = $_GET;
             $presets      = (array) $this->get('select_filterparams');
             $presetNames  = $filterSettings->getParameters();
-            $filterParams = array_keys($filterSettings->getParameterFilterNames());
-            $processed    = array();
+            $filterParams = \array_keys($filterSettings->getParameterFilterNames());
+            $processed    = [];
 
             // We have to use all the preset values we want first.
             foreach ($presets as $presetName => $preset) {
-                if (in_array($presetName, $presetNames)) {
+                if (\in_array($presetName, $presetNames)) {
                     $processed[$presetName] = $preset['value'];
                 }
             }
@@ -405,12 +406,12 @@ class MetaModelSelect extends AbstractSelect
             // * or are overridable.
             foreach ($filterParams as $parameter) {
                 // Unknown parameter? - next please.
-                if (!array_key_exists($parameter, $values)) {
+                if (!\array_key_exists($parameter, $values)) {
                     continue;
                 }
 
                 // Not a preset or allowed to override? - use value.
-                if ((!array_key_exists($parameter, $presets)) || $presets[$parameter]['use_get']) {
+                if ((!\array_key_exists($parameter, $presets)) || $presets[$parameter]['use_get']) {
                     $processed[$parameter] = $values[$parameter];
                 }
             }
@@ -438,7 +439,7 @@ class MetaModelSelect extends AbstractSelect
             $this->determineCount($items, $count);
         }
 
-        $result = array();
+        $result = [];
         foreach ($items as $item) {
             $textValue  = $this->tryParseAttribute($displayValue, $item);
             $aliasValue = $this->tryParseAttribute($aliasColumn, $item);
@@ -484,12 +485,12 @@ class MetaModelSelect extends AbstractSelect
      */
     private function determineCount($items, &$count)
     {
-        $idList = array_unique(array_filter(array_map(
+        $idList = \array_unique(\array_filter(\array_map(
             function ($item) {
                 /** @var IItem $item */
                 return $item->get('id');
             },
-            iterator_to_array($items)
+            \iterator_to_array($items)
         )));
 
         if (empty($idList)) {
@@ -499,7 +500,7 @@ class MetaModelSelect extends AbstractSelect
         $valueCol = $this->getColName();
         $query    = $this->connection->createQueryBuilder()
             ->select($this->getColName())
-            ->addSelect(sprintf('COUNT(%s) AS count', $this->getColName()))
+            ->addSelect(\sprintf('COUNT(%s) AS count', $this->getColName()))
             ->from($this->getMetaModel()->getTableName())
             ->where($this->getColName() . ' IN (:ids)')
             ->groupBy($this->getColName())
@@ -522,7 +523,7 @@ class MetaModelSelect extends AbstractSelect
     public function getFilterOptions($idList, $usedOnly, &$arrCount = null)
     {
         if (!$this->isFilterOptionRetrievingPossible($idList)) {
-            return array();
+            return [];
         }
 
         $strDisplayValue    = $this->getValueColumn();
@@ -540,8 +541,8 @@ class MetaModelSelect extends AbstractSelect
         $this->buildFilterRulesForFilterSetting($filter);
 
         // Add some more filter rules.
-        if ($usedOnly || ($idList && is_array($idList))) {
-            $this->buildFilterRulesForUsedOnly($filter, $idList ?: array());
+        if ($usedOnly || ($idList && \is_array($idList))) {
+            $this->buildFilterRulesForUsedOnly($filter, $idList ?: []);
         }
 
         $objItems = $this->getSelectMetaModel()->findByFilter($filter, $strSortingValue);
@@ -570,8 +571,8 @@ class MetaModelSelect extends AbstractSelect
             ->setParameter('ids', $idList, Connection::PARAM_STR_ARRAY)
             ->execute();
 
-        $valueIds = array();
-        $valueMap = array();
+        $valueIds = [];
+        $valueMap = [];
         while ($values = $statement->fetch(\PDO::FETCH_OBJ)) {
             $itemId             = $values->id;
             $value              = $values->$myColName;
@@ -579,16 +580,17 @@ class MetaModelSelect extends AbstractSelect
             $valueMap[$value][] = $itemId;
         }
 
-        $filter = $metaModel->getEmptyFilter()->addFilterRule(new StaticIdList(array_unique(array_values($valueIds))));
+        $filter =
+            $metaModel->getEmptyFilter()->addFilterRule(new StaticIdList(\array_unique(\array_values($valueIds))));
         $value  = $this->getValueColumn();
-        $items  = $metaModel->findByFilter($filter, $value, 0, 0, $strDirection, array($value));
-        $result = array();
+        $items  = $metaModel->findByFilter($filter, $value, 0, 0, $strDirection, [$value]);
+        $result = [];
         foreach ($items as $item) {
-            $result = array_merge($result, $valueMap[$item->get('id')]);
+            $result = \array_merge($result, $valueMap[$item->get('id')]);
         }
 
-        $diff = array_diff($idList, $result);
-        return array_merge($result, $diff);
+        $diff = \array_diff($idList, $result);
+        return \array_merge($result, $diff);
     }
 
     /**
@@ -597,10 +599,10 @@ class MetaModelSelect extends AbstractSelect
     public function getDataFor($arrIds)
     {
         if (!$this->isProperlyConfigured()) {
-            return array();
+            return [];
         }
 
-        $result      = array();
+        $result      = [];
         $valueColumn = $this->getColName();
         // First pass, load database rows.
         $statement  = $this->connection->createQueryBuilder()
@@ -610,7 +612,7 @@ class MetaModelSelect extends AbstractSelect
             ->setParameter('ids', $arrIds, Connection::PARAM_STR_ARRAY)
             ->execute();
 
-        $valueIds = array();
+        $valueIds = [];
         while ($rows = $statement->fetch(\PDO::FETCH_OBJ)) {
             /** @noinspection PhpUndefinedFieldInspection */
             $valueIds[$rows->id] = $rows->$valueColumn;
@@ -640,7 +642,7 @@ class MetaModelSelect extends AbstractSelect
             return;
         }
 
-        $query = sprintf(
+        $query = \sprintf(
         // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
             'UPDATE %1$s SET %2$s=:val WHERE %1$s.id=:id',
             $this->getMetaModel()->getTableName(), // 1
@@ -649,15 +651,15 @@ class MetaModelSelect extends AbstractSelect
         );
 
         foreach ($arrValues as $itemId => $value) {
-            if (is_array($value) && isset($value[self::SELECT_RAW]['id'])) {
+            if (\is_array($value) && isset($value[self::SELECT_RAW]['id'])) {
                 $this->connection->prepare($query)->execute(['val' => $value[self::SELECT_RAW]['id'], 'id' => $itemId]);
-            } elseif (is_numeric($itemId) && (is_numeric($value) || $value === null)) {
+            } elseif (\is_numeric($itemId) && (\is_numeric($value) || $value === null)) {
                 $this->connection->prepare($query)->execute(['val' => $value, 'id' => $itemId]);
             } else {
                 throw new \RuntimeException(
                     'Invalid values encountered, itemId: ' .
-                    var_export($value, true) .
-                    ' value: ' . var_export($value, true)
+                    \var_export($value, true) .
+                    ' value: ' . \var_export($value, true)
                 );
             }
         }
@@ -681,16 +683,16 @@ class MetaModelSelect extends AbstractSelect
             return parent::convertValuesToValueIds($values);
         }
 
-        $sanitizedValues = array();
+        $sanitizedValues = [];
         foreach ($values as $value) {
             $valueIds = $attribute->searchFor($value);
             if ($valueIds === null) {
                 return null;
             }
 
-            $sanitizedValues = array_merge($valueIds, $sanitizedValues);
+            $sanitizedValues = \array_merge($valueIds, $sanitizedValues);
         }
 
-        return array_unique($sanitizedValues);
+        return \array_unique($sanitizedValues);
     }
 }

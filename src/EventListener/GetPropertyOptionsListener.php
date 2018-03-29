@@ -3,7 +3,7 @@
 /**
  * This file is part of MetaModels/attribute_select.
  *
- * (c) 2012-2017 The MetaModels team.
+ * (c) 2012-2018 The MetaModels team.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -14,7 +14,8 @@
  * @subpackage AttributeSelect
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
  * @author     David Molineus <david.molineus@netzmacht.de>
- * @copyright  2012-2017 The MetaModels team.
+ * @author     Sven Baumann <baumann.sv@gmail.com>
+ * @copyright  2012-2018 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0
  * @filesource
  */
@@ -57,7 +58,7 @@ class GetPropertyOptionsListener
         try {
             $options = $attribute->getFilterOptionsForDcGeneral();
         } catch (\Exception $exception) {
-            $options = array('Error: ' . $exception->getMessage());
+            $options = ['Error: ' . $exception->getMessage()];
         }
 
         $event->setOptions($options);
