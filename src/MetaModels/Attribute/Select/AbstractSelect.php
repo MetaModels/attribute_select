@@ -207,7 +207,7 @@ abstract class AbstractSelect extends AbstractHybrid
      */
     public function getAttributeSettingNames()
     {
-        return array_merge(
+        return \array_merge(
             parent::getAttributeSettingNames(),
             [
                 'select_table',
@@ -242,11 +242,11 @@ abstract class AbstractSelect extends AbstractHybrid
      */
     public function unsetDataFor($arrIds)
     {
-        $strQuery = sprintf(
+        $strQuery = \sprintf(
             'UPDATE %1$s SET %2$s=0 WHERE %1$s.id IN (%3$s)',
             $this->getMetaModel()->getTableName(),
             $this->getColName(),
-            implode(',', $arrIds)
+            \implode(',', $arrIds)
         );
         $this->getDatabase()->execute($strQuery);
     }
@@ -268,12 +268,12 @@ abstract class AbstractSelect extends AbstractHybrid
             return $values;
         }
 
-        $values = array_unique(array_filter($values));
+        $values = \array_unique(\array_filter($values));
         if (empty($values)) {
             return [];
         }
         $objSelectIds = $this->getDatabase()
-            ->prepare(sprintf(
+            ->prepare(\sprintf(
                 'SELECT %s FROM %s WHERE %s IN (%s)',
                 $idColumn,
                 $tableName,
@@ -296,6 +296,6 @@ abstract class AbstractSelect extends AbstractHybrid
      */
     public function getFilterUrlValue($varValue)
     {
-        return urlencode($varValue[$this->getAliasColumn()]);
+        return \urlencode($varValue[$this->getAliasColumn()]);
     }
 }

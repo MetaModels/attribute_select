@@ -63,7 +63,7 @@ class FilterRuleSelect extends FilterRule
      */
     public function getMatchingIds()
     {
-        $values = $this->objAttribute->convertValuesToValueIds(explode(',', $this->value));
+        $values = $this->objAttribute->convertValuesToValueIds(\explode(',', $this->value));
         if (empty($values)) {
             return $values;
         }
@@ -75,7 +75,7 @@ class FilterRuleSelect extends FilterRule
                     'SELECT id FROM %s WHERE %s IN (%s)',
                     $this->objAttribute->getMetaModel()->getTableName(),
                     $this->objAttribute->getColName(),
-                    implode(',', array_fill(0, count($values), '?'))
+                    \implode(',', \array_fill(0, \count($values), '?'))
                 )
             )
         ->execute($values);

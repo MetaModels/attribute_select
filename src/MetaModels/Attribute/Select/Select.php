@@ -61,7 +61,7 @@ class Select extends AbstractSelect
         $strSortColumn = $this->getSortingColumn();
         $idList        = $this->getDatabase()
             ->prepare(
-                sprintf(
+                \sprintf(
                     'SELECT %1$s.id FROM %1$s
                     LEFT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
                     WHERE %1$s.id IN (%5$s)
@@ -88,7 +88,7 @@ class Select extends AbstractSelect
      */
     public function getAttributeSettingNames()
     {
-        return array_merge(
+        return \array_merge(
             parent::getAttributeSettingNames(),
             [
                 'select_id',
@@ -112,7 +112,7 @@ class Select extends AbstractSelect
     {
         // Lookup the value.
         $values = $this->getDatabase()
-            ->prepare(sprintf('SELECT %1$s.* FROM %1$s WHERE %2$s=?', $this->getSelectSource(), $this->getIdColumn()))
+            ->prepare(\sprintf('SELECT %1$s.* FROM %1$s WHERE %2$s=?', $this->getSelectSource(), $this->getIdColumn()))
             ->execute($varValue);
 
         return $values->row();
@@ -141,7 +141,7 @@ class Select extends AbstractSelect
      */
     protected function getAdditionalWhere()
     {
-        return $this->get('select_where') ? html_entity_decode($this->get('select_where')) : false;
+        return $this->get('select_where') ? \html_entity_decode($this->get('select_where')) : false;
     }
 
     /**
@@ -161,7 +161,7 @@ class Select extends AbstractSelect
     {
         $arrReturn = [];
         while ($values->next()) {
-            if (is_array($count)) {
+            if (\is_array($count)) {
                 /** @noinspection PhpUndefinedFieldInspection */
                 $count[$values->$aliasColumn] = $values->mm_count;
             }
@@ -184,7 +184,7 @@ class Select extends AbstractSelect
         $additionalWhere = $this->getAdditionalWhere();
         $sortColumn      = $this->getSortingColumn();
         if ($usedOnly) {
-            return $this->getDatabase()->execute(sprintf(
+            return $this->getDatabase()->execute(\sprintf(
                 'SELECT COUNT(%1$s.%2$s) as mm_count, %1$s.*
                     FROM %1$s
                     RIGHT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
@@ -202,7 +202,7 @@ class Select extends AbstractSelect
             ));
         }
 
-        return $this->getDatabase()->execute(sprintf(
+        return $this->getDatabase()->execute(\sprintf(
             'SELECT COUNT(%3$s.%4$s) as mm_count, %1$s.*
                 FROM %1$s
                 LEFT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
@@ -239,7 +239,7 @@ class Select extends AbstractSelect
         $objDB = $this->getDatabase();
         if ($idList) {
             $objValue = $objDB
-                ->prepare(sprintf(
+                ->prepare(\sprintf(
                     'SELECT COUNT(%1$s.%2$s) as mm_count, %1$s.*
                     FROM %1$s
                     RIGHT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
@@ -283,7 +283,7 @@ class Select extends AbstractSelect
 
         // Using aliased join here to resolve issue #3 - SQL error for self referencing table.
         $objValue = $objDB
-            ->prepare(sprintf(
+            ->prepare(\sprintf(
                 'SELECT sourceTable.*, %2$s.id AS %3$s
                 FROM %1$s sourceTable
                 LEFT JOIN %2$s ON (sourceTable.%4$s=%2$s.%5$s)
@@ -318,7 +318,7 @@ class Select extends AbstractSelect
         $strTableName = $this->getSelectSource();
         $strColNameId = $this->getIdColumn();
         if ($strTableName && $strColNameId) {
-            $strQuery = sprintf(
+            $strQuery = \sprintf(
                 'UPDATE %1$s SET %2$s=? WHERE %1$s.id=?',
                 $this->getMetaModel()->getTableName(),
                 $this->getColName()
