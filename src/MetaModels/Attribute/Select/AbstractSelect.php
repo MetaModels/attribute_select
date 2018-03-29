@@ -3,7 +3,7 @@
 /**
  * This file is part of MetaModels/attribute_select.
  *
- * (c) 2012-2016 The MetaModels team.
+ * (c) 2012-2018 The MetaModels team.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -14,7 +14,8 @@
  * @subpackage AttributeSelect
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
  * @author     Stefan Heimes <stefan_heimes@hotmail.com>
- * @copyright  2012-2016 The MetaModels team.
+ * @author     Sven Baumann <baumann.sv@gmail.com>
+ * @copyright  2012-2018 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0
  * @filesource
  */
@@ -179,7 +180,7 @@ abstract class AbstractSelect extends AbstractHybrid
     /**
      * {@inheritdoc}
      */
-    public function getFieldDefinition($arrOverrides = array())
+    public function getFieldDefinition($arrOverrides = [])
     {
         $arrFieldDef      = parent::getFieldDefinition($arrOverrides);
         $this->widgetMode = $arrOverrides['select_as_radio'];
@@ -206,9 +207,9 @@ abstract class AbstractSelect extends AbstractHybrid
      */
     public function getAttributeSettingNames()
     {
-        return array_merge(
+        return \array_merge(
             parent::getAttributeSettingNames(),
-            array(
+            [
                 'select_table',
                 'select_column',
                 'select_alias',
@@ -220,7 +221,7 @@ abstract class AbstractSelect extends AbstractHybrid
                 'chosen',
                 'filterable',
                 'searchable'
-            )
+            ]
         );
     }
 
@@ -241,11 +242,11 @@ abstract class AbstractSelect extends AbstractHybrid
      */
     public function unsetDataFor($arrIds)
     {
-        $strQuery = sprintf(
+        $strQuery = \sprintf(
             'UPDATE %1$s SET %2$s=0 WHERE %1$s.id IN (%3$s)',
             $this->getMetaModel()->getTableName(),
             $this->getColName(),
-            implode(',', $arrIds)
+            \implode(',', $arrIds)
         );
         $this->getDatabase()->execute($strQuery);
     }
@@ -267,12 +268,12 @@ abstract class AbstractSelect extends AbstractHybrid
             return $values;
         }
 
-        $values = array_unique(array_filter($values));
+        $values = \array_unique(\array_filter($values));
         if (empty($values)) {
-            return array();
+            return [];
         }
         $objSelectIds = $this->getDatabase()
-            ->prepare(sprintf(
+            ->prepare(\sprintf(
                 'SELECT %s FROM %s WHERE %s IN (%s)',
                 $idColumn,
                 $tableName,
@@ -295,6 +296,6 @@ abstract class AbstractSelect extends AbstractHybrid
      */
     public function getFilterUrlValue($varValue)
     {
-        return urlencode($varValue[$this->getAliasColumn()]);
+        return \urlencode($varValue[$this->getAliasColumn()]);
     }
 }

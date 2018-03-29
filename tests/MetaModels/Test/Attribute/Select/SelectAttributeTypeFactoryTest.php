@@ -9,6 +9,7 @@
  * @package    MetaModels
  * @subpackage Tests
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
+ * @author     Sven Baumann <baumann.sv@gmail.com>
  * @copyright  The MetaModels team.
  * @license    LGPL.
  * @filesource
@@ -20,6 +21,9 @@ use MetaModels\Attribute\IAttributeTypeFactory;
 use MetaModels\Attribute\Select\AttributeTypeFactory;
 use MetaModels\IMetaModel;
 use MetaModels\Test\Attribute\AttributeTypeFactoryTest;
+use MetaModels\MetaModel;
+use MetaModels\Attribute\Select\Select;
+use MetaModels\Attribute\Select\MetaModelSelect;
 
 /**
  * Test the attribute factory.
@@ -41,11 +45,7 @@ class SelectAttributeTypeFactoryTest extends AttributeTypeFactoryTest
      */
     protected function mockMetaModel($tableName, $language, $fallbackLanguage)
     {
-        $metaModel = $this->getMock(
-            'MetaModels\MetaModel',
-            array(),
-            array(array())
-        );
+        $metaModel = $this->getMockBuilder(MetaModel::class)->setMethods([])->setConstructorArgs([[]])->getMock();
 
         $metaModel
             ->expects($this->any())
@@ -72,7 +72,7 @@ class SelectAttributeTypeFactoryTest extends AttributeTypeFactoryTest
      */
     protected function getAttributeFactories()
     {
-        return array(new AttributeTypeFactory());
+        return [new AttributeTypeFactory()];
     }
 
     /**
@@ -83,17 +83,17 @@ class SelectAttributeTypeFactoryTest extends AttributeTypeFactoryTest
     public function testCreateSelect()
     {
         $factory   = new AttributeTypeFactory();
-        $values    = array(
+        $values    = [
             'select_table'  => 'tl_page',
             'select_column' => 'pid',
             'select_alias'  => 'alias',
-        );
+        ];
         $attribute = $factory->createInstance(
             $values,
             $this->mockMetaModel('mm_test', 'de', 'en')
         );
 
-        $this->assertInstanceOf('MetaModels\Attribute\Select\Select', $attribute);
+        $this->assertInstanceOf(Select::class, $attribute);
 
         foreach ($values as $key => $value) {
             $this->assertEquals($value, $attribute->get($key), $key);
@@ -108,17 +108,17 @@ class SelectAttributeTypeFactoryTest extends AttributeTypeFactoryTest
     public function testCreateMetaModelSelect()
     {
         $factory   = new AttributeTypeFactory();
-        $values    = array(
+        $values    = [
             'select_table'  => 'mm_page',
             'select_column' => 'pid',
             'select_alias'  => 'alias',
-        );
+        ];
         $attribute = $factory->createInstance(
             $values,
             $this->mockMetaModel('mm_test', 'de', 'en')
         );
 
-        $this->assertInstanceOf('MetaModels\Attribute\Select\MetaModelSelect', $attribute);
+        $this->assertInstanceOf(MetaModelSelect::class, $attribute);
 
         foreach ($values as $key => $value) {
             $this->assertEquals($value, $attribute->get($key), $key);

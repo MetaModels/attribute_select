@@ -3,7 +3,7 @@
 /**
  * This file is part of MetaModels/attribute_select.
  *
- * (c) 2012-2016 The MetaModels team.
+ * (c) 2012-2018 The MetaModels team.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -20,7 +20,8 @@
  * @author     Paul Pflugradt <paulpflugradt@googlemail.com>
  * @author     Simon Kusterer <simon.kusterer@xamb.de>
  * @author     Stefan Heimes <stefan_heimes@hotmail.com>
- * @copyright  2012-2016 The MetaModels team.
+ * @author     Sven Baumann <baumann.sv@gmail.com>
+ * @copyright  2012-2018 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0
  * @filesource
  */
@@ -60,7 +61,7 @@ class Select extends AbstractSelect
         $strSortColumn = $this->getSortingColumn();
         $idList        = $this->getDatabase()
             ->prepare(
-                sprintf(
+                \sprintf(
                     'SELECT %1$s.id FROM %1$s
                     LEFT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
                     WHERE %1$s.id IN (%5$s)
@@ -87,10 +88,13 @@ class Select extends AbstractSelect
      */
     public function getAttributeSettingNames()
     {
-        return array_merge(parent::getAttributeSettingNames(), array(
-            'select_id',
-            'select_where',
-        ));
+        return \array_merge(
+            parent::getAttributeSettingNames(),
+            [
+                'select_id',
+                'select_where',
+            ]
+        );
     }
 
     /**
@@ -108,7 +112,7 @@ class Select extends AbstractSelect
     {
         // Lookup the value.
         $values = $this->getDatabase()
-            ->prepare(sprintf('SELECT %1$s.* FROM %1$s WHERE %2$s=?', $this->getSelectSource(), $this->getIdColumn()))
+            ->prepare(\sprintf('SELECT %1$s.* FROM %1$s WHERE %2$s=?', $this->getSelectSource(), $this->getIdColumn()))
             ->execute($varValue);
 
         return $values->row();
@@ -123,7 +127,7 @@ class Select extends AbstractSelect
     public function getFilterOptionsForDcGeneral()
     {
         if (!$this->isFilterOptionRetrievingPossible(null)) {
-            return array();
+            return [];
         }
 
         $values = $this->getFilterOptionsForUsedOnly(false);
@@ -137,7 +141,7 @@ class Select extends AbstractSelect
      */
     protected function getAdditionalWhere()
     {
-        return $this->get('select_where') ? html_entity_decode($this->get('select_where')) : false;
+        return $this->get('select_where') ? \html_entity_decode($this->get('select_where')) : false;
     }
 
     /**
@@ -155,9 +159,9 @@ class Select extends AbstractSelect
      */
     protected function convertOptionsList($values, $aliasColumn, $valueColumn, &$count = null)
     {
-        $arrReturn = array();
+        $arrReturn = [];
         while ($values->next()) {
-            if (is_array($count)) {
+            if (\is_array($count)) {
                 /** @noinspection PhpUndefinedFieldInspection */
                 $count[$values->$aliasColumn] = $values->mm_count;
             }
@@ -180,7 +184,7 @@ class Select extends AbstractSelect
         $additionalWhere = $this->getAdditionalWhere();
         $sortColumn      = $this->getSortingColumn();
         if ($usedOnly) {
-            return $this->getDatabase()->execute(sprintf(
+            return $this->getDatabase()->execute(\sprintf(
                 'SELECT COUNT(%1$s.%2$s) as mm_count, %1$s.*
                     FROM %1$s
                     RIGHT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
@@ -198,7 +202,7 @@ class Select extends AbstractSelect
             ));
         }
 
-        return $this->getDatabase()->execute(sprintf(
+        return $this->getDatabase()->execute(\sprintf(
             'SELECT COUNT(%3$s.%4$s) as mm_count, %1$s.*
                 FROM %1$s
                 LEFT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
@@ -224,7 +228,7 @@ class Select extends AbstractSelect
     public function getFilterOptions($idList, $usedOnly, &$arrCount = null)
     {
         if (!$this->isFilterOptionRetrievingPossible($idList)) {
-            return array();
+            return [];
         }
 
         $tableName       = $this->getSelectSource();
@@ -235,7 +239,7 @@ class Select extends AbstractSelect
         $objDB = $this->getDatabase();
         if ($idList) {
             $objValue = $objDB
-                ->prepare(sprintf(
+                ->prepare(\sprintf(
                     'SELECT COUNT(%1$s.%2$s) as mm_count, %1$s.*
                     FROM %1$s
                     RIGHT JOIN %3$s ON (%3$s.%4$s=%1$s.%2$s)
@@ -266,20 +270,20 @@ class Select extends AbstractSelect
     public function getDataFor($arrIds)
     {
         if (!$this->isProperlyConfigured()) {
-            return array();
+            return [];
         }
 
         $objDB          = $this->getDatabase();
         $strTableNameId = $this->getSelectSource();
         $strColNameId   = $this->getIdColumn();
-        $arrReturn      = array();
+        $arrReturn      = [];
 
         $strMetaModelTableName   = $this->getMetaModel()->getTableName();
         $strMetaModelTableNameId = $strMetaModelTableName.'_id';
 
         // Using aliased join here to resolve issue #3 - SQL error for self referencing table.
         $objValue = $objDB
-            ->prepare(sprintf(
+            ->prepare(\sprintf(
                 'SELECT sourceTable.*, %2$s.id AS %3$s
                 FROM %1$s sourceTable
                 LEFT JOIN %2$s ON (sourceTable.%4$s=%2$s.%5$s)
@@ -314,7 +318,7 @@ class Select extends AbstractSelect
         $strTableName = $this->getSelectSource();
         $strColNameId = $this->getIdColumn();
         if ($strTableName && $strColNameId) {
-            $strQuery = sprintf(
+            $strQuery = \sprintf(
                 'UPDATE %1$s SET %2$s=? WHERE %1$s.id=?',
                 $this->getMetaModel()->getTableName(),
                 $this->getColName()
