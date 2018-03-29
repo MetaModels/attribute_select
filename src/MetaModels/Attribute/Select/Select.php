@@ -3,7 +3,7 @@
 /**
  * This file is part of MetaModels/attribute_select.
  *
- * (c) 2012-2016 The MetaModels team.
+ * (c) 2012-2018 The MetaModels team.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -20,7 +20,8 @@
  * @author     Paul Pflugradt <paulpflugradt@googlemail.com>
  * @author     Simon Kusterer <simon.kusterer@xamb.de>
  * @author     Stefan Heimes <stefan_heimes@hotmail.com>
- * @copyright  2012-2016 The MetaModels team.
+ * @author     Sven Baumann <baumann.sv@gmail.com>
+ * @copyright  2012-2018 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0
  * @filesource
  */
@@ -87,10 +88,13 @@ class Select extends AbstractSelect
      */
     public function getAttributeSettingNames()
     {
-        return array_merge(parent::getAttributeSettingNames(), array(
-            'select_id',
-            'select_where',
-        ));
+        return array_merge(
+            parent::getAttributeSettingNames(),
+            [
+                'select_id',
+                'select_where',
+            ]
+        );
     }
 
     /**
@@ -123,7 +127,7 @@ class Select extends AbstractSelect
     public function getFilterOptionsForDcGeneral()
     {
         if (!$this->isFilterOptionRetrievingPossible(null)) {
-            return array();
+            return [];
         }
 
         $values = $this->getFilterOptionsForUsedOnly(false);
@@ -155,7 +159,7 @@ class Select extends AbstractSelect
      */
     protected function convertOptionsList($values, $aliasColumn, $valueColumn, &$count = null)
     {
-        $arrReturn = array();
+        $arrReturn = [];
         while ($values->next()) {
             if (is_array($count)) {
                 /** @noinspection PhpUndefinedFieldInspection */
@@ -224,7 +228,7 @@ class Select extends AbstractSelect
     public function getFilterOptions($idList, $usedOnly, &$arrCount = null)
     {
         if (!$this->isFilterOptionRetrievingPossible($idList)) {
-            return array();
+            return [];
         }
 
         $tableName       = $this->getSelectSource();
@@ -266,13 +270,13 @@ class Select extends AbstractSelect
     public function getDataFor($arrIds)
     {
         if (!$this->isProperlyConfigured()) {
-            return array();
+            return [];
         }
 
         $objDB          = $this->getDatabase();
         $strTableNameId = $this->getSelectSource();
         $strColNameId   = $this->getIdColumn();
-        $arrReturn      = array();
+        $arrReturn      = [];
 
         $strMetaModelTableName   = $this->getMetaModel()->getTableName();
         $strMetaModelTableNameId = $strMetaModelTableName.'_id';

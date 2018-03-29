@@ -3,7 +3,7 @@
 /**
  * This file is part of MetaModels/attribute_select.
  *
- * (c) 2012-2016 The MetaModels team.
+ * (c) 2012-2018 The MetaModels team.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -16,7 +16,8 @@
  * @author     Stefan heimes <stefan_heimes@hotmail.com>
  * @author     Martin Treml <github@r2pi.net>
  * @author     David Maack <david.maack@arcor.de>
- * @copyright  2012-2016 The MetaModels team.
+ * @author     Sven Baumann <baumann.sv@gmail.com>
+ * @copyright  2012-2018 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0
  * @filesource
  */
@@ -91,10 +92,10 @@ class MetaModelSelect extends AbstractSelect
     {
         return array_merge(
             parent::getAttributeSettingNames(),
-            array(
+            [
                 'select_filter',
                 'select_filterparams',
-            )
+            ]
         );
     }
 
@@ -107,14 +108,14 @@ class MetaModelSelect extends AbstractSelect
      */
     protected function itemsToValues(IItems $items)
     {
-        $values = array();
+        $values = [];
         foreach ($items as $item) {
             /** @var IItem $item */
             $valueId    = $item->get('id');
             $parsedItem = $item->parseValue();
 
             $values[$valueId] = array_merge(
-                array(self::SELECT_RAW => $parsedItem['raw']),
+                [self::SELECT_RAW => $parsedItem['raw']],
                 $parsedItem['text']
             );
         }
@@ -135,9 +136,9 @@ class MetaModelSelect extends AbstractSelect
         $recursionKey = $this->getMetaModel()->getTableName();
 
         // Prevent recursion.
-        static $tables = array();
+        static $tables = [];
         if (isset($tables[$recursionKey])) {
-            return array();
+            return [];
         }
         $tables[$recursionKey] = $recursionKey;
 
@@ -243,7 +244,7 @@ class MetaModelSelect extends AbstractSelect
     public function getFilterOptionsForDcGeneral()
     {
         if (!$this->isFilterOptionRetrievingPossible(null)) {
-            return array();
+            return [];
         }
 
         $originalLanguage       = $GLOBALS['TL_LANGUAGE'];
@@ -276,7 +277,7 @@ class MetaModelSelect extends AbstractSelect
      *
      * @return void
      */
-    public function buildFilterRulesForUsedOnly($filter, $idList = array())
+    public function buildFilterRulesForUsedOnly($filter, $idList = [])
     {
         if (empty($idList)) {
             $query = sprintf(
@@ -340,7 +341,7 @@ class MetaModelSelect extends AbstractSelect
             $presets      = (array) $this->get('select_filterparams');
             $presetNames  = $filterSettings->getParameters();
             $filterParams = array_keys($filterSettings->getParameterFilterNames());
-            $processed    = array();
+            $processed    = [];
 
             // We have to use all the preset values we want first.
             foreach ($presets as $presetName => $preset) {
@@ -387,7 +388,7 @@ class MetaModelSelect extends AbstractSelect
             $this->determineCount($items, $count);
         }
 
-        $result = array();
+        $result = [];
         foreach ($items as $item) {
             $textValue  = $this->tryParseAttribute($displayValue, $item);
             $aliasValue = $this->tryParseAttribute($aliasColumn, $item);
@@ -473,7 +474,7 @@ class MetaModelSelect extends AbstractSelect
     public function getFilterOptions($idList, $usedOnly, &$arrCount = null)
     {
         if (!$this->isFilterOptionRetrievingPossible($idList)) {
-            return array();
+            return [];
         }
 
         $strDisplayValue    = $this->getValueColumn();
@@ -492,7 +493,7 @@ class MetaModelSelect extends AbstractSelect
 
         // Add some more filter rules.
         if ($usedOnly || ($idList && is_array($idList))) {
-            $this->buildFilterRulesForUsedOnly($filter, $idList ?: array());
+            $this->buildFilterRulesForUsedOnly($filter, $idList ?: []);
         }
 
         $objItems = $this->getSelectMetaModel()->findByFilter($filter, $strSortingValue);
@@ -528,8 +529,8 @@ class MetaModelSelect extends AbstractSelect
             )
             ->execute($idList);
 
-        $valueIds = array();
-        $valueMap = array();
+        $valueIds = [];
+        $valueMap = [];
         while ($values->next()) {
             $itemId             = $values->id;
             $value              = $values->$myColName;
@@ -539,8 +540,8 @@ class MetaModelSelect extends AbstractSelect
 
         $filter = $metaModel->getEmptyFilter()->addFilterRule(new StaticIdList(array_unique(array_values($valueIds))));
         $value  = $this->getValueColumn();
-        $items  = $metaModel->findByFilter($filter, $value, 0, 0, $strDirection, array($value));
-        $result = array();
+        $items  = $metaModel->findByFilter($filter, $value, 0, 0, $strDirection, [$value]);
+        $result = [];
         foreach ($items as $item) {
             $result = array_merge($result, $valueMap[$item->get('id')]);
         }
@@ -555,10 +556,10 @@ class MetaModelSelect extends AbstractSelect
     public function getDataFor($arrIds)
     {
         if (!$this->isProperlyConfigured()) {
-            return array();
+            return [];
         }
 
-        $result      = array();
+        $result      = [];
         $valueColumn = $this->getColName();
         // First pass, load database rows.
         $rows = $this->getDatabase()->prepare(
@@ -573,7 +574,7 @@ class MetaModelSelect extends AbstractSelect
             )
         )->execute($arrIds);
 
-        $valueIds = array();
+        $valueIds = [];
         while ($rows->next()) {
             /** @noinspection PhpUndefinedFieldInspection */
             $valueIds[$rows->id] = $rows->$valueColumn;
@@ -645,7 +646,7 @@ class MetaModelSelect extends AbstractSelect
             return parent::convertValuesToValueIds($values);
         }
 
-        $sanitizedValues = array();
+        $sanitizedValues = [];
         foreach ($values as $value) {
             $valueIds = $attribute->searchFor($value);
             if ($valueIds === null) {

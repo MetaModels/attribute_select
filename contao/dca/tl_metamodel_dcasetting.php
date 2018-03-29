@@ -18,72 +18,66 @@
  * @author     Oliver Hoff <oliver@hofff.com>
  * @author     Stefan heimes <stefan_heimes@hotmail.com>
  * @author     Ingolf Steinhardt <info@e-spin.de>
+ * @author     Sven Baumann <baumann.sv@gmail.com>
  * @copyright  2012-2018 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0
  * @filesource
  */
 
-$GLOBALS['TL_DCA']['tl_metamodel_dcasetting']['metasubselectpalettes']['attr_id']['select'] = array
-(
-    'presentation' => array(
+$GLOBALS['TL_DCA']['tl_metamodel_dcasetting']['metasubselectpalettes']['attr_id']['select'] = [
+    'presentation' => [
         'tl_class',
         'includeBlankOption',
         'submitOnChange',
         'chosen',
         'select_as_radio'
-    ),
-    'functions'    => array(
+    ],
+    'functions'    => [
         'mandatory'
-    ),
-    'overview'     => array(
+    ],
+    'overview'     => [
         'filterable',
         'searchable'
-    )
-);
+    ]
+];
 
 $GLOBALS['TL_DCA']['tl_metamodel_dcasetting']['palettes']['__selector__'][] = 'select_as_radio';
 
-$GLOBALS['TL_DCA']['tl_metamodel_dcasetting']['metasubselectpalettes']['select_as_radio'][2] = array(
-    'presentation after select_as_radio' => array(
+$GLOBALS['TL_DCA']['tl_metamodel_dcasetting']['metasubselectpalettes']['select_as_radio'][2] = [
+    'presentation after select_as_radio' => [
         'select_minLevel',
         'select_maxLevel'
-    )
-);
+    ]
+];
 
-$GLOBALS['TL_DCA']['tl_metamodel_dcasetting']['fields']['select_as_radio'] = array
-(
+$GLOBALS['TL_DCA']['tl_metamodel_dcasetting']['fields']['select_as_radio'] = [
     'label'     => &$GLOBALS['TL_LANG']['tl_metamodel_dcasetting']['select_as_radio'],
     'exclude'   => true,
     'inputType' => 'select',
-    'options'   => array(0, 1, 2),
+    'options'   => [0, 1, 2],
     'reference' => &$GLOBALS['TL_LANG']['tl_metamodel_dcasetting']['select_as_radio_reference'],
     'sql'       => 'varchar(1) NOT NULL default \'0\'',
-    'eval'      => array
-    (
+    'eval'      => [
         'tl_class' => 'clr'
-    )
-);
+    ]
+];
 
-$GLOBALS['TL_DCA']['tl_metamodel_dcasetting']['fields']['select_minLevel'] = array
-(
+$GLOBALS['TL_DCA']['tl_metamodel_dcasetting']['fields']['select_minLevel'] = [
     'label'     => &$GLOBALS['TL_LANG']['tl_metamodel_dcasetting']['select_minLevel'],
     'exclude'   => true,
     'inputType' => 'text',
     'sql'       => 'int(11) NOT NULL default \'0\'',
-    'eval'      => array
-    (
+    'eval'      => [
         'tl_class' => 'clr w50'
-    )
-);
+    ]
+];
 
-$GLOBALS['TL_DCA']['tl_metamodel_dcasetting']['fields']['select_maxLevel'] = array
-(
+$GLOBALS['TL_DCA']['tl_metamodel_dcasetting']['fields']['select_maxLevel'] = [
     'label'     => &$GLOBALS['TL_LANG']['tl_metamodel_dcasetting']['select_maxLevel'],
     'exclude'   => true,
     'inputType' => 'text',
     'sql'       => 'int(11) NOT NULL default \'0\'',
-    'eval'      => array
-    (
+    'eval'      => [
         'tl_class' => 'w50'
-    )
-);
+    ]
+];
