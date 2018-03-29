@@ -4,7 +4,7 @@
     "keywords":["contao", "metamodels", "attribute", "select", "nontranslatable"],
     "type":"contao-module",
     "homepage":"http://now.metamodel.me/",
-    "license":"LGPL-3.0+",
+    "license":"LGPL-3.0-or-later",
     "authors":[
         {
             "name":"Christian Schiffler",
