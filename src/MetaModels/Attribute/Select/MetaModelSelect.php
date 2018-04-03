@@ -54,7 +54,7 @@ class MetaModelSelect extends AbstractSelect
     protected function checkConfiguration()
     {
         return parent::checkConfiguration()
-            && (null !== $this->getSelectMetaModel());
+               && (null !== $this->getSelectMetaModel());
     }
 
     /**
@@ -380,12 +380,14 @@ class MetaModelSelect extends AbstractSelect
      *
      * @param null|string[]  $count        The counter array.
      *
+     * @param null|array     $idList       A list for the current Items to use.
+     *
      * @return array
      */
-    protected function convertItemsToFilterOptions($items, $displayValue, $aliasColumn, &$count = null)
+    protected function convertItemsToFilterOptions($items, $displayValue, $aliasColumn, &$count = null, $idList = null)
     {
         if (null !== $count) {
-            $this->determineCount($items, $count);
+            $this->determineCount($items, $count, $idList);
         }
 
         $result = [];
@@ -430,11 +432,13 @@ class MetaModelSelect extends AbstractSelect
      *
      * @param null|string[]  $count The counter array.
      *
+     * @param array          $idList The id list for the subselect.
+     *
      * @return void
      */
-    private function determineCount($items, &$count)
+    private function determineCount($items, &$count, $idList)
     {
-        $idList = \array_unique(\array_filter(\array_map(
+        $usedOptionsIdList = \array_unique(\array_filter(\array_map(
             function ($item) {
                 /** @var IItem $item */
                 return $item->get('id');
@@ -442,21 +446,36 @@ class MetaModelSelect extends AbstractSelect
             \iterator_to_array($items)
         )));
 
-        if (empty($idList)) {
+        if (empty($usedOptionsIdList)) {
             return;
         }
 
         $valueCol = $this->getColName();
-        $query    = $this->getDatabase()
-            ->prepare(
-                \sprintf(
-                    'SELECT %2$s, COUNT(%2$s) AS count FROM %1$s WHERE %2$s IN (%3$s) GROUP BY %2$s',
-                    $this->getMetaModel()->getTableName(),
-                    $this->getColName(),
-                    $this->parameterMask($idList)
+
+        if ($idList === null) {
+            $query = $this->getDatabase()
+                ->prepare(
+                    \sprintf(
+                        'SELECT %2$s, COUNT(%2$s) AS count FROM %1$s WHERE %2$s IN (%3$s) GROUP BY %2$s',
+                        $this->getMetaModel()->getTableName(),
+                        $this->getColName(),
+                        $this->parameterMask($usedOptionsIdList)
+                    )
                 )
-            )
-            ->execute($idList);
+                ->execute($usedOptionsIdList);
+        } else {
+            $query = $this->getDatabase()
+                ->prepare(
+                    \sprintf(
+                        'SELECT %2$s, COUNT(%2$s) AS count FROM %1$s WHERE %2$s IN (%3$s) AND id IN (%4$s) GROUP BY %2$s',
+                        $this->getMetaModel()->getTableName(),
+                        $this->getColName(),
+                        $this->parameterMask($usedOptionsIdList),
+                        $this->parameterMask($idList)
+                    )
+                )
+                ->execute(array_merge($usedOptionsIdList, $idList));
+        }
 
         while ($query->next()) {
             $count[$query->{$valueCol}] = $query->count;
@@ -503,7 +522,7 @@ class MetaModelSelect extends AbstractSelect
             $GLOBALS['TL_LANGUAGE'] = $strCurrentLanguage;
         }
 
-        return $this->convertItemsToFilterOptions($objItems, $strDisplayValue, $this->getAliasColumn(), $arrCount);
+        return $this->convertItemsToFilterOptions($objItems, $strDisplayValue, $this->getAliasColumn(), $arrCount, $idList);
     }
 
     /**
