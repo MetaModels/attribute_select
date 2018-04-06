@@ -143,14 +143,26 @@ class BackendEventsListener
      */
     public function getTableAndMetaModelsList()
     {
-        $sqlTable     = $this->translator->trans('select_table_type.sql-table', [], 'contao_tl_metamodel_attribute');
-        $translated   = $this->translator->trans('select_table_type.translated', [], 'contao_tl_metamodel_attribute');
-        $untranslated = $this->translator->trans('select_table_type.untranslated', [], 'contao_tl_metamodel_attribute');
+        $sqlTable     = $this->translator->trans(
+            'tl_metamodel_attribute.select_table_type.sql-table',
+            [],
+            'contao_tl_metamodel_attribute'
+        );
+        $translated   = $this->translator->trans(
+            'tl_metamodel_attribute.select_table_type.translated',
+            [],
+            'contao_tl_metamodel_attribute'
+        );
+        $untranslated = $this->translator->trans(
+            'tl_metamodel_attribute.select_table_type.untranslated',
+            [],
+            'contao_tl_metamodel_attribute'
+        );
 
         $result = $this->getMetaModelTableNames($translated, $untranslated);
 
         foreach ($this->connection->getSchemaManager()->listTableNames() as $table) {
-            if ((\substr($table, 0, 3) !== 'mm_')) {
+            if (0 !== strpos($table, 'mm_')) {
                 $result[$sqlTable][$table] = $table;
             }
         }
@@ -274,19 +286,28 @@ class BackendEventsListener
      */
     public function getColumnNamesFrom($table)
     {
-        if (\substr($table, 0, 3) === 'mm_') {
+        if (0 === strpos($table, 'mm_')) {
             $attributes = $this->getAttributeNamesFrom($table);
             \asort($attributes);
 
+            $sql = $this->translator->trans(
+                'tl_metamodel_attribute.select_column_type.sql',
+                [],
+                'contao_tl_metamodel_attribute'
+            );
+            $attribute = $this->translator->trans(
+                'tl_metamodel_attribute.select_column_type.attribute',
+                [],
+                'contao_tl_metamodel_attribute'
+            );
+
             return
                 [
-                    $this->translator->trans('select_column_type.sql', [], 'contao_tl_metamodel_attribute') =>
-                        \array_diff_key(
-                            $this->getColumnNamesFromMetaModel($table),
-                            \array_flip(array_keys($attributes))
-                        ),
-                    $this->translator->trans('select_column_type.attribute', [], 'contao_tl_metamodel_attribute') =>
-                        $attributes
+                    $sql       => \array_diff_key(
+                        $this->getColumnNamesFromMetaModel($table),
+                        \array_flip(array_keys($attributes))
+                    ),
+                    $attribute => $attributes,
                 ];
         }
 
