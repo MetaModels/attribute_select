@@ -16,8 +16,9 @@
  * @author     Stefan Heimes <stefan_heimes@hotmail.com>
  * @author     David Molineus <david.molineus@netzmacht.de>
  * @author     Sven Baumann <baumann.sv@gmail.com>
+ * @author     Ingolf Steinhardt <info@e-spin.de>
  * @copyright  2012-2018 The MetaModels team.
- * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0
+ * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
  */
 
@@ -269,7 +270,7 @@ abstract class AbstractSelect extends AbstractHybrid
             ->where($aliasColumn . ' IN (:values)')
             ->setParameter('values', $values, Connection::PARAM_STR_ARRAY)
             ->execute()
-            ->fetch(\PDO::FETCH_COLUMN);
+            ->fetch(\PDO::FETCH_ASSOC);
     }
 
     /**
