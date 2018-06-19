@@ -13,12 +13,13 @@
  * @package    MetaModels
  * @subpackage AttributeSelect
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
- * @author     Stefan heimes <stefan_heimes@hotmail.com>
+ * @author     Stefan Heimes <stefan_heimes@hotmail.com>
  * @author     Martin Treml <github@r2pi.net>
  * @author     David Maack <david.maack@arcor.de>
  * @author     Sven Baumann <baumann.sv@gmail.com>
+ * @author     Ingolf Steinhardt <info@e-spin.de>
  * @copyright  2012-2018 The MetaModels team.
- * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0
+ * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
  */
 
@@ -616,7 +617,7 @@ class MetaModelSelect extends AbstractSelect
         $database = $this->getDatabase();
         foreach ($arrValues as $itemId => $value) {
             if (\is_array($value) && isset($value[self::SELECT_RAW]['id'])) {
-                $database->prepare($query)->execute($value[self::SELECT_RAW]['id'], $itemId);
+                $database->prepare($query)->execute((int) $value[self::SELECT_RAW]['id'], $itemId);
             } elseif (\is_numeric($itemId) && (\is_numeric($value) || $value === null)) {
                 $database->prepare($query)->execute($value, $itemId);
             } else {
