@@ -617,9 +617,9 @@ class MetaModelSelect extends AbstractSelect
         $database = $this->getDatabase();
         foreach ($arrValues as $itemId => $value) {
             if (\is_array($value) && isset($value[self::SELECT_RAW]['id'])) {
-                $database->prepare($query)->execute((int) $value[self::SELECT_RAW]['id'], $itemId);
+                $database->prepare($query)->execute($value[self::SELECT_RAW]['id'], $itemId);
             } elseif (\is_numeric($itemId) && (\is_numeric($value) || $value === null)) {
-                $database->prepare($query)->execute($value, $itemId);
+                $database->prepare($query)->execute((int) $value, $itemId);
             } else {
                 throw new \RuntimeException(
                     'Invalid values encountered, itemId: ' .
