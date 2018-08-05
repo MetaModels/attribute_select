@@ -13,7 +13,7 @@
  * @package    MetaModels
  * @subpackage AttributeSelect
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
- * @author     Stefan heimes <stefan_heimes@hotmail.com>
+ * @author     Stefan Heimes <stefan_heimes@hotmail.com>
  * @author     Martin Treml <github@r2pi.net>
  * @author     David Maack <david.maack@arcor.de>
  * @author     Sven Baumann <baumann.sv@gmail.com>
@@ -53,8 +53,7 @@ class MetaModelSelect extends AbstractSelect
      */
     protected function checkConfiguration()
     {
-        return parent::checkConfiguration()
-               && (null !== $this->getSelectMetaModel());
+        return parent::checkConfiguration() && (null !== $this->getSelectMetaModel());
     }
 
     /**
@@ -452,8 +451,9 @@ class MetaModelSelect extends AbstractSelect
 
         $valueCol = $this->getColName();
 
-        if ($idList === null) {
-            $query = $this->getDatabase()
+        if ($idList === null || empty($idList)) {
+            $query = $this
+                ->getDatabase()
                 ->prepare(
                     \sprintf(
                         'SELECT %2$s, COUNT(%2$s) AS count FROM %1$s WHERE %2$s IN (%3$s) GROUP BY %2$s',
@@ -464,10 +464,12 @@ class MetaModelSelect extends AbstractSelect
                 )
                 ->execute($usedOptionsIdList);
         } else {
-            $query = $this->getDatabase()
+            $sql   = 'SELECT %2$s, COUNT(%2$s) AS count FROM %1$s WHERE %2$s IN (%3$s) AND id IN (%4$s) GROUP BY %2$s';
+            $query = $this
+                ->getDatabase()
                 ->prepare(
                     \sprintf(
-                        'SELECT %2$s, COUNT(%2$s) AS count FROM %1$s WHERE %2$s IN (%3$s) AND id IN (%4$s) GROUP BY %2$s',
+                        $sql,
                         $this->getMetaModel()->getTableName(),
                         $this->getColName(),
                         $this->parameterMask($usedOptionsIdList),
@@ -522,7 +524,13 @@ class MetaModelSelect extends AbstractSelect
             $GLOBALS['TL_LANGUAGE'] = $strCurrentLanguage;
         }
 
-        return $this->convertItemsToFilterOptions($objItems, $strDisplayValue, $this->getAliasColumn(), $arrCount, $idList);
+        return $this->convertItemsToFilterOptions(
+            $objItems,
+            $strDisplayValue,
+            $this->getAliasColumn(),
+            $arrCount,
+            $idList
+        );
     }
 
     /**
