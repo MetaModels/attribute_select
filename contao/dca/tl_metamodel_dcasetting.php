@@ -14,9 +14,8 @@
  * @subpackage AttributeSelect
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
  * @author     Andreas Isaak <info@andreas-isaak.de>
- * @author     Andreas Isaak <info@andreas-isaak.de>
+ * @author     Stefan Heimes <stefan_heimes@hotmail.com>
  * @author     Oliver Hoff <oliver@hofff.com>
- * @author     Stefan heimes <stefan_heimes@hotmail.com>
  * @author     Ingolf Steinhardt <info@e-spin.de>
  * @author     Sven Baumann <baumann.sv@gmail.com>
  * @copyright  2012-2018 The MetaModels team.
