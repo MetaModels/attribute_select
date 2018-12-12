@@ -26,10 +26,6 @@ use MetaModels\Filter\FilterRule;
 
 /**
  * This is the MetaModelFilterRule class for handling select fields.
- *
- * @package    MetaModels
- * @subpackage AttributeSelect
- * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
  */
 class FilterRuleSelect extends FilterRule
 {

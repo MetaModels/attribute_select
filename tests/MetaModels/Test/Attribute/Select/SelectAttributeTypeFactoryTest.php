@@ -29,8 +29,6 @@ use MetaModels\Attribute\Select\MetaModelSelect;
 
 /**
  * Test the attribute factory.
- *
- * @package MetaModels\Test\Filter\Setting
  */
 class SelectAttributeTypeFactoryTest extends AttributeTypeFactoryTest
 {

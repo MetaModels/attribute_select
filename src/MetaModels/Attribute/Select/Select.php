@@ -29,11 +29,6 @@ namespace MetaModels\Attribute\Select;
 
 /**
  * This is the MetaModelAttribute class for handling select attributes on plain SQL tables.
- *
- * @package    MetaModels
- * @subpackage AttributeSelect
- * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
- * @author     Christian de la Haye <service@delahaye.de>
  */
 class Select extends AbstractSelect
 {
