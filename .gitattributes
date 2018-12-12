@@ -7,3 +7,4 @@ build.xml export-ignore
 phpunit.xml.dist export-ignore
 /.github export-ignore
 /tests export-ignore
+ctb.json export-ignore
