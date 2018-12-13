@@ -1,67 +1,69 @@
 {
-    "name":"metamodels/attribute_select",
-    "description":"MetaModels attribute for selects",
-    "keywords":["contao", "metamodels", "attribute", "select", "nontranslatable"],
-    "type":"contao-module",
-    "homepage":"http://now.metamodel.me/",
-    "license":"LGPL-3.0-or-later",
-    "authors":[
-        {
-            "name":"Christian Schiffler",
-            "email":"c.schiffler@cyberspectrum.de",
-            "homepage":"http://www.cyberspectrum.de",
-            "role":"Developer"
-        },
-        {
-            "name":"Stefan Heimes",
-            "email":"stefan_heimes@hotmail.com",
-            "role":"Developer"
-        }
-    ],
-    "support":{
-        "email":"mail@metamodel.me",
-        "issues":"https://github.com/MetaModels/attribute_select/issues",
-        "wiki":"http://de.contaowiki.org/MetaModels",
-        "irc":"irc://irc.freenode.org/contao.mm",
-        "source":"https://github.com/MetaModels/attribute_select"
+  "name": "metamodels/attribute_select",
+  "description": "MetaModels attribute for selects",
+  "keywords": [
+    "contao",
+    "metamodels",
+    "attribute",
+    "select",
+    "nontranslatable"
+  ],
+  "type": "contao-module",
+  "homepage": "http://now.metamodel.me/",
+  "license": "LGPL-3.0-or-later",
+  "authors": [
+    {
+      "name": "Christian Schiffler",
+      "email": "c.schiffler@cyberspectrum.de",
+      "homepage": "http://www.cyberspectrum.de",
+      "role": "Developer"
     },
-    "require":{
-        "php": "^5.6 || ^7.0",
-        "contao/core": "^3.5.5",
-        "contao-community-alliance/composer-plugin": "^2.0",
-        "contao-community-alliance/dc-general": "^2.0@beta",
-        "metamodels/core":"^2.0"
-    },
-    "require-dev": {
-        "cyberspectrum/contao-toolbox": "^0.6",
-        "phpcq/all-tasks": "^1.2",
-        "metamodels/base-unit-tests": "^1.0.4"
-    },
-    "autoload": {
-        "psr-0": {
-            "MetaModels\\": "src"
-        }
-    },
-    "autoload-dev": {
-        "psr-0": {
-            "MetaModels\\Test\\": "tests"
-        }
-    },
-    "extra":{
-        "contao": {
-            "sources":{
-                "contao": "system/modules/metamodelsattribute_select"
-            },
-            "transifex": {
-                "project": "metamodels",
-                "prefix": "attribute_select-",
-                "languages_cto": "contao/languages",
-                "languages_tx": ".tx"
-            }
-        },
-        "branch-alias": {
-            "dev-master": "2.0.x-dev",
-            "dev-develop": "2.1.x-dev"
-        }
+    {
+      "name": "Stefan Heimes",
+      "email": "stefan_heimes@hotmail.com",
+      "role": "Developer"
     }
+  ],
+  "support": {
+    "email": "mail@metamodel.me",
+    "issues": "https://github.com/MetaModels/attribute_select/issues",
+    "wiki": "http://de.contaowiki.org/MetaModels",
+    "irc": "irc://irc.freenode.org/contao.mm",
+    "source": "https://github.com/MetaModels/attribute_select"
+  },
+  "require": {
+    "php": "^5.6 || ^7.0",
+    "contao-community-alliance/composer-plugin": "^2.4",
+    "contao-community-alliance/dc-general": "^2.0@beta",
+    "contao/core": "^3.5.5",
+    "metamodels/core": "^2.0"
+  },
+  "require-dev": {
+    "metamodels/base-unit-tests": "^1.0.4",
+    "phpcq/all-tasks": "^1.2"
+  },
+  "autoload": {
+    "psr-0": {
+      "MetaModels\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-0": {
+      "MetaModels\\Test\\": "tests"
+    }
+  },
+  "extra": {
+    "contao": {
+      "sources": {
+        "contao": "system/modules/metamodelsattribute_select"
+      }
+    },
+    "branch-alias": {
+      "dev-master": "2.0.x-dev",
+      "dev-develop": "2.1.x-dev"
+    }
+  },
+  "config": {
+    "sort-packages": true
+  }
 }

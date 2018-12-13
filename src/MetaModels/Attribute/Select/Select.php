@@ -10,8 +10,7 @@
  *
  * This project is provided in good faith and hope to be usable by anyone.
  *
- * @package    MetaModels
- * @subpackage AttributeSelect
+ * @package    MetaModels/attribute_select
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
  * @author     Christian de la Haye <service@delahaye.de>
  * @author     Andreas Isaak <andy.jared@googlemail.com>
@@ -31,11 +30,6 @@ namespace MetaModels\Attribute\Select;
 
 /**
  * This is the MetaModelAttribute class for handling select attributes on plain SQL tables.
- *
- * @package    MetaModels
- * @subpackage AttributeSelect
- * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
- * @author     Christian de la Haye <service@delahaye.de>
  */
 class Select extends AbstractSelect
 {
