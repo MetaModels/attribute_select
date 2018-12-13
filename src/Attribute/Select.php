@@ -181,12 +181,12 @@ class Select extends AbstractSelect
                     'sourceTable',
                     $this->getMetaModel()->getTableName(),
                     'modelTable',
-                    'modelTable.' . $this->getColName() . '=' . 'sourceTable.' . $this->getIdColumn()
+                    'modelTable.' . $this->getColName() . '=sourceTable.' . $this->getIdColumn()
                 )
                 ->addGroupBy('sourceTable.' . $this->getIdColumn())
                 ->addOrderBy('sourceTable.' . $sortColumn);
 
-            if($additionalWhere = $this->getAdditionalWhere()) {
+            if ($additionalWhere = $this->getAdditionalWhere()) {
                 $builder->andWhere($additionalWhere);
             }
 
@@ -201,12 +201,12 @@ class Select extends AbstractSelect
                 'sourceTable',
                 $this->getMetaModel()->getTableName(),
                 'modelTable',
-                'modelTable.' . $this->getColName() . '=' . 'sourceTable.' . $this->getIdColumn()
+                'modelTable.' . $this->getColName() . '=sourceTable.' . $this->getIdColumn()
             )
             ->addGroupBy('sourceTable.' . $this->getIdColumn())
             ->addOrderBy('sourceTable.' . $sortColumn);
 
-        if($additionalWhere = $this->getAdditionalWhere()) {
+        if ($additionalWhere = $this->getAdditionalWhere()) {
             $builder->andWhere($additionalWhere);
         }
 
@@ -224,9 +224,9 @@ class Select extends AbstractSelect
             return array();
         }
 
-        $tableName       = $this->getSelectSource();
-        $idColumn        = $this->getIdColumn();
-        $strSortColumn   = $this->getSortingColumn();
+        $tableName     = $this->getSelectSource();
+        $idColumn      = $this->getIdColumn();
+        $strSortColumn = $this->getSortingColumn();
 
         if ($idList) {
             $builder = $this->connection->createQueryBuilder()
@@ -244,12 +244,11 @@ class Select extends AbstractSelect
                 ->addGroupBy('sourceTable.' . $idColumn)
                 ->addOrderBy('sourceTable.' . $strSortColumn);
 
-            if($additionalWhere = $this->getAdditionalWhere()) {
+            if ($additionalWhere = $this->getAdditionalWhere()) {
                 $builder->andWhere($additionalWhere);
             }
 
             $statement = $builder->execute();
-
         } else {
             $statement = $this->getFilterOptionsForUsedOnly($usedOnly);
         }
@@ -275,7 +274,7 @@ class Select extends AbstractSelect
 
         $builder = $this->connection->createQueryBuilder()
             ->select('sourceTable.*')
-            ->addselect('modelTable.id AS ' . $strMetaModelTableNameId)
+            ->addSelect('modelTable.id AS ' . $strMetaModelTableNameId)
             ->from($strTableNameId, 'sourceTable')
             ->leftJoin(
                 'sourceTable',

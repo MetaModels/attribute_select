@@ -295,6 +295,7 @@ class BackendEventsListener
                 [],
                 'contao_tl_metamodel_attribute'
             );
+
             $attribute = $this->translator->trans(
                 'tl_metamodel_attribute.select_column_type.attribute',
                 [],
@@ -583,7 +584,8 @@ class BackendEventsListener
                 ->select('sourceTable.*')
                 ->from($values->getPropertyValue('select_table'), 'sourceTable')
                 ->where($where)
-                ->orderBy('sourceTable.' . ($values->getPropertyValue('select_sorting') ?: $values->getPropertyValue('select_id')));
+                ->orderBy('sourceTable.' . ($values->getPropertyValue('select_sorting')
+                        ?: $values->getPropertyValue('select_id')));
 
             try {
                 $query->execute();
