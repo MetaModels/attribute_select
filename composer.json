@@ -1,77 +1,77 @@
 {
-    "name":"metamodels/attribute_select",
-    "description":"MetaModels attribute for selects",
-    "keywords":["contao", "metamodels", "attribute", "select", "nontranslatable"],
-    "type":"contao-bundle",
-    "homepage":"http://now.metamodel.me/",
-    "license":"LGPL-3.0-or-later",
-    "authors":[
-        {
-            "name":"Christian Schiffler",
-            "email":"c.schiffler@cyberspectrum.de",
-            "homepage":"http://www.cyberspectrum.de",
-            "role":"Developer"
-        },
-        {
-            "name":"Stefan Heimes",
-            "email":"stefan_heimes@hotmail.com",
-            "role":"Developer"
-        }
-    ],
-    "support":{
-        "email":"mail@metamodel.me",
-        "issues":"https://github.com/MetaModels/attribute_select/issues",
-        "wiki":"http://de.contaowiki.org/MetaModels",
-        "irc":"irc://irc.freenode.org/contao.mm",
-        "source":"https://github.com/MetaModels/attribute_select"
+  "name": "metamodels/attribute_select",
+  "description": "MetaModels attribute for selects",
+  "keywords": [
+    "contao",
+    "metamodels",
+    "attribute",
+    "select",
+    "nontranslatable"
+  ],
+  "type": "contao-bundle",
+  "homepage": "http://now.metamodel.me/",
+  "license": "LGPL-3.0-or-later",
+  "authors": [
+    {
+      "name": "Christian Schiffler",
+      "email": "c.schiffler@cyberspectrum.de",
+      "homepage": "http://www.cyberspectrum.de",
+      "role": "Developer"
     },
-    "require":{
-        "php": "^5.6 || ^7.0",
-        "contao/core-bundle": "^4.4",
-        "contao-community-alliance/dc-general": "^2.1@dev",
-        "metamodels/core": "^2.1@dev",
-        "symfony/dependency-injection": "^3.3 || ^4.0",
-        "symfony/http-kernel": "^3.3 || ^4.0"
+    {
+      "name": "Stefan Heimes",
+      "email": "stefan_heimes@hotmail.com",
+      "role": "Developer"
+    }
+  ],
+  "support": {
+    "email": "mail@metamodel.me",
+    "issues": "https://github.com/MetaModels/attribute_select/issues",
+    "wiki": "http://de.contaowiki.org/MetaModels",
+    "irc": "irc://irc.freenode.org/contao.mm",
+    "source": "https://github.com/MetaModels/attribute_select"
+  },
+  "require": {
+    "php": "^5.6 || ^7.0",
+    "contao-community-alliance/dc-general": "^2.1@dev",
+    "contao/core-bundle": "^4.4",
+    "metamodels/core": "^2.1@dev",
+    "symfony/dependency-injection": "^3.3 || ^4.0",
+    "symfony/http-kernel": "^3.3 || ^4.0"
+  },
+  "require-dev": {
+    "contao/manager-plugin": "^2.1",
+    "phpcq/all-tasks": "^1.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "MetaModels\\AttributeSelectBundle\\": "src"
     },
-    "require-dev": {
-        "cyberspectrum/contao-toolbox": "^0.6",
-        "phpcq/all-tasks": "^1.2",
-        "contao/manager-plugin": "^2.1"
-    },
-    "autoload": {
-        "psr-4": {
-            "MetaModels\\AttributeSelectBundle\\": "src"
-        },
-        "files": [
-            "src/deprecated-autoload.php"
-        ]
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "MetaModels\\AttributeSelectBundle\\Test\\": "tests"
-        }
-    },
-    "extra":{
-        "contao-manager-plugin": "MetaModels\\AttributeSelectBundle\\ContaoManager\\Plugin",
-        "contao": {
-            "transifex": {
-                "project": "metamodels",
-                "prefix": "attribute_select-",
-                "languages_cto": "src/Resources/contao/languages",
-                "languages_tx": ".tx"
-            }
-        },
-        "branch-alias": {
-            "dev-master": "2.0.x-dev",
-            "dev-feature/contao4": "2.1.x-dev"
-        }
-    },
-    "minimum-stability": "dev",
-    "prefer-stable": true,
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "git@gitlab.com:metamodels/core.git"
-        }
+    "files": [
+      "src/deprecated-autoload.php"
     ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "MetaModels\\AttributeSelectBundle\\Test\\": "tests"
+    }
+  },
+  "extra": {
+    "contao-manager-plugin": "MetaModels\\AttributeSelectBundle\\ContaoManager\\Plugin",
+    "branch-alias": {
+      "dev-master": "2.0.x-dev",
+      "dev-feature/contao4": "2.1.x-dev"
+    }
+  },
+  "config": {
+    "sort-packages": true
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "git@gitlab.com:metamodels/core.git"
+    }
+  ]
 }

@@ -10,13 +10,12 @@
  *
  * This project is provided in good faith and hope to be usable by anyone.
  *
- * @package    MetaModels
- * @subpackage AttributeSelect
+ * @package    MetaModels/attribute_select
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
  * @author     David Molineus <david.molineus@netzmacht.de>
  * @author     Sven Baumann <baumann.sv@gmail.com>
  * @copyright  2012-2018 The MetaModels team.
- * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0
+ * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
  */
 
