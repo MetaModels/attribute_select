@@ -97,9 +97,10 @@ class Select extends AbstractSelect
      */
     public function valueToWidget($varValue)
     {
-        $value = $varValue[$this->getIdColumn()];
+        $value      = $varValue[$this->getIdColumn()];
+        $sourceName = $this->getSelectSource();
 
-        if ($this->isTreePicker()) {
+        if ($this->isTreePicker() && !\in_array($sourceName, ['tl_page', 'tl_files'])) {
             return $value ? [$value] : null;
         }
 

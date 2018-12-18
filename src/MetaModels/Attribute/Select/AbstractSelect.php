@@ -168,6 +168,21 @@ abstract class AbstractSelect extends AbstractHybrid
     }
 
     /**
+     * Get the picker input type.
+     *
+     * @return string
+     */
+    private function getPickerType()
+    {
+        $sourceName = $this->getSelectSource();
+        if (!\in_array($sourceName, ['tl_page', 'tl_files'])) {
+            return 'DcGeneralTreePicker';
+        }
+
+        return $sourceName === 'tl_page' ? 'pageTree' : 'fileTree';
+    }
+
+    /**
      * Obtain the filter options with always the id being contained instead of the alias.
      *
      * This is being called from BackendSubscriber to circumvent problems when dealing with translated aliases.
@@ -184,7 +199,7 @@ abstract class AbstractSelect extends AbstractHybrid
         $arrFieldDef      = parent::getFieldDefinition($arrOverrides);
         $this->widgetMode = $arrOverrides['select_as_radio'];
         if ($this->isTreePicker()) {
-            $arrFieldDef['inputType']          = 'DcGeneralTreePicker';
+            $arrFieldDef['inputType']          = $this->getPickerType();
             $arrFieldDef['eval']['sourceName'] = $this->getSelectSource();
             $arrFieldDef['eval']['fieldType']  = 'radio';
             $arrFieldDef['eval']['idProperty'] = $this->getIdColumn();
