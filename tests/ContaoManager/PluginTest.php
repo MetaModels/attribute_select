@@ -13,6 +13,7 @@
  * @package    MetaModels
  * @subpackage AttributeSelect
  * @author     David Molineus <david.molineus@netzmacht.de>
+ * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
  * @copyright  2012-2017 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_text/blob/master/LICENSE LGPL-3.0
  * @filesource
@@ -67,30 +68,5 @@ class PluginTest extends TestCase
 
         $this->assertEquals($bundleConfig->getLoadAfter(), [MetaModelsCoreBundle::class]);
         $this->assertEquals($bundleConfig->getReplace(), ['metamodelsattribute_select']);
-    }
-
-    /**
-     * Test if the routing config is loaded.
-     *
-     * @return void
-     */
-    public function testRouting()
-    {
-        $loader   = $this->getMockBuilder(LoaderInterface::class)->getMock();
-        $resolver = $this->getMockBuilder(LoaderResolverInterface::class)->getMock();
-
-        $loader
-            ->expects($this->once())
-            ->method('load');
-
-        $resolver
-            ->expects($this->once())
-            ->method('resolve')
-            ->willReturn($loader);
-
-        $kernel = $this->getMockBuilder(KernelInterface::class)->getMock();
-
-        $plugin = new Plugin();
-        $plugin->getRouteCollection($resolver, $kernel);
     }
 }
