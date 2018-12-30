@@ -224,16 +224,9 @@ class MetaModelSelect extends AbstractSelect
      */
     public function valueToWidget($varValue)
     {
-        if (isset($varValue[$this->getIdColumn()])) {
-            // Hope the best that this is unique...
-            return (string) $varValue[$this->getIdColumn()];
-        }
+        $aliasColumn = $this->getIdColumn();
 
-        if (isset($varValue[self::SELECT_RAW]['id'])) {
-            return (string) $varValue[self::SELECT_RAW]['id'];
-        }
-
-        return '';
+        return $varValue[$aliasColumn] ?? $varValue[self::SELECT_RAW][$aliasColumn] ?? null;
     }
 
     /**
@@ -243,62 +236,59 @@ class MetaModelSelect extends AbstractSelect
      */
     public function widgetToValue($varValue, $itemId)
     {
-        static $cache;
-        if (isset($cache[$this->get('id')][$varValue])) {
-            return $cache[$this->get('id')][$varValue];
+        if (null === $varValue) {
+            return null;
+        }
+        static $cache = [];
+        $attributeId = $this->get('id');
+        if (array_key_exists($attributeId, $cache) && array_key_exists($varValue, $cache[$attributeId])) {
+            return $cache[$attributeId][$varValue];
         }
 
-        $model     = $this->getSelectMetaModel();
-        $alias     = $this->getIdColumn();
-        $attribute = $model->getAttribute($alias);
+        $model = $this->getSelectMetaModel();
+        $alias = $this->getIdColumn();
 
-        if ($attribute) {
+        if ($model->hasAttribute($alias)) {
+            $attribute = $model->getAttribute($alias);
             // It is an attribute, we may search for it.
             $ids = $attribute->searchFor($varValue);
-            if (!$ids) {
-                $valueId = 0;
-            } else {
-                if (\count($ids) > 1) {
-                    throw new \RuntimeException(
-                        \sprintf(
-                            'Multiple values found for %s, are there obsolete values for %s.%s (att_id: %s)?',
-                            \var_export($varValue, true),
-                            $model->getTableName(),
-                            $this->getColName(),
-                            $this->get('id')
-                        )
-                    );
-                }
-                $valueId = \array_shift($ids);
-            }
         } else {
             // Must be a system column then.
-            // Special case first, the id is our alias, easy way out.
-            if ($alias === 'id') {
-                $valueId = $varValue;
-            } else {
-                $result = $this->connection->createQueryBuilder()
-                    ->select('v.id')
-                    ->from($this->getSelectSource(), 'v')
-                    ->where('v.' . $this->getAliasColumn() . '=:value')
-                    ->setParameter('value', $varValue)
-                    ->execute();
+            $result = $this->connection->createQueryBuilder()
+                ->select('v.id')
+                ->from($this->getSelectSource(), 'v')
+                ->where('v.' . $this->getAliasColumn() . '=:value')
+                ->setParameter('value', $varValue)
+                ->execute();
 
-                $valueId = $result->fetch(\PDO::FETCH_COLUMN);
-
-                /** @noinspection PhpUndefinedFieldInspection */
-                if ($valueId === false) {
-                    throw new \RuntimeException('Could not translate value ' . \var_export($varValue, true));
-                }
-            }
+            $ids = $result->fetchAll(\PDO::FETCH_COLUMN);
         }
+
+        // Maybe deleted value?
+        if ([] === $ids) {
+            return $cache[$attributeId][$varValue] = null;
+        }
+
+        // Multiple results.
+        if (null === $ids || \count($ids) > 1) {
+            throw new \RuntimeException(
+                \sprintf(
+                    'Multiple values found for %s, are there obsolete values for %s.%s (att_id: %s)?',
+                    \var_export($varValue, true),
+                    $model->getTableName(),
+                    $this->getColName(),
+                    $this->get('id')
+                )
+            );
+        }
+        $valueId = \array_shift($ids);
 
         $value = $this->getValuesById(
             [$valueId],
             [$this->getAliasColumn(), $this->getValueColumn(), $this->getIdColumn(), $this->getSortingColumn()]
         );
 
-        return $cache[$this->get('id')][$varValue] = $value[$valueId];
+        return $cache[$attributeId][$varValue] = $value[$valueId];
     }
 
     /**

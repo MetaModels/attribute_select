@@ -12,8 +12,6 @@
  *
  * @package    MetaModels/attribute_select
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
- * @author     David Molineus <david.molineus@netzmacht.de>
- * @author     Sven Baumann <baumann.sv@gmail.com>
  * @copyright  2012-2018 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
@@ -24,15 +22,18 @@ namespace MetaModels\AttributeSelectBundle\Test\Attribute;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Statement;
-use MetaModels\AttributeSelectBundle\Attribute\Select;
+use MetaModels\Attribute\IAttribute;
+use MetaModels\AttributeSelectBundle\Attribute\MetaModelSelect;
+use MetaModels\Filter\Setting\IFilterSettingFactory;
 use MetaModels\Helper\TableManipulator;
+use MetaModels\IFactory;
 use MetaModels\IMetaModel;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Unit tests to test class Select.
+ * Unit tests to test class MetaModelSelect.
  */
-class SelectTest extends TestCase
+class MetaModelSelectTest extends TestCase
 {
     /**
      * Mock a MetaModel.
@@ -47,17 +48,14 @@ class SelectTest extends TestCase
         $metaModel = $this->getMockForAbstractClass('MetaModels\IMetaModel');
 
         $metaModel
-            ->expects($this->any())
             ->method('getTableName')
             ->willReturn('mm_unittest');
 
         $metaModel
-            ->expects($this->any())
             ->method('getActiveLanguage')
             ->willReturn($language);
 
         $metaModel
-            ->expects($this->any())
             ->method('getFallbackLanguage')
             ->willReturn($fallbackLanguage);
 
@@ -95,13 +93,23 @@ class SelectTest extends TestCase
      *
      * @return void
      */
-    public function testInstantiationSelect()
+    public function testInstantiationMetaModelSelect()
     {
-        $connection  = $this->mockConnection();
-        $manipulator = $this->mockTableManipulator($connection);
+        $connection    = $this->mockConnection();
+        $manipulator   = $this->mockTableManipulator($connection);
+        $factory       = $this->getMockForAbstractClass(IFactory::class);
+        $filterFactory = $this->getMockForAbstractClass(IFilterSettingFactory::class);
 
-        $text = new Select($this->mockMetaModel('en', 'en'), [], $connection, $manipulator);
-        $this->assertInstanceOf('MetaModels\AttributeSelectBundle\Attribute\Select', $text);
+        $text = new MetaModelSelect(
+            $this->mockMetaModel('en', 'en'),
+            ['id' => uniqid('', false)],
+            $connection,
+            $manipulator,
+            $factory,
+            $filterFactory
+        );
+
+        $this->assertInstanceOf('MetaModels\AttributeSelectBundle\Attribute\MetaModelSelect', $text);
     }
 
     /**
@@ -148,14 +156,18 @@ class SelectTest extends TestCase
      */
     public function testValueToWidget($expected, $value, $attrConfig): void
     {
-        $connection  = $this->mockConnection();
-        $manipulator = $this->mockTableManipulator($connection);
+        $connection    = $this->mockConnection();
+        $manipulator   = $this->mockTableManipulator($connection);
+        $factory       = $this->getMockForAbstractClass(IFactory::class);
+        $filterFactory = $this->getMockForAbstractClass(IFilterSettingFactory::class);
 
-        $select = new Select(
+        $select = new MetaModelSelect(
             $this->mockMetaModel('en', 'en'),
             $attrConfig,
             $connection,
-            $manipulator
+            $manipulator,
+            $factory,
+            $filterFactory
         );
 
         $this->assertSame($expected, $select->valueToWidget($value));
@@ -168,14 +180,23 @@ class SelectTest extends TestCase
      */
     public function testWidgetToValueForNull(): void
     {
-        $connection  = $this->mockConnection();
-        $manipulator = $this->mockTableManipulator($connection);
-        $select      = new Select(
+        $connection    = $this->mockConnection();
+        $manipulator   = $this->mockTableManipulator($connection);
+        $factory       = $this->getMockForAbstractClass(IFactory::class);
+        $filterFactory = $this->getMockForAbstractClass(IFilterSettingFactory::class);
+        $select        = new MetaModelSelect(
             $this->mockMetaModel('en', 'en'),
-            ['id' => uniqid('', false)],
+            [
+                'id'           => uniqid('', false),
+                'select_table' => 'mm_test_select',
+            ],
             $connection,
-            $manipulator
+            $manipulator,
+            $factory,
+            $filterFactory
         );
+
+        $factory->expects($this->never())->method('getMetaModel');
 
         $this->assertNull($select->widgetToValue(null, 23));
     }
@@ -185,52 +206,34 @@ class SelectTest extends TestCase
      *
      * @return void
      */
-    public function testWidgetToValueForNonNull(): void
+    public function testWidgetToValueForNonNullWithId(): void
     {
-        $connection  = $this->mockConnection();
-        $manipulator = $this->mockTableManipulator($connection);
-        $select      = new Select(
-            $this->mockMetaModel('en', 'en'),
-            [
-                'id'           => uniqid('', false),
-                'select_table' => 'mm_test_select',
-            ],
-            $connection,
-            $manipulator
-        );
-
-        $builder = $this
-            ->getMockBuilder(QueryBuilder::class)
-            ->disableOriginalConstructor()
+        $connection    = $this->mockConnection();
+        $manipulator   = $this->mockTableManipulator($connection);
+        $factory       = $this->getMockForAbstractClass(IFactory::class);
+        $filterFactory = $this->getMockForAbstractClass(IFilterSettingFactory::class);
+        $select        = $this
+            ->getMockBuilder(MetaModelSelect::class)
+            ->setConstructorArgs([
+                $this->mockMetaModel('en', 'en'),
+                [
+                    'id'           => uniqid('', false),
+                    'select_table' => 'mm_test_select',
+                ],
+                $connection,
+                $manipulator,
+                $factory,
+                $filterFactory
+            ])
+            ->setMethods(['getValuesById'])
             ->getMock();
-        $builder
-            ->expects($this->once())
-            ->method('select')
-            ->with('*')
-            ->willReturn($builder);
-        $builder
-            ->expects($this->once())
-            ->method('from')
-            ->with('mm_test_select')
-            ->willReturn($builder);
 
-        $builder
-            ->expects($this->once())
-            ->method('where')
-            ->with('id=:id')
-            ->willReturn($builder);
-
-        $builder
-            ->expects($this->once())
-            ->method('setParameter')
-            ->with('id', 10)
-            ->willReturn($builder);
-
-        $builder
-            ->expects($this->once())
-            ->method('setMaxResults')
-            ->with(1)
-            ->willReturn($builder);
+        $select->expects($this->once())->method('getValuesById')->willReturn([10 => [
+            'id'      => 10,
+            'pid'     => 0,
+            'sorting' => 1,
+            'tstamp'  => 343094400,
+        ]]);
 
         $statement = $this
             ->getMockBuilder(Statement::class)
@@ -238,19 +241,30 @@ class SelectTest extends TestCase
             ->getMock();
         $statement
             ->expects($this->once())
-            ->method('fetch')
-            ->with(\PDO::FETCH_ASSOC)
-            ->willReturnOnConsecutiveCalls([
-                'id'      => 10,
-                'pid'     => 0,
-                'sorting' => 1,
-                'tstamp'  => 343094400,
-            ], null);
-        $builder
-            ->expects($this->once())
-            ->method('execute')
-            ->willReturn($statement);
+            ->method('fetchAll')
+            ->with(\PDO::FETCH_COLUMN)
+            ->willReturn([10]);
+
+        $builder = $this
+            ->getMockBuilder(QueryBuilder::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $builder->expects($this->once())->method('select')->with('v.id')->willReturn($builder);
+        $builder->expects($this->once())->method('from')->with('mm_test_select', 'v')->willReturn($builder);
+        $builder->expects($this->once())->method('where')->with('v.id=:value')->willReturn($builder);
+        $builder->expects($this->once())->method('setParameter')->with('value', 10)->willReturn($builder);
+        $builder->expects($this->once())->method('execute')->willReturn($statement);
+
+
         $connection->expects($this->once())->method('createQueryBuilder')->willReturn($builder);
+
+        $metaModel = $this->getMockForAbstractClass(IMetaModel::class);
+
+        $factory
+            ->expects($this->once())
+            ->method('getMetaModel')
+            ->with('mm_test_select')
+            ->willReturn($metaModel);
 
         $this->assertSame([
             'id'      => 10,

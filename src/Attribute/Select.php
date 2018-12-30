@@ -87,14 +87,11 @@ class Select extends AbstractSelect
      */
     public function valueToWidget($varValue)
     {
-        $value      = $varValue[$this->getIdColumn()];
-        $sourceName = $this->getSelectSource();
-
-        if ($this->isTreePicker() && !\in_array($sourceName, ['tl_page', 'tl_files'])) {
-            return $value ? [$value] : null;
+        if (!is_array($varValue) || !array_key_exists($idColumn = $this->getIdColumn(), $varValue)) {
+            return null;
         }
 
-        return $value;
+        return ($varValue[$idColumn] ?? null);
     }
 
     /**
@@ -102,16 +99,20 @@ class Select extends AbstractSelect
      */
     public function widgetToValue($varValue, $itemId)
     {
+        if (null === $varValue) {
+            return null;
+        }
         // Lookup the value.
-        $values = $this->connection->createQueryBuilder()
+        $value = $this->connection->createQueryBuilder()
             ->select('*')
             ->from($this->getSelectSource())
             ->where($this->getIdColumn() . '=:id')
             ->setParameter('id', $varValue)
+            ->setMaxResults(1)
             ->execute()
             ->fetch(\PDO::FETCH_ASSOC);
 
-        return $values;
+        return $value;
     }
 
     /**
