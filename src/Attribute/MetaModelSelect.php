@@ -257,7 +257,7 @@ class MetaModelSelect extends AbstractSelect
             $result = $this->connection->createQueryBuilder()
                 ->select('v.id')
                 ->from($this->getSelectSource(), 'v')
-                ->where('v.' . $this->getAliasColumn() . '=:value')
+                ->where('v.' . $this->getIdColumn() . '=:value')
                 ->setParameter('value', $varValue)
                 ->execute();
 
