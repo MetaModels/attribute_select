@@ -32,8 +32,6 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Test the attribute factory.
- *
- * @package MetaModels\Test\Filter\Setting
  */
 class SelectAttributeTypeFactoryTest extends TestCase
 {
