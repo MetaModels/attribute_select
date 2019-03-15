@@ -1,0 +1,10 @@
+services:
+    metamodels.attribute_select.factory:
+        class: MetaModels\AttributeSelectBundle\Attribute\AttributeTypeFactory
+        arguments:
+            - '@database_connection'
+            - '@metamodels.table_manipulator'
+            - '@metamodels.factory'
+            - '@metamodels.filter_setting_factory'
+        tags:
+          - { name: metamodels.attribute_factory }
