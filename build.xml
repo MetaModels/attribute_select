@@ -8,4 +8,5 @@ This project is using the PHP code quality project (PHPCQ).
 -->
 <project name="MetaModels attribute select" default="build">
     <import file="vendor/phpcq/phpcq/phpcq.main.xml"/>
+    <target name="phpspec" />
 </project>
