@@ -1,54 +1,46 @@
 services:
-    metamodels.attribute_select.listeners.get_property_options:
-        class: MetaModels\AttributeSelectBundle\EventListener\GetPropertyOptionsListener
-        tags:
-          - {
-              name: kernel.event_listener,
-              event: 'dc-general.view.contao2backend.get-property-options',
-              method: getPropertyOptions
-            }
+  metamodels.attribute_select.listeners.get_property_options:
+    class: MetaModels\AttributeSelectBundle\EventListener\GetPropertyOptionsListener
+    tags:
+      -
+        name: kernel.event_listener
+        event: 'dc-general.view.contao2backend.get-property-options'
+        method: getPropertyOptions
 
-    metamodels.attribute_select.listeners.backend_listener:
-        class: MetaModels\AttributeSelectBundle\EventListener\BackendEventsListener
-        arguments:
-          - '@cca.dc-general.scope-matcher'
-          - '@database_connection'
-          - '@metamodels.factory'
-          - "@metamodels.filter_setting_factory"
-          - "@translator"
-        tags:
-          - {
-              name: kernel.event_listener,
-              event: 'dc-general.view.contao2backend.get-property-options',
-              method: 'getTableNames'
-            }
-          - {
-              name: kernel.event_listener,
-              event: 'dc-general.view.contao2backend.get-property-options',
-              method: 'getColumnNames'
-            }
-          - {
-              name: kernel.event_listener,
-              event: 'dc-general.view.contao2backend.get-property-options',
-              method: 'getIntColumnNames'
-            }
-          - {
-              name: kernel.event_listener,
-              event: 'dc-general.view.contao2backend.get-property-options',
-              method: 'getFilters'
-            }
-          - {
-              name: kernel.event_listener,
-              event: 'dc-general.view.contao2backend.build-widget',
-              method: 'getFiltersParams'
-            }
-          - {
-              name: kernel.event_listener,
-              event: 'dc-general.factory.build-data-definition',
-              method: 'buildPaletteRestrictions'
-            }
-          - {
-              name: kernel.event_listener,
-              event: 'dc-general.view.contao2backend.encode-property-value-from-widget',
-              method: 'checkQuery'
-            }
+  metamodels.attribute_select.listeners.backend_listener:
+    class: MetaModels\AttributeSelectBundle\EventListener\BackendEventsListener
+    arguments:
+      - '@cca.dc-general.scope-matcher'
+      - '@database_connection'
+      - '@metamodels.factory'
+      - "@metamodels.filter_setting_factory"
+      - "@translator"
+    tags:
+      -
+        name: kernel.event_listener
+        event: 'dc-general.view.contao2backend.get-property-options'
+        method: 'getTableNames'
+      -
+        name: kernel.event_listener
+        event: 'dc-general.view.contao2backend.get-property-options'
+        method: 'getColumnNames'
+      -
+        name: kernel.event_listener
+        event: 'dc-general.view.contao2backend.get-property-options'
+        method: 'getIntColumnNames'
+      -
+        name: kernel.event_listener
+        event: 'dc-general.view.contao2backend.get-property-options'
+        method: 'getFilters'
+      -
+        name: kernel.event_listener
+        event: 'dc-general.view.contao2backend.build-widget'
+        method: 'getFiltersParams'
+      -
+        name: kernel.event_listener
+        event: 'dc-general.factory.build-data-definition'
+        method: 'buildPaletteRestrictions'
+      -
+        name: kernel.event_listener
+        event: 'dc-general.view.contao2backend.encode-property-value-from-widget'
+        method: 'checkQuery'
