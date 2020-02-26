@@ -12,7 +12,7 @@
  * Translations are managed automatically using Transifex. To create a new translation
  * or to help to maintain an existing one, please register at transifex.com.
  *
- * Last-updated: 2020-02-16T15:33:33+01:00
+ * Last-updated: 2020-02-16T16:16:31+01:00
  *
  * @copyright 2012-2020 The MetaModels team.
  * @license   https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0-or-later
