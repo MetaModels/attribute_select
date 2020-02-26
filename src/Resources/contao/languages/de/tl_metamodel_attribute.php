@@ -1,20 +1,30 @@
 <?php
 /**
- * Translations are managed using Transifex. To create a new translation
+ * This file is part of MetaModels/attribute_select.
+ *
+ * (c) 2012-2020 The MetaModels team.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * This project is provided in good faith and hope to be usable by anyone.
+ *
+ * Translations are managed automatically using Transifex. To create a new translation
  * or to help to maintain an existing one, please register at transifex.com.
  *
- * @link http://help.transifex.com/intro/translating.html
- * @link https://www.transifex.com/projects/p/metamodels/language/de/
+ * Last-updated: 2020-02-16T16:16:31+01:00
  *
- * @license http://www.gnu.org/licenses/lgpl-3.0.html LGPL
- *
- * last-updated: 2018-03-29T15:31:35+02:00
+ * @copyright 2012-2020 The MetaModels team.
+ * @license   https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0-or-later
+ * @link      https://www.transifex.com/metamodels/public/
+ * @link      https://www.transifex.com/signup/?join_project=metamodels
  */
 
+
 $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_alias']['0']                 = 'Alias-Spalte';
-$GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_alias']['1']                 = 'Bitte wählen Sie die Tabellenspalte die als Optionsalias (zum Beispiel in Filterwidgets) benutzt werden soll. Falls Sie unsicher sind wählen Sie dieselbe Spalte wie für die ID aus.';
+$GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_alias']['1']                 = 'Bitte wählen Sie die Tabellenspalte, die als Optionsalias (zum Beispiel in Filterwidgets) benutzt werden soll. Falls Sie unsicher sind, wählen Sie dieselbe Spalte wie für die ID aus.';
 $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_column']['0']                = 'Werte-Spalte';
-$GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_column']['1']                = 'Bitte wählen Sie die Tabellenspalte aus der ein Textwert bezogen werden soll.';
+$GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_column']['1']                = 'Bitte wählen Sie die Tabellenspalte, aus der ein Textwert bezogen werden soll.';
 $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_column_type']['attribute']   = 'MetaModels Attribute';
 $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_column_type']['sql']         = 'Spalte der SQL-Tabelle';
 $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_filter']['0']                = 'Filter';
@@ -22,7 +32,7 @@ $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_filter']['1']             
 $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_filterparams']['0']          = 'Filterparameter';
 $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_filterparams']['1']          = 'Hier können Sie eine Vorgabe für den Filter wählen..';
 $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_id']['0']                    = 'ID-Spalte';
-$GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_id']['1']                    = 'Bitte wählen Sie die Tabellenspalte aus die als Datensatz-ID dienen solll.';
+$GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_id']['1']                    = 'Bitte wählen Sie die Tabellenspalte aus, die als Datensatz-ID dienen soll.';
 $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_sorting']['0']               = 'Auswahl-Sortierung';
 $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_sorting']['1']               = 'Bitte wählen Sie einen Eintrag für die Tag-Sortierung aus.';
 $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_table']['0']                 = 'Quelltabelle';

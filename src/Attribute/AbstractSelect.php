@@ -55,7 +55,7 @@ abstract class AbstractSelect extends AbstractHybrid
      */
     public function getSQLDataType()
     {
-        return 'int(11) NOT NULL default \'0\'';
+        return 'int(11) NULL';
     }
 
     /**
@@ -299,5 +299,15 @@ abstract class AbstractSelect extends AbstractHybrid
     public function getFilterUrlValue($varValue)
     {
         return \urlencode($varValue[$this->getAliasColumn()]);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * This is needed for compatibility with MySQL strict mode.
+     */
+    public function serializeData($value)
+    {
+        return $value === '' ? null : $value;
     }
 }

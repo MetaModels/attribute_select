@@ -8,3 +8,9 @@ services:
             - '@metamodels.filter_setting_factory'
         tags:
           - { name: metamodels.attribute_factory }
+
+    MetaModels\AttributeSelectBundle\Migration\AllowNullMigration:
+        arguments:
+            - '@database_connection'
+        tags:
+            - name: contao.migration

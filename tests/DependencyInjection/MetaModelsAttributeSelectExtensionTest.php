@@ -3,7 +3,7 @@
 /**
  * This file is part of MetaModels/attribute_select.
  *
- * (c) 2012-2019 The MetaModels team.
+ * (c) 2012-2020 The MetaModels team.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -12,16 +12,20 @@
  *
  * @package    MetaModels/attribute_select
  * @author     David Molineus <david.molineus@netzmacht.de>
- * @copyright  2012-2019 The MetaModels team.
+ * @author     Ingolf Steinhardt <info@e-spin.de>
+ * @copyright  2012-2020 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
  */
+
+declare(strict_types = 1);
 
 namespace MetaModels\AttributeSelectBundle\Test\DependencyInjection;
 
 use MetaModels\AttributeSelectBundle\Attribute\AttributeTypeFactory;
 use MetaModels\AttributeSelectBundle\Controller\RateAjaxController;
 use MetaModels\AttributeSelectBundle\DependencyInjection\MetaModelsAttributeSelectExtension;
+use MetaModels\AttributeSelectBundle\Migration\AllowNullMigration;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -50,7 +54,7 @@ class MetaModelsAttributeSelectExtensionTest extends TestCase
      *
      * @return void
      */
-    public function testFactoryIsRegistered()
+    public function testRegistersServices()
     {
         $container = $this->getMockBuilder(ContainerBuilder::class)->getMock();
 
@@ -66,6 +70,18 @@ class MetaModelsAttributeSelectExtensionTest extends TestCase
                             $this->assertInstanceOf(Definition::class, $value);
                             $this->assertEquals(AttributeTypeFactory::class, $value->getClass());
                             $this->assertCount(1, $value->getTag('metamodels.attribute_factory'));
+
+                            return true;
+                        }
+                    )
+                ],
+                [
+                    AllowNullMigration::class,
+                    $this->callback(
+                        function ($value) {
+                            /** @var Definition $value */
+                            $this->assertInstanceOf(Definition::class, $value);
+                            $this->assertCount(1, $value->getTag('contao.migration'));
 
                             return true;
                         }
