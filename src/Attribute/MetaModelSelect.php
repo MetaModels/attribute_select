@@ -493,7 +493,7 @@ class MetaModelSelect extends AbstractSelect
         $valueCol = $this->getColName();
         $query    = $this->connection->createQueryBuilder()
             ->select('t.' . $this->getColName())
-            ->addSelect(\sprintf('COUNT(t.%s) AS count', 't.' . $this->getColName()))
+            ->addSelect(\sprintf('COUNT(t.%s) AS count', $this->getColName()))
             ->from($this->getMetaModel()->getTableName(), 't')
             ->where('t.' . $this->getColName() . ' IN (:ids)')
             ->groupBy('t.' . $this->getColName())
