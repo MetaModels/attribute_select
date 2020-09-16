@@ -176,7 +176,7 @@ class AllowNullMigration extends AbstractMigration
     private function fixColumn(string $tableName, string $columnName): void
     {
         $this->connection->query(
-            sprintf('ALTER TABLE %1$s CHANGE %2$s %2$s int(11) NULL', $tableName, $columnName)
+            sprintf('ALTER TABLE %1$s CHANGE %1$s.%2$s %1$s.%2$s int(11) NULL', $tableName, $columnName)
         );
     }
 }

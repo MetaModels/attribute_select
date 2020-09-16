@@ -336,13 +336,13 @@ class MetaModelSelect extends AbstractSelect
     public function buildFilterRulesForUsedOnly($filter, $idList = [])
     {
         $builder = $this->connection->createQueryBuilder()
-            ->select($this->getColName())
-            ->from($this->getMetaModel()->getTableName())
-            ->groupBy($this->getColName());
+            ->select('t.' . $this->getColName())
+            ->from($this->getMetaModel()->getTableName(), 't')
+            ->groupBy('t.' . $this->getColName());
 
         if (!empty($idList)) {
             $builder
-                ->where('id IN (:ids)')
+                ->where('t.id IN (:ids)')
                 ->setParameter('ids', $idList, Connection::PARAM_STR_ARRAY);
         }
 
@@ -492,15 +492,15 @@ class MetaModelSelect extends AbstractSelect
 
         $valueCol = $this->getColName();
         $query    = $this->connection->createQueryBuilder()
-            ->select($this->getColName())
-            ->addSelect(\sprintf('COUNT(%s) AS count', $this->getColName()))
-            ->from($this->getMetaModel()->getTableName())
-            ->where($this->getColName() . ' IN (:ids)')
-            ->groupBy($this->getColName())
+            ->select('t.' . $this->getColName())
+            ->addSelect(\sprintf('COUNT(t.%s) AS count', $this->getColName()))
+            ->from($this->getMetaModel()->getTableName(), 't')
+            ->where('t.' . $this->getColName() . ' IN (:ids)')
+            ->groupBy('t.' . $this->getColName())
             ->setParameter('ids', $usedOptionsIdList, Connection::PARAM_STR_ARRAY);
         if ($idList !== null && !empty($idList)) {
             $query
-                ->andWhere('id IN (:idList)')
+                ->andWhere('t.id IN (:idList)')
                 ->setParameter('idList', $idList, Connection::PARAM_STR_ARRAY);
         }
         $query = $query->execute();
@@ -569,9 +569,9 @@ class MetaModelSelect extends AbstractSelect
         $metaModel = $this->getSelectMetaModel();
         $myColName = $this->getColName();
         $statement = $this->connection->createQueryBuilder()
-            ->select('id,' . $myColName)
-            ->from($this->getMetaModel()->getTableName())
-            ->where('id IN (:ids)')
+            ->select('t.id, t.' . $myColName)
+            ->from($this->getMetaModel()->getTableName(), 't')
+            ->where('t.id IN (:ids)')
             ->setParameter('ids', $idList, Connection::PARAM_STR_ARRAY)
             ->execute();
 
@@ -610,9 +610,9 @@ class MetaModelSelect extends AbstractSelect
         $valueColumn = $this->getColName();
         // First pass, load database rows.
         $statement  = $this->connection->createQueryBuilder()
-            ->select($valueColumn . ', id')
-            ->from($this->getMetaModel()->getTableName())
-            ->where('id IN (:ids)')
+            ->select('t.' . $valueColumn . ', t.id')
+            ->from($this->getMetaModel()->getTableName(), 't')
+            ->where('t.id IN (:ids)')
             ->setParameter('ids', $arrIds, Connection::PARAM_STR_ARRAY)
             ->execute();
 
@@ -648,7 +648,7 @@ class MetaModelSelect extends AbstractSelect
 
         $query = \sprintf(
         // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
-            'UPDATE %1$s SET %2$s=:val WHERE %1$s.id=:id',
+            'UPDATE %1$s SET %1$s.%2$s=:val WHERE %1$s.id=:id',
             $this->getMetaModel()->getTableName(), // 1
             $this->getColName()                    // 2
         // @codingStandardsIgnoreEnd

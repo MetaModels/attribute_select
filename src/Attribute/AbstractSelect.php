@@ -249,9 +249,9 @@ abstract class AbstractSelect extends AbstractHybrid
     public function unsetDataFor($arrIds)
     {
         $this->connection->createQueryBuilder()
-            ->update($this->getMetaModel()->getTableName())
-            ->set($this->getColName(), 0)
-            ->where('id IN (:ids)')
+            ->update($this->getMetaModel()->getTableName(), 't')
+            ->set('t.' . $this->getColName(), 0)
+            ->where('t.id IN (:ids)')
             ->setParameter('ids', $arrIds, Connection::PARAM_STR_ARRAY)
             ->execute();
     }
@@ -279,10 +279,10 @@ abstract class AbstractSelect extends AbstractHybrid
         }
 
         return $this->connection->createQueryBuilder()
-            ->select($idColumn)
-            ->from($tableName)
-            ->where($aliasColumn . ' IN (:values)')
-            ->setParameter('values', $values, Connection::PARAM_STR_ARRAY)
+            ->select('t.' . $idColumn)
+            ->from($tableName, 't')
+            ->where('t.' . $aliasColumn . ' IN (:values)')
+            ->setParameter('t.values', $values, Connection::PARAM_STR_ARRAY)
             ->execute()
             ->fetch(\PDO::FETCH_ASSOC);
     }
