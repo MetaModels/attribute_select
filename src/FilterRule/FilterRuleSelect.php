@@ -3,7 +3,7 @@
 /**
  * This file is part of MetaModels/attribute_select.
  *
- * (c) 2012-2019 The MetaModels team.
+ * (c) 2012-2021 The MetaModels team.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -15,7 +15,8 @@
  * @author     Andreas Isaak <andy.jared@googlemail.com>
  * @author     David Molineus <david.molineus@netzmacht.de>
  * @author     Sven Baumann <baumann.sv@gmail.com>
- * @copyright  2012-2019 The MetaModels team.
+ * @author     Ingolf Steinhardt <info@e-spin.de>
+ * @copyright  2012-2021 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
  */
@@ -87,8 +88,8 @@ class FilterRuleSelect extends FilterRule
 
         $matches = $this->connection->createQueryBuilder()
             ->select('id')
-            ->from($this->objAttribute->getMetaModel()->getTableName())
-            ->where($this->objAttribute->getColName() . ' IN (:ids)')
+            ->from($this->objAttribute->getMetaModel()->getTableName(), 't')
+            ->where('t.' . $this->objAttribute->getColName() . ' IN (:ids)')
             ->setParameter('ids', $values, Connection::PARAM_STR_ARRAY)
             ->execute();
 
