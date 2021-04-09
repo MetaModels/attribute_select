@@ -219,7 +219,7 @@ class SelectTest extends TestCase
         $builder
             ->expects($this->once())
             ->method('where')
-            ->with('id=:id')
+            ->with('t.id=:id')
             ->willReturn($builder);
 
         $builder
