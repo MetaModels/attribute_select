@@ -25,8 +25,9 @@ namespace MetaModels\AttributeSelectBundle\Migration;
 use Contao\CoreBundle\Migration\AbstractMigration;
 use Contao\CoreBundle\Migration\MigrationResult;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\FetchMode;
 use Doctrine\DBAL\Schema\Column;
+use Doctrine\DBAL\Schema\ColumnDiff;
+use Doctrine\DBAL\Schema\TableDiff;
 
 /**
  * This migration changes all database columns to allow null values.
@@ -95,10 +96,10 @@ class AllowNullMigration extends AbstractMigration
     {
         $langColumns = $this->fetchNonNullableColumns();
         $message     = [];
-        foreach ($langColumns as $tableName => $tableColumnNames) {
-            foreach ($tableColumnNames as $tableColumnName) {
-                $this->fixColumn($tableName, $tableColumnName);
-                $message[] = $tableName . '.' . $tableColumnName;
+        foreach ($langColumns as $tableName => $tableColumns) {
+            foreach ($tableColumns as $tableColumn) {
+                $this->fixColumn($tableName, $tableColumn);
+                $message[] = $tableName . '.' . $tableColumn->getName();
             }
         }
 
@@ -138,7 +139,7 @@ class AllowNullMigration extends AbstractMigration
                     if (!isset($result[$tableName])) {
                         $result[$tableName] = [];
                     }
-                    $result[$tableName][] = $tableColumnName;
+                    $result[$tableName][] = $column;
                 }
             }
         }
@@ -162,7 +163,7 @@ class AllowNullMigration extends AbstractMigration
             ->where('attribute.type=:type')
             ->setParameter('type', 'select')
             ->execute()
-            ->fetchAll(FetchMode::ASSOCIATIVE);
+            ->fetchAllAssociative();
 
         $result = [];
         foreach ($langColumns as $langColumn) {
@@ -178,15 +179,26 @@ class AllowNullMigration extends AbstractMigration
     /**
      * Fix a table column.
      *
-     * @param string $tableName  The name of the table.
-     * @param string $columnName The name of the column.
+     * @param string $tableName The name of the table.
+     * @param Column $column    The column.
      *
      * @return void
      */
-    private function fixColumn(string $tableName, string $columnName): void
+    private function fixColumn(string $tableName, Column $column): void
     {
-        $this->connection->query(
-            sprintf('ALTER TABLE %1$s CHANGE %1$s.%2$s %1$s.%2$s int(11) NULL', $tableName, $columnName)
-        );
+        $manager = $this->connection->getSchemaManager();
+        $table   = $manager->listTableDetails($tableName);
+
+        $changeColumn = new Column($column->getName(), $column->getType());
+        $changeColumn
+            ->setLength($column->getLength())
+            ->setNotnull(false)
+            ->setDefault(null);
+        $columnDiff = new ColumnDiff($column->getName(), $changeColumn);
+
+        $tableDiff                   = new TableDiff($tableName);
+        $tableDiff->fromTable        = $table;
+        $tableDiff->changedColumns[] = $columnDiff;
+        $manager->alterTable($tableDiff);
     }
 }
