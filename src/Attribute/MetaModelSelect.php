@@ -3,7 +3,7 @@
 /**
  * This file is part of MetaModels/attribute_select.
  *
- * (c) 2012-2019 The MetaModels team.
+ * (c) 2012-2021 The MetaModels team.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -18,7 +18,7 @@
  * @author     David Molineus <david.molineus@netzmacht.de>
  * @author     Sven Baumann <baumann.sv@gmail.com>
  * @author     Ingolf Steinhardt <info@e-spin.de>
- * @copyright  2012-2019 The MetaModels team.
+ * @copyright  2012-2021 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
  */
@@ -35,6 +35,7 @@ use MetaModels\IFactory;
 use MetaModels\IItem;
 use MetaModels\IItems;
 use MetaModels\IMetaModel;
+use MetaModels\ITranslatedMetaModel;
 use MetaModels\Render\Template;
 
 /**
@@ -74,16 +75,12 @@ class MetaModelSelect extends AbstractSelect
      * Note that you should not use this directly but use the factory classes to instantiate attributes.
      *
      * @param IMetaModel                 $objMetaModel         The MetaModel instance this attribute belongs to.
-     *
      * @param array $arrData                                   The information array, for attribute information, refer
      *                                                         to documentation of table tl_metamodel_attribute and
      *                                                         documentation of the certain attribute classes for
      *                                                         information what values are understood.
-     *
      * @param Connection                 $connection           The database connection.
-     *
      * @param TableManipulator           $tableManipulator     Table manipulator instance.
-     *
      * @param IFactory                   $factory              MetaModel factory.
      *
      * @param IFilterSettingFactory|null $filterSettingFactory Filter setting factory.
@@ -241,7 +238,7 @@ class MetaModelSelect extends AbstractSelect
         }
         static $cache = [];
         $attributeId = $this->get('id');
-        if (array_key_exists($attributeId, $cache) && array_key_exists($varValue, $cache[$attributeId])) {
+        if (\array_key_exists($attributeId, $cache) && \array_key_exists($varValue, $cache[$attributeId])) {
             return $cache[$attributeId][$varValue];
         }
 
@@ -303,8 +300,11 @@ class MetaModelSelect extends AbstractSelect
             return [];
         }
 
-        $originalLanguage       = $GLOBALS['TL_LANGUAGE'];
-        $GLOBALS['TL_LANGUAGE'] = $this->getMetaModel()->getActiveLanguage();
+        $metaModel = $this->getSelectMetaModel();
+        if (!$metaModel instanceof ITranslatedMetaModel) {
+            $originalLanguage       = $GLOBALS['TL_LANGUAGE'];
+            $GLOBALS['TL_LANGUAGE'] = $this->getMetaModel()->getActiveLanguage();
+        }
 
         $filter = $this->getSelectMetaModel()->getEmptyFilter();
 
@@ -319,7 +319,9 @@ class MetaModelSelect extends AbstractSelect
             [$this->getValueColumn(), $this->getIdColumn()]
         );
 
-        $GLOBALS['TL_LANGUAGE'] = $originalLanguage;
+        if (isset($originalLanguage)) {
+            $GLOBALS['TL_LANGUAGE'] = $originalLanguage;
+        }
 
         return $this->convertItemsToFilterOptions($objItems, $this->getValueColumn(), $this->getIdColumn());
     }
@@ -328,7 +330,6 @@ class MetaModelSelect extends AbstractSelect
      * Fetch filter options from foreign table taking the given flag into account.
      *
      * @param IFilter $filter The filter to which the rules shall be added to.
-     *
      * @param array   $idList The list of ids of items for which the rules shall be added.
      *
      * @return void
@@ -413,13 +414,9 @@ class MetaModelSelect extends AbstractSelect
      * Convert a collection of items into a proper filter option list.
      *
      * @param IItems|IItem[] $items        The item collection to convert.
-     *
      * @param string         $displayValue The name of the attribute to use as value.
-     *
      * @param string         $aliasColumn  The name of the attribute to use as alias.
-     *
      * @param null|string[]  $count        The counter array.
-     *
      * @param null|array     $idList       A list for the current Items to use.
      *
      * @return array
@@ -469,9 +466,7 @@ class MetaModelSelect extends AbstractSelect
      * Determine the option count for the passed items.
      *
      * @param IItems|IItem[] $items The item collection to convert.
-     *
      * @param null|string[]  $count The counter array.
-     *
      * @param array          $idList The id list for the subselect.
      *
      * @return void
@@ -528,8 +523,10 @@ class MetaModelSelect extends AbstractSelect
         $strSortingValue    = $this->getSortingColumn();
         $strCurrentLanguage = null;
 
+        $metaModel = $this->getSelectMetaModel();
+
         // Change language.
-        if (TL_MODE == 'BE') {
+        if (TL_MODE == 'BE' && !$metaModel instanceof ITranslatedMetaModel) {
             $strCurrentLanguage     = $GLOBALS['TL_LANGUAGE'];
             $GLOBALS['TL_LANGUAGE'] = $this->getMetaModel()->getActiveLanguage();
         }
@@ -546,7 +543,7 @@ class MetaModelSelect extends AbstractSelect
         $objItems = $this->getSelectMetaModel()->findByFilter($filter, $strSortingValue);
 
         // Reset language.
-        if (TL_MODE == 'BE') {
+        if (TL_MODE == 'BE' && isset($originalLanguage)) {
             $GLOBALS['TL_LANGUAGE'] = $strCurrentLanguage;
         }
 
