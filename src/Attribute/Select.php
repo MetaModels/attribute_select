@@ -3,7 +3,7 @@
 /**
  * This file is part of MetaModels/attribute_select.
  *
- * (c) 2012-2020 The MetaModels team.
+ * (c) 2012-2021 The MetaModels team.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -22,7 +22,7 @@
  * @author     David Molineus <david.molineus@netzmacht.de>
  * @author     Ingolf Steinhardt <info@e-spin.de>
  * @author     Sven Baumann <baumann.sv@gmail.com>
- * @copyright  2012-2020 The MetaModels team.
+ * @copyright  2012-2021 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
  */
@@ -30,7 +30,7 @@
 namespace MetaModels\AttributeSelectBundle\Attribute;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Driver\Statement;
+use Doctrine\DBAL\Driver\ResultStatement;
 
 /**
  * This is the MetaModelAttribute class for handling select attributes on plain SQL tables.
@@ -76,10 +76,13 @@ class Select extends AbstractSelect
      */
     public function getAttributeSettingNames()
     {
-        return array_merge(parent::getAttributeSettingNames(), array(
-            'select_id',
-            'select_where',
-        ));
+        return \array_merge(
+            parent::getAttributeSettingNames(),
+            [
+                'select_id',
+                'select_where',
+            ]
+        );
     }
 
     /**
@@ -117,11 +120,8 @@ class Select extends AbstractSelect
 
     /**
      * {@inheritDoc}
-     *
-     * @SuppressWarnings(PHPMD.Superglobals)
-     * @SuppressWarnings(PHPMD.CamelCaseVariableName)
      */
-    public function getFilterOptionsForDcGeneral()
+    public function getFilterOptionsForDcGeneral(): array
     {
         if (!$this->isFilterOptionRetrievingPossible(null)) {
             return array();
@@ -144,21 +144,18 @@ class Select extends AbstractSelect
     /**
      * Convert the database result into a proper result array.
      *
-     * @param Statement $statement   The database result statement.
-     *
-     * @param string    $aliasColumn The name of the alias column to be used.
-     *
-     * @param string    $valueColumn The name of the value column.
-     *
-     * @param array     $count       The optional count array.
+     * @param ResultStatement $statement   The database result statement.
+     * @param string          $aliasColumn The name of the alias column to be used.
+     * @param string          $valueColumn The name of the value column.
+     * @param array           $count       The optional count array.
      *
      * @return array
      */
     protected function convertOptionsList($statement, $aliasColumn, $valueColumn, &$count = null)
     {
-        $arrReturn = array();
+        $arrReturn = [];
         while ($values = $statement->fetch(\PDO::FETCH_OBJ)) {
-            if (is_array($count)) {
+            if (\is_array($count)) {
                 /** @noinspection PhpUndefinedFieldInspection */
                 $count[$values->$aliasColumn] = $values->mm_count;
             }
@@ -174,7 +171,7 @@ class Select extends AbstractSelect
      *
      * @param bool $usedOnly The flag if only used values shall be returned.
      *
-     * @return Statement
+     * @return ResultStatement
      */
     public function getFilterOptionsForUsedOnly($usedOnly)
     {
@@ -270,7 +267,7 @@ class Select extends AbstractSelect
     public function getDataFor($arrIds)
     {
         if (!$this->isProperlyConfigured()) {
-            return array();
+            return [];
         }
 
         $strTableNameId = $this->getSelectSource();
