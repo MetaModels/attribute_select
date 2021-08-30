@@ -316,7 +316,7 @@ class MetaModelSelect extends AbstractSelect
             0,
             0,
             $this->getSortDirection(),
-            [$this->getAliasColumn(), $this->getValueColumn()]
+            [$this->getValueColumn(), $this->getAliasColumn()]
         );
 
         if (isset($originalLanguage)) {
