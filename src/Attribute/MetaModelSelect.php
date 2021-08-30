@@ -210,7 +210,7 @@ class MetaModelSelect extends AbstractSelect
 
         $metaModel = $this->getSelectMetaModel();
         $filter    = $metaModel->getEmptyFilter()->addFilterRule(new StaticIdList($valueIds));
-        $items     = $metaModel->findByFilter($filter, 'id', 0, 0, 'ASC', $attrOnly);
+        $items     = $metaModel->findByFilter($filter, $this->getSortingColumn(), 0, 0, $this->getSortDirection(), $attrOnly);
         unset($tables[$recursionKey]);
 
         return $this->itemsToValues($items);
@@ -221,7 +221,7 @@ class MetaModelSelect extends AbstractSelect
      */
     public function valueToWidget($varValue)
     {
-        $aliasColumn = $this->getIdColumn();
+        $aliasColumn = $this->getAliasColumn();
 
         return $varValue[$aliasColumn] ?? $varValue[self::SELECT_RAW][$aliasColumn] ?? null;
     }
@@ -243,7 +243,7 @@ class MetaModelSelect extends AbstractSelect
         }
 
         $model = $this->getSelectMetaModel();
-        $alias = $this->getIdColumn();
+        $alias = $this->getAliasColumn();
 
         if ($model->hasAttribute($alias)) {
             $attribute = $model->getAttribute($alias);
@@ -254,7 +254,7 @@ class MetaModelSelect extends AbstractSelect
             $result = $this->connection->createQueryBuilder()
                 ->select('v.id')
                 ->from($this->getSelectSource(), 'v')
-                ->where('v.' . $this->getIdColumn() . '=:value')
+                ->where('v.' . $alias . '=:value')
                 ->setParameter('value', $varValue)
                 ->execute();
 
@@ -315,15 +315,15 @@ class MetaModelSelect extends AbstractSelect
             $this->getSortingColumn(),
             0,
             0,
-            'ASC',
-            [$this->getValueColumn(), $this->getIdColumn()]
+            $this->getSortDirection(),
+            [$this->getAliasColumn(), $this->getValueColumn()]
         );
 
         if (isset($originalLanguage)) {
             $GLOBALS['TL_LANGUAGE'] = $originalLanguage;
         }
 
-        return $this->convertItemsToFilterOptions($objItems, $this->getValueColumn(), $this->getIdColumn());
+        return $this->convertItemsToFilterOptions($objItems, $this->getValueColumn(), $this->getAliasColumn());
     }
 
     /**

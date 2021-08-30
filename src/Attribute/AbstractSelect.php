@@ -89,6 +89,16 @@ abstract class AbstractSelect extends AbstractHybrid
     }
 
     /**
+     * Determine the correct sort direction to use.
+     *
+     * @return string
+     */
+    protected function getSortDirection()
+    {
+        return $this->get('select_sort');
+    }
+
+    /**
      * Determine the correct sorting column to use.
      *
      * @return string
