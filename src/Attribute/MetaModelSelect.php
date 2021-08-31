@@ -209,8 +209,31 @@ class MetaModelSelect extends AbstractSelect
         $tables[$recursionKey] = $recursionKey;
 
         $metaModel = $this->getSelectMetaModel();
-        $filter    = $metaModel->getEmptyFilter()->addFilterRule(new StaticIdList($valueIds));
-        $items     = $metaModel->findByFilter($filter, $this->getSortingColumn(), 0, 0, $this->getSortDirection(), $attrOnly);
+
+        try {
+            $parent = $this->getMetaModel();
+
+            if ($metaModel instanceof ITranslatedMetaModel && $parent instanceof ITranslatedMetaModel) {
+                $currentLanguage = $parent->getLanguage();
+                $previousLanguage = $metaModel->selectLanguage($currentLanguage);
+            }
+
+            $filter = $metaModel->getEmptyFilter()->addFilterRule(new StaticIdList($valueIds));
+            $items  =
+                $metaModel->findByFilter(
+                    $filter,
+                    $this->getSortingColumn(),
+                    0,
+                    0,
+                    $this->getSortDirection(),
+                    $attrOnly
+                );
+        } finally {
+            if (isset($previousLanguage)) {
+                $metaModel->selectLanguage($previousLanguage);
+            }
+        }
+
         unset($tables[$recursionKey]);
 
         return $this->itemsToValues($items);
