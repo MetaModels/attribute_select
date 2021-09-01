@@ -566,7 +566,7 @@ class MetaModelSelect extends AbstractSelect
         $objItems = $this->getSelectMetaModel()->findByFilter($filter, $strSortingValue);
 
         // Reset language.
-        if (TL_MODE == 'BE' && isset($originalLanguage)) {
+        if (TL_MODE == 'BE' && isset($strCurrentLanguage)) {
             $GLOBALS['TL_LANGUAGE'] = $strCurrentLanguage;
         }
 
