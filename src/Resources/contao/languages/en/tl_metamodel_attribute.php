@@ -56,5 +56,5 @@ $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_table_type']['sql-table'] 
 $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_column_type']['attribute'] = 'MetaModel attributes';
 $GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_column_type']['sql']       = 'SQL table column';
 
-$GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_sort_directions']['asc']  = 'Ascending';
-$GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_sort_directions']['desc'] = 'Descending';
+$GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_sort_directions']['ASC']  = 'Ascending';
+$GLOBALS['TL_LANG']['tl_metamodel_attribute']['select_sort_directions']['DESC'] = 'Descending';
