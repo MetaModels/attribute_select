@@ -90,7 +90,7 @@ class Select extends AbstractSelect
      */
     public function valueToWidget($varValue)
     {
-        if (!is_array($varValue) || !array_key_exists($idColumn = $this->getIdColumn(), $varValue)) {
+        if (!is_array($varValue) || !array_key_exists($idColumn = $this->getAliasColumn(), $varValue)) {
             return null;
         }
 
@@ -128,7 +128,7 @@ class Select extends AbstractSelect
         }
 
         $values = $this->getFilterOptionsForUsedOnly(false);
-        return $this->convertOptionsList($values, $this->getIdColumn(), $this->getValueColumn());
+        return $this->convertOptionsList($values,  $this->getAliasColumn(), $this->getValueColumn());
     }
 
     /**
