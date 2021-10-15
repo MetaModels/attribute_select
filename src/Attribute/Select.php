@@ -109,8 +109,8 @@ class Select extends AbstractSelect
         $value = $this->connection->createQueryBuilder()
             ->select('*')
             ->from($this->getSelectSource(), 't')
-            ->where('t.' . $this->getIdColumn() . '=:id')
-            ->setParameter('id', $varValue)
+            ->where('t.' . $this->getAliasColumn() . '=:value')
+            ->setParameter('value', $varValue)
             ->setMaxResults(1)
             ->execute()
             ->fetch(\PDO::FETCH_ASSOC);
