@@ -271,7 +271,34 @@ class MetaModelSelect extends AbstractSelect
         if ($model->hasAttribute($alias)) {
             $attribute = $model->getAttribute($alias);
             // It is an attribute, we may search for it.
+
+            // Check if the current MM has translations.
+            $metaModel        = $this->getMetaModel();
+            $relatedModel     = $attribute->getMetaModel();
+            $originalLanguage = null;
+            $targetLanguage   = null;
+            if ($metaModel instanceof ITranslatedMetaModel) {
+                $targetLanguage = $this->getMetaModel()->getLanguage();
+            } else if ($metaModel->isTranslated()) {
+                $targetLanguage = $metaModel->getActiveLanguage();
+            }
+
+            if ($relatedModel instanceof ITranslatedMetaModel) {
+                $originalLanguage = $relatedModel->selectLanguage($targetLanguage);
+            } else if ($relatedModel->isTranslated()) {
+                $originalLanguage       = $GLOBALS['TL_LANGUAGE'];
+                $GLOBALS['TL_LANGUAGE'] = $targetLanguage;
+            }
+
             $ids = $attribute->searchFor($varValue);
+
+            if (isset($originalLanguage)) {
+                if ($relatedModel instanceof ITranslatedMetaModel) {
+                    $relatedModel->selectLanguage($originalLanguage);
+                } else if ($relatedModel->isTranslated()) {
+                    $GLOBALS['TL_LANGUAGE'] = $originalLanguage;
+                }
+            }
         } else {
             // Must be a system column then.
             $result = $this->connection->createQueryBuilder()
@@ -327,11 +354,19 @@ class MetaModelSelect extends AbstractSelect
         $relatedModel = $this->getSelectMetaModel(); // Model to get the options from.
 
         // Check if the current MM has translations.
-        if ($model instanceof ITranslatedMetaModel && $relatedModel instanceof ITranslatedMetaModel) {
-            $originalLanguage = $relatedModel->selectLanguage($this->getMetaModel()->getLanguage());
-        } else if($model->isTranslated() && $relatedModel->isTranslated()) {
+        $originalLanguage = null;
+        $targetLanguage   = null;
+        if ($model instanceof ITranslatedMetaModel) {
+            $targetLanguage = $this->getMetaModel()->getLanguage();
+        } else if ($model->isTranslated()) {
+            $targetLanguage = $model->getActiveLanguage();
+        }
+
+        if ($relatedModel instanceof ITranslatedMetaModel) {
+            $originalLanguage = $relatedModel->selectLanguage($targetLanguage);
+        } else if ($relatedModel->isTranslated()) {
             $originalLanguage       = $GLOBALS['TL_LANGUAGE'];
-            $GLOBALS['TL_LANGUAGE'] = $model->getActiveLanguage();
+            $GLOBALS['TL_LANGUAGE'] = $targetLanguage;
         }
 
         $filter = $this->getSelectMetaModel()->getEmptyFilter();
@@ -348,9 +383,9 @@ class MetaModelSelect extends AbstractSelect
         );
 
         if (isset($originalLanguage)) {
-            if ($model instanceof ITranslatedMetaModel && $relatedModel instanceof ITranslatedMetaModel) {
+            if ($relatedModel instanceof ITranslatedMetaModel) {
                 $relatedModel->selectLanguage($originalLanguage);
-            } else if($model->isTranslated() && $relatedModel->isTranslated()) {
+            } else if ($relatedModel->isTranslated()) {
                 $GLOBALS['TL_LANGUAGE'] = $originalLanguage;
             }
         }
@@ -708,15 +743,32 @@ class MetaModelSelect extends AbstractSelect
     {
         $strColNameAlias = $this->getAliasColumn();
         $strColNameId    = $this->getIdColumn();
-
         if ($strColNameId === $strColNameAlias) {
             return $values;
         }
 
-        $attribute = $this->getSelectMetaModel()->getAttribute($strColNameAlias);
+        $metaModel = $this->getMetaModel();
+        $relatedModel = $this->getSelectMetaModel();
+        $attribute = $relatedModel->getAttribute($strColNameAlias);
         if (!$attribute) {
             // If not an attribute, perform plain SQL translation. See #32, 34.
             return parent::convertValuesToValueIds($values);
+        }
+
+        // Check if the current MM has translations.
+        $originalLanguage = null;
+        $targetLanguage   = null;
+        if ($metaModel instanceof ITranslatedMetaModel) {
+            $targetLanguage = $this->getMetaModel()->getLanguage();
+        } else if ($metaModel->isTranslated()) {
+            $targetLanguage = $metaModel->getActiveLanguage();
+        }
+
+        if ($relatedModel instanceof ITranslatedMetaModel) {
+            $originalLanguage = $relatedModel->selectLanguage($targetLanguage);
+        } else if ($relatedModel->isTranslated()) {
+            $originalLanguage       = $GLOBALS['TL_LANGUAGE'];
+            $GLOBALS['TL_LANGUAGE'] = $targetLanguage;
         }
 
         $sanitizedValues = [];
@@ -727,6 +779,14 @@ class MetaModelSelect extends AbstractSelect
             }
 
             $sanitizedValues = \array_merge($valueIds, $sanitizedValues);
+        }
+
+        if (isset($originalLanguage)) {
+            if ($relatedModel instanceof ITranslatedMetaModel) {
+                $relatedModel->selectLanguage($originalLanguage);
+            } else if ($relatedModel->isTranslated()) {
+                $GLOBALS['TL_LANGUAGE'] = $originalLanguage;
+            }
         }
 
         return \array_unique($sanitizedValues);

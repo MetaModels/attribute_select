@@ -45,7 +45,6 @@ class GetPropertyOptionsListener
             return;
         }
 
-        /** @var MultiLanguageDataProviderInterface $provider */
         $provider = $event->getEnvironment()->getDataProvider();
         $model    = $event->getModel();
         if (!($model instanceof Model)) {
