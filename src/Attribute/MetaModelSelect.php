@@ -278,7 +278,7 @@ class MetaModelSelect extends AbstractSelect
             $originalLanguage = null;
             $targetLanguage   = null;
             if ($metaModel instanceof ITranslatedMetaModel) {
-                $targetLanguage = $this->getMetaModel()->getLanguage();
+                $targetLanguage = $metaModel->getLanguage();
             } else if ($metaModel->isTranslated()) {
                 $targetLanguage = $metaModel->getActiveLanguage();
             }
@@ -350,7 +350,7 @@ class MetaModelSelect extends AbstractSelect
             return [];
         }
 
-        $model        = $this->getMetaModel(); // Model of the attribute.
+        $metaModel    = $this->getMetaModel(); // Model of the attribute.
         $relatedModel = $this->getSelectMetaModel(); // Model to get the options from.
 
         // Check if the current MM has translations.
@@ -385,7 +385,7 @@ class MetaModelSelect extends AbstractSelect
         if (isset($originalLanguage)) {
             if ($relatedModel instanceof ITranslatedMetaModel) {
                 $relatedModel->selectLanguage($originalLanguage);
-            } else if ($relatedModel->isTranslated()) {
+            } else {
                 $GLOBALS['TL_LANGUAGE'] = $originalLanguage;
             }
         }
@@ -784,7 +784,7 @@ class MetaModelSelect extends AbstractSelect
         if (isset($originalLanguage)) {
             if ($relatedModel instanceof ITranslatedMetaModel) {
                 $relatedModel->selectLanguage($originalLanguage);
-            } else if ($relatedModel->isTranslated()) {
+            } else {
                 $GLOBALS['TL_LANGUAGE'] = $originalLanguage;
             }
         }
