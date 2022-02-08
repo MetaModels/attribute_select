@@ -22,8 +22,10 @@
 namespace MetaModels\AttributeSelectBundle\EventListener;
 
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\GetPropertyOptionsEvent;
+use ContaoCommunityAlliance\DcGeneral\Data\MultiLanguageDataProviderInterface;
 use MetaModels\AttributeSelectBundle\Attribute\AbstractSelect;
 use MetaModels\DcGeneral\Data\Model;
+use MetaModels\ITranslatedMetaModel;
 
 /**
  * The subscriber for the get filter options call.
@@ -43,21 +45,44 @@ class GetPropertyOptionsListener
             return;
         }
 
-        $model = $event->getModel();
-
+        $provider = $event->getEnvironment()->getDataProvider();
+        $model    = $event->getModel();
         if (!($model instanceof Model)) {
             return;
         }
-        $attribute = $model->getItem()->getAttribute($event->getPropertyName());
 
+        // Check if we have the right attribute.
+        $attribute = $model->getItem()->getAttribute($event->getPropertyName());
         if (!($attribute instanceof AbstractSelect)) {
             return;
+        }
+
+        // Check multilanguage support.
+        $attrModel = $attribute->getMetaModel();
+        if ($provider instanceof MultiLanguageDataProviderInterface) {
+            $currentLanguage = $provider->getCurrentLanguage();
+
+            if (!empty($currentLanguage) && $attrModel instanceof ITranslatedMetaModel) {
+                $originalLanguage = $attrModel->selectLanguage($currentLanguage);
+            } elseif (!empty($currentLanguage)) {
+                $originalLanguage       = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
+                $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $currentLanguage);
+            }
         }
 
         try {
             $options = $attribute->getFilterOptionsForDcGeneral();
         } catch (\Exception $exception) {
             $options = ['Error: ' . $exception->getMessage()];
+        }
+
+        // Reset language.
+        if ($provider instanceof MultiLanguageDataProviderInterface && isset($originalLanguage)) {
+            if ($attrModel instanceof ITranslatedMetaModel) {
+                $attrModel->selectLanguage($originalLanguage);
+            } else {
+                $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $originalLanguage);
+            }
         }
 
         $event->setOptions($options);

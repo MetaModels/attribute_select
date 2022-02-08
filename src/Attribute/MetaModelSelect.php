@@ -271,7 +271,34 @@ class MetaModelSelect extends AbstractSelect
         if ($model->hasAttribute($alias)) {
             $attribute = $model->getAttribute($alias);
             // It is an attribute, we may search for it.
+
+            // Check if the current MM has translations.
+            $metaModel        = $this->getMetaModel();
+            $relatedModel     = $attribute->getMetaModel();
+            $originalLanguage = null;
+            $targetLanguage   = null;
+            if ($metaModel instanceof ITranslatedMetaModel) {
+                $targetLanguage = $metaModel->getLanguage();
+            } else if ($metaModel->isTranslated()) {
+                $targetLanguage = $metaModel->getActiveLanguage();
+            }
+
+            if ($relatedModel instanceof ITranslatedMetaModel) {
+                $originalLanguage = $relatedModel->selectLanguage($targetLanguage);
+            } else if ($relatedModel->isTranslated()) {
+                $originalLanguage       = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
+                $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $targetLanguage);
+            }
+
             $ids = $attribute->searchFor($varValue);
+
+            if (isset($originalLanguage)) {
+                if ($relatedModel instanceof ITranslatedMetaModel) {
+                    $relatedModel->selectLanguage($originalLanguage);
+                } else if ($relatedModel->isTranslated()) {
+                    $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $originalLanguage);
+                }
+            }
         } else {
             // Must be a system column then.
             $result = $this->connection->createQueryBuilder()
@@ -323,9 +350,22 @@ class MetaModelSelect extends AbstractSelect
             return [];
         }
 
-        $metaModel = $this->getSelectMetaModel();
-        if (!$metaModel instanceof ITranslatedMetaModel) {
-            $originalLanguage       = $GLOBALS['TL_LANGUAGE'];
+        $metaModel    = $this->getMetaModel(); // Model of the attribute.
+        $relatedModel = $this->getSelectMetaModel(); // Model to get the options from.
+
+        // Check if the current MM has translations.
+        $originalLanguage = null;
+        $targetLanguage   = null;
+        if ($metaModel instanceof ITranslatedMetaModel) {
+            $targetLanguage = $this->getMetaModel()->getLanguage();
+        } else if ($metaModel->isTranslated()) {
+            $targetLanguage = $metaModel->getActiveLanguage();
+        }
+
+        if ($relatedModel instanceof ITranslatedMetaModel) {
+            $originalLanguage = $relatedModel->selectLanguage($targetLanguage);
+        } else if ($relatedModel->isTranslated()) {
+            $originalLanguage       = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
             $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $this->getMetaModel()->getActiveLanguage());
         }
 
@@ -343,7 +383,11 @@ class MetaModelSelect extends AbstractSelect
         );
 
         if (isset($originalLanguage)) {
-            $GLOBALS['TL_LANGUAGE'] = $originalLanguage;
+            if ($relatedModel instanceof ITranslatedMetaModel) {
+                $relatedModel->selectLanguage($originalLanguage);
+            } else {
+                $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $originalLanguage);
+            }
         }
 
         return $this->convertItemsToFilterOptions($objItems, $this->getValueColumn(), $this->getAliasColumn());
@@ -550,7 +594,7 @@ class MetaModelSelect extends AbstractSelect
 
         // Change language.
         if (TL_MODE == 'BE' && !$metaModel instanceof ITranslatedMetaModel) {
-            $strCurrentLanguage     = $GLOBALS['TL_LANGUAGE'];
+            $strCurrentLanguage     = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
             $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $this->getMetaModel()->getActiveLanguage());
         }
 
@@ -567,7 +611,7 @@ class MetaModelSelect extends AbstractSelect
 
         // Reset language.
         if (TL_MODE == 'BE' && isset($strCurrentLanguage)) {
-            $GLOBALS['TL_LANGUAGE'] = $strCurrentLanguage;
+            $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $strCurrentLanguage);
         }
 
         return $this->convertItemsToFilterOptions(
@@ -699,15 +743,32 @@ class MetaModelSelect extends AbstractSelect
     {
         $strColNameAlias = $this->getAliasColumn();
         $strColNameId    = $this->getIdColumn();
-
         if ($strColNameId === $strColNameAlias) {
             return $values;
         }
 
-        $attribute = $this->getSelectMetaModel()->getAttribute($strColNameAlias);
+        $metaModel    = $this->getMetaModel();
+        $relatedModel = $this->getSelectMetaModel();
+        $attribute    = $relatedModel->getAttribute($strColNameAlias);
         if (!$attribute) {
             // If not an attribute, perform plain SQL translation. See #32, 34.
             return parent::convertValuesToValueIds($values);
+        }
+
+        // Check if the current MM has translations.
+        $originalLanguage = null;
+        $targetLanguage   = null;
+        if ($metaModel instanceof ITranslatedMetaModel) {
+            $targetLanguage = $this->getMetaModel()->getLanguage();
+        } elseif ($metaModel->isTranslated()) {
+            $targetLanguage = $metaModel->getActiveLanguage();
+        }
+
+        if ($relatedModel instanceof ITranslatedMetaModel) {
+            $originalLanguage = $relatedModel->selectLanguage($targetLanguage);
+        } elseif ($relatedModel->isTranslated()) {
+            $originalLanguage       = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
+            $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $targetLanguage);
         }
 
         $sanitizedValues = [];
@@ -718,6 +779,14 @@ class MetaModelSelect extends AbstractSelect
             }
 
             $sanitizedValues = \array_merge($valueIds, $sanitizedValues);
+        }
+
+        if (isset($originalLanguage)) {
+            if ($relatedModel instanceof ITranslatedMetaModel) {
+                $relatedModel->selectLanguage($originalLanguage);
+            } else {
+                $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $originalLanguage);
+            }
         }
 
         return \array_unique($sanitizedValues);
