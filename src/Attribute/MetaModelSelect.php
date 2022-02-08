@@ -356,10 +356,10 @@ class MetaModelSelect extends AbstractSelect
         // Check if the current MM has translations.
         $originalLanguage = null;
         $targetLanguage   = null;
-        if ($model instanceof ITranslatedMetaModel) {
+        if ($metaModel instanceof ITranslatedMetaModel) {
             $targetLanguage = $this->getMetaModel()->getLanguage();
-        } else if ($model->isTranslated()) {
-            $targetLanguage = $model->getActiveLanguage();
+        } else if ($metaModel->isTranslated()) {
+            $targetLanguage = $metaModel->getActiveLanguage();
         }
 
         if ($relatedModel instanceof ITranslatedMetaModel) {
