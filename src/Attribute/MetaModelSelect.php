@@ -3,7 +3,7 @@
 /**
  * This file is part of MetaModels/attribute_select.
  *
- * (c) 2012-2021 The MetaModels team.
+ * (c) 2012-2022 The MetaModels team.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -18,7 +18,7 @@
  * @author     David Molineus <david.molineus@netzmacht.de>
  * @author     Sven Baumann <baumann.sv@gmail.com>
  * @author     Ingolf Steinhardt <info@e-spin.de>
- * @copyright  2012-2021 The MetaModels team.
+ * @copyright  2012-2022 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
  */
@@ -366,7 +366,7 @@ class MetaModelSelect extends AbstractSelect
             $originalLanguage = $relatedModel->selectLanguage($targetLanguage);
         } else if ($relatedModel->isTranslated()) {
             $originalLanguage       = $GLOBALS['TL_LANGUAGE'];
-            $GLOBALS['TL_LANGUAGE'] = $targetLanguage;
+            $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $this->getMetaModel()->getActiveLanguage());
         }
 
         $filter = $this->getSelectMetaModel()->getEmptyFilter();
@@ -595,7 +595,7 @@ class MetaModelSelect extends AbstractSelect
         // Change language.
         if (TL_MODE == 'BE' && !$metaModel instanceof ITranslatedMetaModel) {
             $strCurrentLanguage     = $GLOBALS['TL_LANGUAGE'];
-            $GLOBALS['TL_LANGUAGE'] = $this->getMetaModel()->getActiveLanguage();
+            $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $this->getMetaModel()->getActiveLanguage());
         }
 
         $filter = $this->getSelectMetaModel()->getEmptyFilter();
