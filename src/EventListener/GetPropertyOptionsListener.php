@@ -64,7 +64,7 @@ class GetPropertyOptionsListener
 
             if (!empty($currentLanguage) && $attrModel instanceof ITranslatedMetaModel) {
                 $originalLanguage = $attrModel->selectLanguage($currentLanguage);
-            } else if (!empty($currentLanguage)) {
+            } elseif (!empty($currentLanguage)) {
                 $originalLanguage       = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
                 $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $currentLanguage);
             }
