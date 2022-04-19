@@ -82,7 +82,6 @@ class MetaModelSelect extends AbstractSelect
      * @param Connection                 $connection           The database connection.
      * @param TableManipulator           $tableManipulator     Table manipulator instance.
      * @param IFactory                   $factory              MetaModel factory.
-     *
      * @param IFilterSettingFactory|null $filterSettingFactory Filter setting factory.
      */
     public function __construct(
@@ -275,8 +274,8 @@ class MetaModelSelect extends AbstractSelect
             // Check if the current MM has translations.
             $metaModel        = $this->getMetaModel();
             $relatedModel     = $attribute->getMetaModel();
-            $originalLanguage = null;
-            $targetLanguage   = null;
+            $originalLanguage = $GLOBALS['TL_LANGUAGE']; // Fallback for untranslated model.
+            $targetLanguage   = $GLOBALS['TL_LANGUAGE']; // Fallback for untranslated model.
             if ($metaModel instanceof ITranslatedMetaModel) {
                 $targetLanguage = $metaModel->getLanguage();
             } else if ($metaModel->isTranslated()) {
@@ -354,8 +353,8 @@ class MetaModelSelect extends AbstractSelect
         $relatedModel = $this->getSelectMetaModel(); // Model to get the options from.
 
         // Check if the current MM has translations.
-        $originalLanguage = null;
-        $targetLanguage   = null;
+        $originalLanguage = $GLOBALS['TL_LANGUAGE']; // Fallback for untranslated model.
+        $targetLanguage   = $GLOBALS['TL_LANGUAGE']; // Fallback for untranslated model.
         if ($metaModel instanceof ITranslatedMetaModel) {
             $targetLanguage = $this->getMetaModel()->getLanguage();
         } else if ($metaModel->isTranslated()) {
@@ -756,8 +755,8 @@ class MetaModelSelect extends AbstractSelect
         }
 
         // Check if the current MM has translations.
-        $originalLanguage = null;
-        $targetLanguage   = null;
+        $originalLanguage = $GLOBALS['TL_LANGUAGE']; // Fallback for untranslated model.
+        $targetLanguage   = $GLOBALS['TL_LANGUAGE']; // Fallback for untranslated model.
         if ($metaModel instanceof ITranslatedMetaModel) {
             $targetLanguage = $this->getMetaModel()->getLanguage();
         } elseif ($metaModel->isTranslated()) {
