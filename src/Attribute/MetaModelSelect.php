@@ -274,19 +274,22 @@ class MetaModelSelect extends AbstractSelect
             // Check if the current MM has translations.
             $metaModel        = $this->getMetaModel();
             $relatedModel     = $attribute->getMetaModel();
-            $originalLanguage = $GLOBALS['TL_LANGUAGE']; // Fallback for untranslated model.
-            $targetLanguage   = $GLOBALS['TL_LANGUAGE']; // Fallback for untranslated model.
+            $originalLanguage = null;
+            $targetLanguage   = null;
             if ($metaModel instanceof ITranslatedMetaModel) {
                 $targetLanguage = $metaModel->getLanguage();
             } else if ($metaModel->isTranslated()) {
                 $targetLanguage = $metaModel->getActiveLanguage();
             }
 
-            if ($relatedModel instanceof ITranslatedMetaModel) {
-                $originalLanguage = $relatedModel->selectLanguage($targetLanguage);
-            } else if ($relatedModel->isTranslated()) {
-                $originalLanguage       = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
-                $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $targetLanguage);
+            // Retrieve original language only if target language is set.
+            if ($targetLanguage) {
+                if ($relatedModel instanceof ITranslatedMetaModel) {
+                    $originalLanguage = $relatedModel->selectLanguage($targetLanguage);
+                } else if ($relatedModel->isTranslated()) {
+                    $originalLanguage       = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
+                    $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $targetLanguage);
+                }
             }
 
             $ids = $attribute->searchFor($varValue);
@@ -353,19 +356,22 @@ class MetaModelSelect extends AbstractSelect
         $relatedModel = $this->getSelectMetaModel(); // Model to get the options from.
 
         // Check if the current MM has translations.
-        $originalLanguage = $GLOBALS['TL_LANGUAGE']; // Fallback for untranslated model.
-        $targetLanguage   = $GLOBALS['TL_LANGUAGE']; // Fallback for untranslated model.
+        $originalLanguage = null;
+        $targetLanguage   = null;
         if ($metaModel instanceof ITranslatedMetaModel) {
             $targetLanguage = $this->getMetaModel()->getLanguage();
         } else if ($metaModel->isTranslated()) {
             $targetLanguage = $metaModel->getActiveLanguage();
         }
 
-        if ($relatedModel instanceof ITranslatedMetaModel) {
-            $originalLanguage = $relatedModel->selectLanguage($targetLanguage);
-        } else if ($relatedModel->isTranslated()) {
-            $originalLanguage       = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
-            $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $this->getMetaModel()->getActiveLanguage());
+        // Retrieve original language only if target language is set.
+        if ($targetLanguage) {
+            if ($relatedModel instanceof ITranslatedMetaModel) {
+                $originalLanguage = $relatedModel->selectLanguage($targetLanguage);
+            } else if ($relatedModel->isTranslated()) {
+                $originalLanguage       = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
+                $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $this->getMetaModel()->getActiveLanguage());
+            }
         }
 
         $filter = $this->getSelectMetaModel()->getEmptyFilter();
@@ -755,19 +761,22 @@ class MetaModelSelect extends AbstractSelect
         }
 
         // Check if the current MM has translations.
-        $originalLanguage = $GLOBALS['TL_LANGUAGE']; // Fallback for untranslated model.
-        $targetLanguage   = $GLOBALS['TL_LANGUAGE']; // Fallback for untranslated model.
+        $originalLanguage = null;
+        $targetLanguage   = null;
         if ($metaModel instanceof ITranslatedMetaModel) {
             $targetLanguage = $this->getMetaModel()->getLanguage();
         } elseif ($metaModel->isTranslated()) {
             $targetLanguage = $metaModel->getActiveLanguage();
         }
 
-        if ($relatedModel instanceof ITranslatedMetaModel) {
-            $originalLanguage = $relatedModel->selectLanguage($targetLanguage);
-        } elseif ($relatedModel->isTranslated()) {
-            $originalLanguage       = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
-            $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $targetLanguage);
+        // Retrieve original language only if target language is set.
+        if ($targetLanguage) {
+            if ($relatedModel instanceof ITranslatedMetaModel) {
+                $originalLanguage = $relatedModel->selectLanguage($targetLanguage);
+            } elseif ($relatedModel->isTranslated()) {
+                $originalLanguage       = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
+                $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $targetLanguage);
+            }
         }
 
         $sanitizedValues = [];
