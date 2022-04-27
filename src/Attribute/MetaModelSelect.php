@@ -82,7 +82,6 @@ class MetaModelSelect extends AbstractSelect
      * @param Connection                 $connection           The database connection.
      * @param TableManipulator           $tableManipulator     Table manipulator instance.
      * @param IFactory                   $factory              MetaModel factory.
-     *
      * @param IFilterSettingFactory|null $filterSettingFactory Filter setting factory.
      */
     public function __construct(
@@ -283,11 +282,14 @@ class MetaModelSelect extends AbstractSelect
                 $targetLanguage = $metaModel->getActiveLanguage();
             }
 
-            if ($relatedModel instanceof ITranslatedMetaModel) {
-                $originalLanguage = $relatedModel->selectLanguage($targetLanguage);
-            } else if ($relatedModel->isTranslated()) {
-                $originalLanguage       = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
-                $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $targetLanguage);
+            // Retrieve original language only if target language is set.
+            if ($targetLanguage) {
+                if ($relatedModel instanceof ITranslatedMetaModel) {
+                    $originalLanguage = $relatedModel->selectLanguage($targetLanguage);
+                } else if ($relatedModel->isTranslated()) {
+                    $originalLanguage       = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
+                    $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $targetLanguage);
+                }
             }
 
             $ids = $attribute->searchFor($varValue);
@@ -362,11 +364,14 @@ class MetaModelSelect extends AbstractSelect
             $targetLanguage = $metaModel->getActiveLanguage();
         }
 
-        if ($relatedModel instanceof ITranslatedMetaModel) {
-            $originalLanguage = $relatedModel->selectLanguage($targetLanguage);
-        } else if ($relatedModel->isTranslated()) {
-            $originalLanguage       = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
-            $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $this->getMetaModel()->getActiveLanguage());
+        // Retrieve original language only if target language is set.
+        if ($targetLanguage) {
+            if ($relatedModel instanceof ITranslatedMetaModel) {
+                $originalLanguage = $relatedModel->selectLanguage($targetLanguage);
+            } else if ($relatedModel->isTranslated()) {
+                $originalLanguage       = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
+                $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $this->getMetaModel()->getActiveLanguage());
+            }
         }
 
         $filter = $this->getSelectMetaModel()->getEmptyFilter();
@@ -764,11 +769,14 @@ class MetaModelSelect extends AbstractSelect
             $targetLanguage = $metaModel->getActiveLanguage();
         }
 
-        if ($relatedModel instanceof ITranslatedMetaModel) {
-            $originalLanguage = $relatedModel->selectLanguage($targetLanguage);
-        } elseif ($relatedModel->isTranslated()) {
-            $originalLanguage       = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
-            $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $targetLanguage);
+        // Retrieve original language only if target language is set.
+        if ($targetLanguage) {
+            if ($relatedModel instanceof ITranslatedMetaModel) {
+                $originalLanguage = $relatedModel->selectLanguage($targetLanguage);
+            } elseif ($relatedModel->isTranslated()) {
+                $originalLanguage       = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
+                $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $targetLanguage);
+            }
         }
 
         $sanitizedValues = [];
