@@ -31,11 +31,12 @@ namespace MetaModels\AttributeSelectBundle\Attribute;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\ResultStatement;
+use MetaModels\Attribute\IAliasConverter;
 
 /**
  * This is the MetaModelAttribute class for handling select attributes on plain SQL tables.
  */
-class Select extends AbstractSelect
+class Select extends AbstractSelect implements IAliasConverter
 {
     /**
      * {@inheritDoc}
@@ -319,5 +320,72 @@ class Select extends AbstractSelect
                 );
             }
         }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getIdForAlias(string $alias, string $language): ?string
+    {
+        $tableName   = $this->getSelectSource();
+        $idColumn    = $this->getIdColumn();
+        $aliasColumn = $this->getAliasColumn();
+
+        if ($idColumn === $aliasColumn) {
+            return $alias;
+        }
+
+        $foundValues = $this->connection->createQueryBuilder()
+                                ->select('t.' . $idColumn)
+                                ->from($tableName, 't')
+                                ->where('t.' . $aliasColumn . ' = :values')
+                                ->setParameter('values', $alias, Connection::PARAM_STR_ARRAY)
+                                ->execute()
+                                ->fetch(\PDO::FETCH_ASSOC);
+
+        if(empty($foundValues)){
+            return null;
+        }
+
+        return $foundValues[0][$idColumn];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getAliasForId(string $id, string $language): ?string
+    {
+        if (!$this->isProperlyConfigured()) {
+            return null;
+        }
+
+        $strTableNameId             = $this->getSelectSource();
+        $strColNameId               = $this->getIdColumn();
+        $strColNameAlias            = $this->getAliasColumn();
+        $strMetaModelTableName      = $this->getMetaModel()->getTableName();
+        $strMetaModelTableNameId    = $strMetaModelTableName . '_id';
+        $strMetaModelTableNameAlias = $strMetaModelTableName . '_alias';
+
+        $builder = $this->connection
+            ->createQueryBuilder()
+            ->select('sourceTable.' . $strColNameAlias . ' AS ' . $strMetaModelTableNameAlias)
+            ->addSelect('modelTable.id AS ' . $strMetaModelTableNameId)
+            ->from($strTableNameId, 'sourceTable')
+            ->leftJoin(
+                'sourceTable',
+                $strMetaModelTableName,
+                'modelTable',
+                'sourceTable.' . $strColNameId . '=modelTable.' . $this->getColName()
+            )
+            ->where('modelTable.id = :id')
+            ->setParameter('id', $id, Connection::PARAM_STR_ARRAY)
+            ->execute();
+
+        $returnAlias = null;
+        foreach ($builder->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+            $returnAlias = $row[$strMetaModelTableNameAlias];
+        }
+
+        return $returnAlias;
     }
 }
