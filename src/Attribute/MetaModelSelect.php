@@ -29,6 +29,7 @@ use Contao\System;
 use Doctrine\DBAL\Connection;
 use MetaModels\Attribute\IAliasConverter;
 use MetaModels\Filter\IFilter;
+use MetaModels\Filter\Rules\SearchAttribute;
 use MetaModels\Filter\Rules\StaticIdList;
 use MetaModels\Filter\Setting\IFilterSettingFactory;
 use MetaModels\Helper\TableManipulator;
@@ -807,74 +808,55 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
      */
     public function getIdForAlias(string $alias, string $language): ?string
     {
-        $strColNameAlias = $this->getAliasColumn();
-        $strColNameId    = $this->getIdColumn();
-        if ($strColNameId === $strColNameAlias) {
-            return $alias;
-        }
-
-        $metaModel    = $this->getMetaModel();
-        $relatedModel = $this->getSelectMetaModel();
-        $attribute    = $relatedModel->getAttribute($strColNameAlias);
-
-        // If not an attribute, perform plain SQL translation. See #32, 34.
-        if (!$attribute) {
-            $result = parent::convertValuesToValueIds([$alias]);
-            if (empty($result)) {
-                return null;
-            }
-
-            reset($result);
-
-            return current($result);
+        if (!$this->isProperlyConfigured()) {
+            return null;
         }
 
         // Check if the current MM has translations.
-        $originalLanguage   = null;
-        $targetLanguage     = null;
+        $aliasColumn        = $this->getAliasColumn();
+        $relatedModel       = $this->getSelectMetaModel();
+        $currentLanguage    = null;
         $supportedLanguages = null;
-        if ($metaModel instanceof ITranslatedMetaModel) {
-            $targetLanguage     = $metaModel->getLanguage();
-            $supportedLanguages = $metaModel->getLanguages();
-        } elseif ($metaModel->isTranslated()) {
-            $targetLanguage     = $metaModel->getActiveLanguage();
-            $supportedLanguages = $metaModel->getAvailableLanguages();
+        if ($relatedModel instanceof ITranslatedMetaModel) {
+            $currentLanguage    = $relatedModel->getLanguage();
+            $supportedLanguages = $relatedModel->getLanguages();
+        } elseif ($relatedModel->isTranslated()) {
+            $currentLanguage    = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
+            $supportedLanguages = $relatedModel->getAvailableLanguages();
         }
 
-        // If the given language isn't supported return null.
         if (is_array($supportedLanguages) && !in_array($language, $supportedLanguages, false)) {
             return null;
         }
 
         // Retrieve original language only if target language is set.
-        if ($targetLanguage) {
+        if ($currentLanguage) {
             if ($relatedModel instanceof ITranslatedMetaModel) {
-                $originalLanguage = $relatedModel->selectLanguage($targetLanguage);
+                $relatedModel->selectLanguage($language);
             } elseif ($relatedModel->isTranslated()) {
-                $originalLanguage       = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
-                $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $targetLanguage);
+                $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $language);
             }
         }
 
-        // Search for the element.
-        $returnId = null;
-        $valueIds = $attribute->searchFor($alias);
+        // Find the alias in the related metamodels, if there is no found return null.
+        // On more then one result return the first one.
+        $filter = $relatedModel->getEmptyFilter();
+        $filter->addFilterRule(new SearchAttribute($relatedModel->getAttribute($aliasColumn), $alias));
+        $items = $relatedModel->findByFilter($filter);
 
-        // Get the first value of the list, even if we have more than one hit.
-        if (is_array($valueIds)) {
-            reset($valueIds);
-            $returnId = current($valueIds);
-        }
-
-        if (isset($originalLanguage)) {
+        if ($currentLanguage) {
             if ($relatedModel instanceof ITranslatedMetaModel) {
-                $relatedModel->selectLanguage($originalLanguage);
-            } else {
-                $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $originalLanguage);
+                $relatedModel->selectLanguage($currentLanguage);
+            } elseif ($relatedModel->isTranslated()) {
+                $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $currentLanguage);
             }
         }
 
-        return $returnId;
+        if ($items->getCount() == 0) {
+            return null;
+        }
+
+        return $items->first()->current()->get('id');
     }
 
     /**
@@ -886,68 +868,45 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
             return null;
         }
 
-        $result      = [];
-        $valueColumn = $this->getColName();
-        // First pass, load database rows.
-        $statement = $this->connection->createQueryBuilder()
-                                      ->select('t.' . $valueColumn . ', t.id')
-                                      ->from($this->getMetaModel()->getTableName(), 't')
-                                      ->where('t.id = :id)')
-                                      ->setParameter('id', $id, Connection::PARAM_STR_ARRAY)
-                                      ->execute();
-
-        $valueIds = [];
-        while ($rows = $statement->fetch(\PDO::FETCH_OBJ)) {
-            /** @noinspection PhpUndefinedFieldInspection */
-            $valueIds[$rows->id] = $rows->$valueColumn;
-        }
-
         // Check if the current MM has translations.
-        $metaModel          = $this->getMetaModel();
+        $aliasColumn        = $this->getAliasColumn();
         $relatedModel       = $this->getSelectMetaModel();
-        $originalLanguage   = null;
-        $targetLanguage     = null;
+        $currentLanguage    = null;
         $supportedLanguages = null;
-        if ($metaModel instanceof ITranslatedMetaModel) {
-            $targetLanguage     = $metaModel->getLanguage();
-            $supportedLanguages = $metaModel->getLanguages();
-        } elseif ($metaModel->isTranslated()) {
-            $targetLanguage     = $metaModel->getActiveLanguage();
-            $supportedLanguages = $metaModel->getAvailableLanguages();
+        if ($relatedModel instanceof ITranslatedMetaModel) {
+            $currentLanguage    = $relatedModel->getLanguage();
+            $supportedLanguages = $relatedModel->getLanguages();
+        } elseif ($relatedModel->isTranslated()) {
+            $currentLanguage   = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
+            $supportedLanguages = $relatedModel->getAvailableLanguages();
         }
 
-        // If the given language isn't supported return null.
         if (is_array($supportedLanguages) && !in_array($language, $supportedLanguages, false)) {
             return null;
         }
 
         // Retrieve original language only if target language is set.
-        if ($targetLanguage) {
+        if ($currentLanguage) {
             if ($relatedModel instanceof ITranslatedMetaModel) {
-                $originalLanguage = $relatedModel->selectLanguage($targetLanguage);
+                $relatedModel->selectLanguage($language);
             } elseif ($relatedModel->isTranslated()) {
-                $originalLanguage       = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
-                $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $targetLanguage);
+                $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $language);
             }
         }
 
-        $returnAlias = null;
-        $values      = $this->getValuesById($valueIds);
-        foreach ($valueIds as $itemId => $valueId) {
-            if (empty($valueId)) {
-                continue;
-            }
-            $returnAlias = $values[$valueId];
+        $item = $relatedModel->findById($id, [$aliasColumn]);
+        if ($item === null) {
+            return null;
         }
 
-        if (isset($originalLanguage)) {
+        if ($currentLanguage) {
             if ($relatedModel instanceof ITranslatedMetaModel) {
-                $relatedModel->selectLanguage($originalLanguage);
-            } else {
-                $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $originalLanguage);
+                $relatedModel->selectLanguage($currentLanguage);
+            } elseif ($relatedModel->isTranslated()) {
+                $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $currentLanguage);
             }
         }
 
-        return $returnAlias;
+        return $item->parseAttribute($aliasColumn)['text'] ?? null;
     }
 }
