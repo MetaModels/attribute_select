@@ -817,16 +817,22 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
         $relatedModel       = $this->getSelectMetaModel();
         $currentLanguage    = null;
         $supportedLanguages = null;
+
         if ($relatedModel instanceof ITranslatedMetaModel) {
-            $currentLanguage    = $relatedModel->getLanguage();
             $supportedLanguages = $relatedModel->getLanguages();
+            $fallbackLanguage   = $relatedModel->getMainLanguage();
         } elseif ($relatedModel->isTranslated()) {
-            $currentLanguage    = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
+            $backendLanguage    = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
             $supportedLanguages = $relatedModel->getAvailableLanguages();
+            $fallbackLanguage   = $relatedModel->getFallbackLanguage() ?? $backendLanguage;
         }
 
-        if (is_array($supportedLanguages) && !in_array($language, $supportedLanguages, false)) {
-            return null;
+        if (\is_array($supportedLanguages) && !empty($supportedLanguages)) {
+            if (\in_array($language, $supportedLanguages, false)) {
+                $currentLanguage = $language;
+            } else {
+                $currentLanguage = $fallbackLanguage;
+            }
         }
 
         // Retrieve original language only if target language is set.
@@ -873,16 +879,23 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
         $relatedModel       = $this->getSelectMetaModel();
         $currentLanguage    = null;
         $supportedLanguages = null;
+        $fallbackLanguage   = null;
+
         if ($relatedModel instanceof ITranslatedMetaModel) {
-            $currentLanguage    = $relatedModel->getLanguage();
             $supportedLanguages = $relatedModel->getLanguages();
+            $fallbackLanguage   = $relatedModel->getMainLanguage();
         } elseif ($relatedModel->isTranslated()) {
-            $currentLanguage   = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
+            $backendLanguage    = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
             $supportedLanguages = $relatedModel->getAvailableLanguages();
+            $fallbackLanguage   = $relatedModel->getFallbackLanguage() ?? $backendLanguage;
         }
 
-        if (is_array($supportedLanguages) && !in_array($language, $supportedLanguages, false)) {
-            return null;
+        if (\is_array($supportedLanguages) && !empty($supportedLanguages)) {
+            if (\in_array($language, $supportedLanguages, false)) {
+                $currentLanguage = $language;
+            } else {
+                $currentLanguage = $fallbackLanguage;
+            }
         }
 
         // Retrieve original language only if target language is set.
