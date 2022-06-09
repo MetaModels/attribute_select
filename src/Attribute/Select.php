@@ -30,8 +30,11 @@
 namespace MetaModels\AttributeSelectBundle\Attribute;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Driver\Exception as DbalDriverException;
 use Doctrine\DBAL\Driver\ResultStatement;
+use Doctrine\DBAL\Exception;
 use MetaModels\Attribute\IAliasConverter;
+use MetaModels\ITranslatedMetaModel;
 
 /**
  * This is the MetaModelAttribute class for handling select attributes on plain SQL tables.
@@ -44,7 +47,7 @@ class Select extends AbstractSelect
     protected function checkConfiguration()
     {
         return parent::checkConfiguration()
-            && $this->connection->getSchemaManager()->tablesExist([$this->getSelectSource()]);
+               && $this->connection->getSchemaManager()->tablesExist([$this->getSelectSource()]);
     }
 
     /**
@@ -130,7 +133,7 @@ class Select extends AbstractSelect
 
         $values = $this->getFilterOptionsForUsedOnly(false);
 
-        return $this->convertOptionsList($values,  $this->getIdColumn(), $this->getValueColumn());
+        return $this->convertOptionsList($values, $this->getIdColumn(), $this->getValueColumn());
     }
 
     /**
@@ -277,7 +280,7 @@ class Select extends AbstractSelect
         $arrReturn      = [];
 
         $strMetaModelTableName   = $this->getMetaModel()->getTableName();
-        $strMetaModelTableNameId = $strMetaModelTableName.'_id';
+        $strMetaModelTableNameId = $strMetaModelTableName . '_id';
 
         $builder = $this->connection->createQueryBuilder()
             ->select('sourceTable.*')
