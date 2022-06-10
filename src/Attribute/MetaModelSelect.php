@@ -81,9 +81,9 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
      *                                                         to documentation of table tl_metamodel_attribute and
      *                                                         documentation of the certain attribute classes for
      *                                                         information what values are understood.
-     * @param Connection                 $connection           The database connection.
-     * @param TableManipulator           $tableManipulator     Table manipulator instance.
-     * @param IFactory                   $factory              MetaModel factory.
+     * @param Connection|null            $connection           The database connection.
+     * @param TableManipulator|null      $tableManipulator     Table manipulator instance.
+     * @param IFactory|null              $factory              MetaModel factory.
      * @param IFilterSettingFactory|null $filterSettingFactory Filter setting factory.
      */
     public function __construct(
@@ -845,7 +845,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
         }
 
         // Find the alias in the related metamodels, if there is no found return null.
-        // On more then one result return the first one.
+        // On more than one result return the first one.
         $filter = $relatedModel->getEmptyFilter();
         $filter->addFilterRule(new SearchAttribute($relatedModel->getAttribute($aliasColumn), $alias));
         $items = $relatedModel->findByFilter($filter);
