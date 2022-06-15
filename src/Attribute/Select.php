@@ -3,7 +3,7 @@
 /**
  * This file is part of MetaModels/attribute_select.
  *
- * (c) 2012-2021 The MetaModels team.
+ * (c) 2012-2022 The MetaModels team.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -22,7 +22,7 @@
  * @author     David Molineus <david.molineus@netzmacht.de>
  * @author     Ingolf Steinhardt <info@e-spin.de>
  * @author     Sven Baumann <baumann.sv@gmail.com>
- * @copyright  2012-2021 The MetaModels team.
+ * @copyright  2012-2022 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
  */
@@ -30,7 +30,11 @@
 namespace MetaModels\AttributeSelectBundle\Attribute;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Driver\Exception as DbalDriverException;
 use Doctrine\DBAL\Driver\ResultStatement;
+use Doctrine\DBAL\Exception;
+use MetaModels\Attribute\IAliasConverter;
+use MetaModels\ITranslatedMetaModel;
 
 /**
  * This is the MetaModelAttribute class for handling select attributes on plain SQL tables.
@@ -43,7 +47,7 @@ class Select extends AbstractSelect
     protected function checkConfiguration()
     {
         return parent::checkConfiguration()
-            && $this->connection->getSchemaManager()->tablesExist([$this->getSelectSource()]);
+               && $this->connection->getSchemaManager()->tablesExist([$this->getSelectSource()]);
     }
 
     /**
@@ -124,12 +128,12 @@ class Select extends AbstractSelect
     public function getFilterOptionsForDcGeneral(): array
     {
         if (!$this->isFilterOptionRetrievingPossible(null)) {
-            return array();
+            return [];
         }
 
         $values = $this->getFilterOptionsForUsedOnly(false);
 
-        return $this->convertOptionsList($values,  $this->getIdColumn(), $this->getValueColumn());
+        return $this->convertOptionsList($values, $this->getIdColumn(), $this->getValueColumn());
     }
 
     /**
@@ -227,7 +231,7 @@ class Select extends AbstractSelect
     public function getFilterOptions($idList, $usedOnly, &$arrCount = null)
     {
         if (!$this->isFilterOptionRetrievingPossible($idList)) {
-            return array();
+            return [];
         }
 
         $tableName     = $this->getSelectSource();
@@ -276,7 +280,7 @@ class Select extends AbstractSelect
         $arrReturn      = [];
 
         $strMetaModelTableName   = $this->getMetaModel()->getTableName();
-        $strMetaModelTableNameId = $strMetaModelTableName.'_id';
+        $strMetaModelTableNameId = $strMetaModelTableName . '_id';
 
         $builder = $this->connection->createQueryBuilder()
             ->select('sourceTable.*')
