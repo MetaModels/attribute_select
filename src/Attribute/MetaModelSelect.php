@@ -280,7 +280,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
             $targetLanguage   = null;
             if ($metaModel instanceof ITranslatedMetaModel) {
                 $targetLanguage = $metaModel->getLanguage();
-            } elseif ($metaModel->isTranslated()) {
+            } elseif ($metaModel->isTranslated(false)) {
                 $targetLanguage = $metaModel->getActiveLanguage();
             }
 
@@ -288,7 +288,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
             if ($targetLanguage) {
                 if ($relatedModel instanceof ITranslatedMetaModel) {
                     $originalLanguage = $relatedModel->selectLanguage($targetLanguage);
-                } elseif ($relatedModel->isTranslated()) {
+                } elseif ($relatedModel->isTranslated(false)) {
                     $originalLanguage       = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
                     $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $targetLanguage);
                 }
@@ -362,7 +362,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
         $targetLanguage   = null;
         if ($metaModel instanceof ITranslatedMetaModel) {
             $targetLanguage = $this->getMetaModel()->getLanguage();
-        } elseif ($metaModel->isTranslated()) {
+        } elseif ($metaModel->isTranslated(false)) {
             $targetLanguage = $metaModel->getActiveLanguage();
         }
 
@@ -370,7 +370,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
         if ($targetLanguage) {
             if ($relatedModel instanceof ITranslatedMetaModel) {
                 $originalLanguage = $relatedModel->selectLanguage($targetLanguage);
-            } elseif ($relatedModel->isTranslated()) {
+            } elseif ($relatedModel->isTranslated(false)) {
                 $originalLanguage       = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
                 $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $this->getMetaModel()->getActiveLanguage());
             }
@@ -839,7 +839,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
         if ($currentLanguage) {
             if ($relatedModel instanceof ITranslatedMetaModel) {
                 $relatedModel->selectLanguage($language);
-            } elseif ($relatedModel->isTranslated()) {
+            } elseif ($relatedModel->isTranslated(false)) {
                 $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $language);
             }
         }
@@ -884,7 +884,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
         if ($relatedModel instanceof ITranslatedMetaModel) {
             $supportedLanguages = $relatedModel->getLanguages();
             $fallbackLanguage   = $relatedModel->getMainLanguage();
-        } elseif ($relatedModel->isTranslated()) {
+        } elseif ($relatedModel->isTranslated(false)) {
             $backendLanguage    = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
             $supportedLanguages = $relatedModel->getAvailableLanguages();
             $fallbackLanguage   = $relatedModel->getFallbackLanguage() ?? $backendLanguage;
@@ -902,7 +902,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
         if ($currentLanguage) {
             if ($relatedModel instanceof ITranslatedMetaModel) {
                 $relatedModel->selectLanguage($language);
-            } elseif ($relatedModel->isTranslated()) {
+            } elseif ($relatedModel->isTranslated(false)) {
                 $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $language);
             }
         }
@@ -915,7 +915,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
         if ($currentLanguage) {
             if ($relatedModel instanceof ITranslatedMetaModel) {
                 $relatedModel->selectLanguage($currentLanguage);
-            } elseif ($relatedModel->isTranslated()) {
+            } elseif ($relatedModel->isTranslated(false)) {
                 $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $currentLanguage);
             }
         }
