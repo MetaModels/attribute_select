@@ -167,15 +167,15 @@ class BackendEventsListener
             }
         }
 
-        if (\is_array($result[$translated] ?? null)) {
+        if (isset($result[$translated]) && \is_array($result[$translated])) {
             \asort($result[$translated]);
         }
 
-        if (\is_array($result[$untranslated] ?? null)) {
+        if (isset($result[$untranslated]) && \is_array($result[$untranslated])) {
             \asort($result[$untranslated]);
         }
 
-        if (\is_array($result[$sqlTable] ?? null)) {
+        if (isset($result[$sqlTable]) && \is_array($result[$sqlTable])) {
             \asort($result[$sqlTable]);
         }
 
