@@ -3,7 +3,7 @@
 /**
  * This file is part of MetaModels/attribute_select.
  *
- * (c) 2012-2020 The MetaModels team.
+ * (c) 2012-2022 The MetaModels team.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -18,7 +18,7 @@
  * @author     Ingolf Steinhardt <info@e-spin.de>
  * @author     Sven Baumann <baumann.sv@gmail.com>
  * @author     Richard Henkenjohann <richardhenkenjohann@googlemail.com>
- * @copyright  2012-2020 The MetaModels team.
+ * @copyright  2012-2022 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
  */
@@ -42,7 +42,7 @@ use Doctrine\DBAL\Types\Type;
 use MetaModels\DcGeneral\DataDefinition\Palette\Condition\Property\ConditionTableNameIsMetaModel;
 use MetaModels\Filter\Setting\IFilterSettingFactory;
 use MetaModels\IFactory;
-use Symfony\Component\Translation\TranslatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Handle events for tl_metamodel_attribute.alias_fields.attr_id.
@@ -167,15 +167,15 @@ class BackendEventsListener
             }
         }
 
-        if (\is_array($result[$translated])) {
+        if (\is_array($result[$translated] ?? null)) {
             \asort($result[$translated]);
         }
 
-        if (\is_array($result[$untranslated])) {
+        if (\is_array($result[$untranslated] ?? null)) {
             \asort($result[$untranslated]);
         }
 
-        if (\is_array($result[$sqlTable])) {
+        if (\is_array($result[$sqlTable] ?? null)) {
             \asort($result[$sqlTable]);
         }
 
