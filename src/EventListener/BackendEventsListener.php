@@ -38,7 +38,7 @@ use ContaoCommunityAlliance\DcGeneral\DataDefinition\Palette\Condition\Property\
 use ContaoCommunityAlliance\DcGeneral\DataDefinition\Palette\PropertyInterface;
 use ContaoCommunityAlliance\DcGeneral\Factory\Event\BuildDataDefinitionEvent;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Types\Type;
+use Doctrine\DBAL\Types\Types;
 use MetaModels\DcGeneral\DataDefinition\Palette\Condition\Property\ConditionTableNameIsMetaModel;
 use MetaModels\Filter\Setting\IFilterSettingFactory;
 use MetaModels\IFactory;
@@ -370,14 +370,18 @@ class BackendEventsListener
 
         if ($metaModel) {
             $statement = $this->connection
-                ->prepare('SELECT id,name FROM tl_metamodel_filter WHERE pid=:pid ORDER BY name');
-
-            $statement->execute(['pid' => $metaModel->get('id')]);
+                ->createQueryBuilder()
+                ->select('t.id, t.name')
+                ->from('tl_metamodel_filter','t')
+                ->where('t.pid=:pid')
+                ->setParameter('pid', $metaModel->get('id'))
+                ->orderBy('t.name')
+                ->executeQuery();
 
             $result = [];
-            while ($row = $statement->fetch(\PDO::FETCH_OBJ)) {
+            while ($row = $statement->fetchAssociative()) {
                 /** @noinspection PhpUndefinedFieldInspection */
-                $result[$row->id] = $row->name;
+                $result[$row['id']] = $row['name'];
             }
 
             $event->setOptions($result);
@@ -446,7 +450,7 @@ class BackendEventsListener
 
         $result = $this->getColumnNamesFromMetaModel(
             $event->getModel()->getProperty('select_table'),
-            [Type::INTEGER, Type::BIGINT, Type::SMALLINT]
+            [Types::INTEGER, Types::BIGINT, Types::SMALLINT]
         );
 
         $event->setOptions($result);

@@ -310,7 +310,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
                 ->setParameter('value', $varValue)
                 ->execute();
 
-            $ids = $result->fetchAll(\PDO::FETCH_COLUMN);
+            $ids = $result->fetchFirstColumn();
         }
 
         // Maybe deleted value?
@@ -424,7 +424,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
                 ->setParameter('ids', $idList, Connection::PARAM_STR_ARRAY);
         }
 
-        $arrUsedValues = $builder->execute()->fetchAll(\PDO::FETCH_COLUMN);
+        $arrUsedValues = $builder->execute()->fetchFirstColumn();
         $arrUsedValues = \array_filter(
             $arrUsedValues,
             function ($value) {
@@ -581,7 +581,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
         }
         $query = $query->execute();
 
-        while ($row = $query->fetch(\PDO::FETCH_ASSOC)) {
+        while ($row = $query->fetchAssociative()) {
             $count[$row->{$valueCol}] = $row->count;
         }
     }
@@ -655,9 +655,9 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
 
         $valueIds = [];
         $valueMap = [];
-        while ($values = $statement->fetch(\PDO::FETCH_OBJ)) {
-            $itemId             = $values->id;
-            $value              = $values->$myColName;
+        while ($values = $statement->fetchAssociative()) {
+            $itemId             = $values['id'];
+            $value              = $values[$myColName];
             $valueIds[$itemId]  = $value;
             $valueMap[$value][] = $itemId;
         }
@@ -696,9 +696,9 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
             ->execute();
 
         $valueIds = [];
-        while ($rows = $statement->fetch(\PDO::FETCH_OBJ)) {
+        while ($rows = $statement->fetchAssociative()) {
             /** @noinspection PhpUndefinedFieldInspection */
-            $valueIds[$rows->id] = $rows->$valueColumn;
+            $valueIds[$rows['id']] = $rows[$valueColumn];
         }
 
         $values = $this->getValuesById($valueIds);

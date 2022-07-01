@@ -70,7 +70,7 @@ class Select extends AbstractSelect
             ->orderBy('s.' . $strSortColumn, $strDirection)
             ->setParameter('ids', $idList, Connection::PARAM_STR_ARRAY)
             ->execute()
-            ->fetchAll(\PDO::FETCH_COLUMN);
+            ->fetchAllAssociative();
 
         return $idList;
     }
@@ -117,7 +117,7 @@ class Select extends AbstractSelect
             ->setParameter('value', $varValue)
             ->setMaxResults(1)
             ->execute()
-            ->fetch(\PDO::FETCH_ASSOC);
+            ->fetchAssociative();
 
         return $value;
     }
@@ -159,13 +159,13 @@ class Select extends AbstractSelect
     protected function convertOptionsList($statement, $aliasColumn, $valueColumn, &$count = null)
     {
         $arrReturn = [];
-        while ($values = $statement->fetch(\PDO::FETCH_OBJ)) {
+        while ($values = $statement->fetchAssociative()) {
             if (\is_array($count)) {
                 /** @noinspection PhpUndefinedFieldInspection */
-                $count[$values->$aliasColumn] = $values->mm_count;
+                $count[$values[$aliasColumn]] = $values['mm_count'];
             }
 
-            $arrReturn[$values->$aliasColumn] = $values->$valueColumn;
+            $arrReturn[$values[$aliasColumn]] = $values[$valueColumn];
         }
 
         return $arrReturn;
@@ -299,9 +299,7 @@ class Select extends AbstractSelect
             $builder->andWhere($additionalWhere);
         }
 
-        $statement = $builder->execute();
-
-        foreach ($statement->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+        foreach ($builder->fetchAllAssociative() as $row) {
             $arrReturn[$row[$strMetaModelTableNameId]] = $row;
         }
 
