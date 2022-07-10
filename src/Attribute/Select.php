@@ -69,7 +69,7 @@ class Select extends AbstractSelect
             ->where('m.id IN (:ids)')
             ->orderBy('s.' . $strSortColumn, $strDirection)
             ->setParameter('ids', $idList, Connection::PARAM_STR_ARRAY)
-            ->execute()
+            ->executeQuery()
             ->fetchAllAssociative();
 
         return $idList;
@@ -116,7 +116,7 @@ class Select extends AbstractSelect
             ->where('t.' . $this->getAliasColumn() . '=:value')
             ->setParameter('value', $varValue)
             ->setMaxResults(1)
-            ->execute()
+            ->executeQuery()
             ->fetchAssociative();
 
         return $value;
@@ -220,7 +220,7 @@ class Select extends AbstractSelect
             $builder->andWhere($additionalWhere);
         }
 
-        return $builder->execute();
+        return $builder->executeQuery();
     }
 
     /**
@@ -258,7 +258,7 @@ class Select extends AbstractSelect
                 $builder->andWhere($additionalWhere);
             }
 
-            $statement = $builder->execute();
+            $statement = $builder->executeQuery();
         } else {
             $statement = $this->getFilterOptionsForUsedOnly($usedOnly);
         }

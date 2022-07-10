@@ -308,7 +308,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
                 ->from($this->getSelectSource(), 'v')
                 ->where('v.' . $alias . '=:value')
                 ->setParameter('value', $varValue)
-                ->execute();
+                ->executeQuery();
 
             $ids = $result->fetchFirstColumn();
         }
