@@ -200,7 +200,7 @@ class Select extends AbstractSelect
                 $builder->andWhere($additionalWhere);
             }
 
-            return $builder->execute();
+            return $builder->executeQuery();
         }
 
         $builder = $this->connection->createQueryBuilder()

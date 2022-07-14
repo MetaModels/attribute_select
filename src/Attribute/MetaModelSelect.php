@@ -582,7 +582,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
         $query = $query->execute();
 
         while ($row = $query->fetchAssociative()) {
-            $count[$row->{$valueCol}] = $row->count;
+            $count[$row[$valueCol]] = $row['count'];
         }
     }
 
