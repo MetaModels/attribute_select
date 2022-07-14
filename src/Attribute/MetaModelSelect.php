@@ -812,9 +812,25 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
             return null;
         }
 
+        $aliasColumn  = $this->getAliasColumn();
+        $relatedModel = $this->getSelectMetaModel();
+
+        // Check first, if alias column a system column.
+        if (!$relatedModel->hasAttribute($aliasColumn)) {
+            $result  = $this->connection->createQueryBuilder()
+                ->select('t.id')
+                ->from($this->getSelectSource(), 't')
+                ->where('t.' . $aliasColumn . '=:value')
+                ->setParameter('value', $alias)
+                ->setFirstResult(0)
+                ->setMaxResults(1)
+                ->execute();
+            $idValue = $result->fetchOne();
+
+            return ($idValue === false) ? null : (string) $idValue;
+        }
+
         // Check if the current MM has translations.
-        $aliasColumn        = $this->getAliasColumn();
-        $relatedModel       = $this->getSelectMetaModel();
         $currentLanguage    = null;
         $supportedLanguages = null;
 
