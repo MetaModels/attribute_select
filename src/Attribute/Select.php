@@ -133,7 +133,7 @@ class Select extends AbstractSelect
 
         $values = $this->getFilterOptionsForUsedOnly(false);
 
-        return $this->convertOptionsList($values, $this->getIdColumn(), $this->getValueColumn());
+        return $this->convertOptionsList($values, $this->getAliasColumn(), $this->getValueColumn());
     }
 
     /**
