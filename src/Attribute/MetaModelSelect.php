@@ -222,7 +222,10 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
                 $previousLanguage = $metaModel->selectLanguage($metaModel->getMainLanguage());
             }
 
-            $filter = $metaModel->getEmptyFilter()->addFilterRule(new StaticIdList($valueIds));
+            $filter = $metaModel->getEmptyFilter();
+            $this->buildFilterRulesForFilterSetting($filter);
+            $filter->addFilterRule(new StaticIdList($valueIds));
+
             $items  =
                 $metaModel->findByFilter(
                     $filter,

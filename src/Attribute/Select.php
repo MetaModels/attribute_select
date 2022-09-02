@@ -293,10 +293,15 @@ class Select extends AbstractSelect
                 'sourceTable.' . $strColNameId . '=modelTable.' . $this->getColName()
             )
             ->where('modelTable.id IN (:ids)')
-            ->setParameter('ids', $arrIds, Connection::PARAM_STR_ARRAY)
-            ->execute();
+            ->setParameter('ids', $arrIds, Connection::PARAM_STR_ARRAY);
 
-        foreach ($builder->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+        if ($additionalWhere = $this->getAdditionalWhere()) {
+            $builder->andWhere($additionalWhere);
+        }
+
+        $statement = $builder->execute();
+
+        foreach ($statement->fetchAll(\PDO::FETCH_ASSOC) as $row) {
             $arrReturn[$row[$strMetaModelTableNameId]] = $row;
         }
 
