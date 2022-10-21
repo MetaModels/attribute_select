@@ -299,7 +299,13 @@ class Select extends AbstractSelect
             $builder->andWhere($additionalWhere);
         }
 
-        foreach ($builder->fetchAllAssociative() as $row) {
+        $statement = $builder->executeQuery();
+
+        if ($statement->rowCount() == 0) {
+            return $result;
+        }
+
+        foreach ($statement->fetchAllAssociative() as $row) {
             $arrReturn[$row[$strMetaModelTableNameId]] = $row;
         }
 
