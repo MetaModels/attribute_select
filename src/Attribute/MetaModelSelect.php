@@ -253,7 +253,15 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
     {
         $aliasColumn = $this->getAliasColumn();
 
-        return $varValue[$aliasColumn] ?? $varValue[self::SELECT_RAW][$aliasColumn] ?? null;
+        if (null !== ($widgetValue = ($varValue[$aliasColumn] ?? null))) {
+            return (string) $widgetValue;
+        }
+
+        if (null !== ($widgetValue = ($varValue[self::SELECT_RAW][$aliasColumn] ?? null))) {
+            return (string) $widgetValue;
+        }
+
+        return null;
     }
 
     /**
