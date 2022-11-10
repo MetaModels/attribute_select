@@ -44,6 +44,8 @@ use MetaModels\Render\Template;
 
 /**
  * This is the MetaModelAttribute class for handling select attributes on MetaModels.
+ *
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 class MetaModelSelect extends AbstractSelect implements IAliasConverter
 {
@@ -261,6 +263,8 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
      * {@inheritdoc}
      *
      * @throws \RuntimeException When the value is invalid.
+     *
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
     public function widgetToValue($varValue, $itemId)
     {
@@ -594,6 +598,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
      *
      * @SuppressWarnings(PHPMD.Superglobals)
      * @SuppressWarnings(PHPMD.CamelCaseVariableName)
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     public function getFilterOptions($idList, $usedOnly, &$arrCount = null)
     {
@@ -752,6 +757,10 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
 
     /**
      * {@inheritdoc}
+     *
+     * @SuppressWarnings(PHPMD.Superglobals)
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
     public function convertValuesToValueIds($values)
     {
@@ -811,6 +820,10 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
 
     /**
      * {@inheritdoc}
+     *
+     * @SuppressWarnings(PHPMD.Superglobals)
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
     public function getIdForAlias(string $alias, string $language): ?string
     {
@@ -889,6 +902,11 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
 
     /**
      * {@inheritdoc}
+     *
+     * @SuppressWarnings(PHPMD.Superglobals)
+     * @SuppressWarnings(PHPMD.ShortVariable)
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
     public function getAliasForId(string $id, string $language): ?string
     {
