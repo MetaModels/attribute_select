@@ -18,6 +18,7 @@
  * @author     David Molineus <david.molineus@netzmacht.de>
  * @author     Sven Baumann <baumann.sv@gmail.com>
  * @author     Ingolf Steinhardt <info@e-spin.de>
+ * @author     Marc Reimann <reimann@mediendepot-ruhr.de>
  * @copyright  2012-2022 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
@@ -845,7 +846,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
         } elseif ($relatedModel->isTranslated(false)) {
             $backendLanguage    = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
             $supportedLanguages = $relatedModel->getAvailableLanguages();
-            $fallbackLanguage   = $relatedModel->getFallbackLanguage() ?? $backendLanguage;
+            $fallbackLanguage   = ($relatedModel->getFallbackLanguage() ?? $backendLanguage);
         }
 
         if (\is_array($supportedLanguages) && !empty($supportedLanguages)) {
@@ -908,7 +909,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
         } elseif ($relatedModel->isTranslated(false)) {
             $backendLanguage    = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
             $supportedLanguages = $relatedModel->getAvailableLanguages();
-            $fallbackLanguage   = $relatedModel->getFallbackLanguage() ?? $backendLanguage;
+            $fallbackLanguage   = ($relatedModel->getFallbackLanguage() ?? $backendLanguage);
         }
 
         if (\is_array($supportedLanguages) && !empty($supportedLanguages)) {
@@ -941,6 +942,6 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
             }
         }
 
-        return $item->parseAttribute($aliasColumn)['text'] ?? null;
+        return ($item->parseAttribute($aliasColumn)['text'] ?? null);
     }
 }
