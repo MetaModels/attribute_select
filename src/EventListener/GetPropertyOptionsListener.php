@@ -40,6 +40,9 @@ class GetPropertyOptionsListener
      * @param GetPropertyOptionsEvent $event The event.
      *
      * @return void
+     *
+     * @SuppressWarnings(PHPMD.Superglobals)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
     public static function getPropertyOptions(GetPropertyOptionsEvent $event)
     {

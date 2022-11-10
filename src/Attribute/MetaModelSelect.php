@@ -264,6 +264,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
      *
      * @throws \RuntimeException When the value is invalid.
      *
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
      */
     public function widgetToValue($varValue, $itemId)
@@ -349,6 +350,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
      * {@inheritDoc}
      *
      * @SuppressWarnings(PHPMD.Superglobals)
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.CamelCaseVariableName)
      */
     public function getFilterOptionsForDcGeneral()
