@@ -1,4 +1,4 @@
-name: MetaModels attribute_alias
+name: MetaModels attribute_select
 
 on:
   push:
