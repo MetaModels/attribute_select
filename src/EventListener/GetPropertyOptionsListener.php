@@ -43,6 +43,7 @@ class GetPropertyOptionsListener
      *
      * @SuppressWarnings(PHPMD.Superglobals)
      * @SuppressWarnings(PHPMD.NPathComplexity)
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     public static function getPropertyOptions(GetPropertyOptionsEvent $event)
     {
