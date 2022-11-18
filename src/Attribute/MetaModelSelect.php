@@ -18,6 +18,7 @@
  * @author     David Molineus <david.molineus@netzmacht.de>
  * @author     Sven Baumann <baumann.sv@gmail.com>
  * @author     Ingolf Steinhardt <info@e-spin.de>
+ * @author     Marc Reimann <reimann@mediendepot-ruhr.de>
  * @copyright  2012-2022 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
@@ -43,6 +44,8 @@ use MetaModels\Render\Template;
 
 /**
  * This is the MetaModelAttribute class for handling select attributes on MetaModels.
+ *
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 class MetaModelSelect extends AbstractSelect implements IAliasConverter
 {
@@ -268,6 +271,9 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
      * {@inheritdoc}
      *
      * @throws \RuntimeException When the value is invalid.
+     *
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
     public function widgetToValue($varValue, $itemId)
     {
@@ -352,6 +358,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
      * {@inheritDoc}
      *
      * @SuppressWarnings(PHPMD.Superglobals)
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.CamelCaseVariableName)
      */
     public function getFilterOptionsForDcGeneral()
@@ -601,6 +608,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
      *
      * @SuppressWarnings(PHPMD.Superglobals)
      * @SuppressWarnings(PHPMD.CamelCaseVariableName)
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     public function getFilterOptions($idList, $usedOnly, &$arrCount = null)
     {
@@ -759,6 +767,10 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
 
     /**
      * {@inheritdoc}
+     *
+     * @SuppressWarnings(PHPMD.Superglobals)
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
     public function convertValuesToValueIds($values)
     {
@@ -818,6 +830,10 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
 
     /**
      * {@inheritdoc}
+     *
+     * @SuppressWarnings(PHPMD.Superglobals)
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
     public function getIdForAlias(string $alias, string $language): ?string
     {
@@ -853,7 +869,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
         } elseif ($relatedModel->isTranslated(false)) {
             $backendLanguage    = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
             $supportedLanguages = $relatedModel->getAvailableLanguages();
-            $fallbackLanguage   = $relatedModel->getFallbackLanguage() ?? $backendLanguage;
+            $fallbackLanguage   = ($relatedModel->getFallbackLanguage() ?? $backendLanguage);
         }
 
         if (\is_array($supportedLanguages) && !empty($supportedLanguages)) {
@@ -896,6 +912,11 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
 
     /**
      * {@inheritdoc}
+     *
+     * @SuppressWarnings(PHPMD.Superglobals)
+     * @SuppressWarnings(PHPMD.ShortVariable)
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
     public function getAliasForId(string $id, string $language): ?string
     {
@@ -916,7 +937,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
         } elseif ($relatedModel->isTranslated(false)) {
             $backendLanguage    = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
             $supportedLanguages = $relatedModel->getAvailableLanguages();
-            $fallbackLanguage   = $relatedModel->getFallbackLanguage() ?? $backendLanguage;
+            $fallbackLanguage   = ($relatedModel->getFallbackLanguage() ?? $backendLanguage);
         }
 
         if (\is_array($supportedLanguages) && !empty($supportedLanguages)) {
@@ -949,6 +970,6 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
             }
         }
 
-        return $item->parseAttribute($aliasColumn)['text'] ?? null;
+        return ($item->parseAttribute($aliasColumn)['text'] ?? null);
     }
 }

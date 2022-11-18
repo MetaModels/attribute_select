@@ -27,6 +27,9 @@ use Doctrine\DBAL\Connection;
 use MetaModels\Attribute\AbstractHybrid;
 use MetaModels\AttributeSelectBundle\FilterRule\FilterRuleSelect;
 
+/**
+ * This is the MetaModelAttribute class for handling select attributes.
+ */
 abstract class AbstractSelect extends AbstractHybrid
 {
     /**

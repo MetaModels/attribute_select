@@ -14,7 +14,7 @@
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
  * @author     David Molineus <david.molineus@netzmacht.de>
  * @author     Sven Baumann <baumann.sv@gmail.com>
- * @copyright  2012-2021 The MetaModels team.
+ * @copyright  2012-2022 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
  */
@@ -219,13 +219,13 @@ class SelectTest extends TestCase
         $builder
             ->expects($this->once())
             ->method('where')
-            ->with('t.id=:id')
+            ->with('t.id=:value')
             ->willReturn($builder);
 
         $builder
             ->expects($this->once())
             ->method('setParameter')
-            ->with('id', 10)
+            ->with('value', 10)
             ->willReturn($builder);
 
         $builder
