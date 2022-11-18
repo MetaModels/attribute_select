@@ -3,7 +3,7 @@
 /**
  * This file is part of MetaModels/attribute_select.
  *
- * (c) 2012-2019 The MetaModels team.
+ * (c) 2012-2022 The MetaModels team.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -16,7 +16,7 @@
  * @author     David Molineus <david.molineus@netzmacht.de>
  * @author     Sven Baumann <baumann.sv@gmail.com>
  * @author     Ingolf Steinhardt <info@e-spin.de>
- * @copyright  2012-2019 The MetaModels team.
+ * @copyright  2012-2022 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
  */
@@ -28,11 +28,7 @@ use MetaModels\Attribute\AbstractHybrid;
 use MetaModels\AttributeSelectBundle\FilterRule\FilterRuleSelect;
 
 /**
- * This is the abstract base class for handling select attributes.
- *
- * @package    MetaModels
- * @subpackage AttributeSelect
- * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
+ * This is the MetaModelAttribute class for handling select attributes.
  */
 abstract class AbstractSelect extends AbstractHybrid
 {
@@ -86,6 +82,16 @@ abstract class AbstractSelect extends AbstractHybrid
     protected function getIdColumn()
     {
         return $this->get('select_id') ?: 'id';
+    }
+
+    /**
+     * Determine the correct sort direction to use.
+     *
+     * @return string
+     */
+    protected function getSortDirection()
+    {
+        return $this->get('select_sort');
     }
 
     /**
@@ -220,6 +226,7 @@ abstract class AbstractSelect extends AbstractHybrid
                 'select_column',
                 'select_alias',
                 'select_sorting',
+                'select_sort',
                 'select_as_radio',
                 'includeBlankOption',
                 'submitOnChange',
@@ -249,9 +256,9 @@ abstract class AbstractSelect extends AbstractHybrid
     public function unsetDataFor($arrIds)
     {
         $this->connection->createQueryBuilder()
-            ->update($this->getMetaModel()->getTableName())
-            ->set($this->getColName(), 0)
-            ->where('id IN (:ids)')
+            ->update($this->getMetaModel()->getTableName(), 't')
+            ->set('t.' . $this->getColName(), 0)
+            ->where('t.id IN (:ids)')
             ->setParameter('ids', $arrIds, Connection::PARAM_STR_ARRAY)
             ->execute();
     }
@@ -279,9 +286,9 @@ abstract class AbstractSelect extends AbstractHybrid
         }
 
         return $this->connection->createQueryBuilder()
-            ->select($idColumn)
-            ->from($tableName)
-            ->where($aliasColumn . ' IN (:values)')
+            ->select('t.' . $idColumn)
+            ->from($tableName, 't')
+            ->where('t.' . $aliasColumn . ' IN (:values)')
             ->setParameter('values', $values, Connection::PARAM_STR_ARRAY)
             ->execute()
             ->fetch(\PDO::FETCH_ASSOC);

@@ -3,7 +3,7 @@
 /**
  * This file is part of MetaModels/attribute_select.
  *
- * (c) 2012-2019 The MetaModels team.
+ * (c) 2012-2021 The MetaModels team.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -14,7 +14,7 @@
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
  * @author     David Molineus <david.molineus@netzmacht.de>
  * @author     Sven Baumann <baumann.sv@gmail.com>
- * @copyright  2012-2019 The MetaModels team.
+ * @copyright  2012-2022 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
  */
@@ -31,6 +31,8 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Unit tests to test class Select.
+ *
+ * @covers \MetaModels\AttributeSelectBundle\Attribute\Select
  */
 class SelectTest extends TestCase
 {
@@ -217,13 +219,13 @@ class SelectTest extends TestCase
         $builder
             ->expects($this->once())
             ->method('where')
-            ->with('id=:id')
+            ->with('t.id=:value')
             ->willReturn($builder);
 
         $builder
             ->expects($this->once())
             ->method('setParameter')
-            ->with('id', 10)
+            ->with('value', 10)
             ->willReturn($builder);
 
         $builder

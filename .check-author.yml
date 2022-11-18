@@ -6,3 +6,10 @@ exclude:
 
 mapping:
   'Andreas Isaak <info@andreas-isaak.de>': 'Andreas Isaak <andy.jared@googlemail.com>'
+  'Stefan Heimes <stefan_heimes@hotmail.com>': 'Stefan Heimes <heimes@men-at-work.de>'
+  'Ingolf Steinhardt <info@e-spin.de>':
+    - 'e-spin <gitlab@e-spin.de>'
+    - 'zonky <info@e-spin.de>'
+    - 'zonky2 <info@e-spin.de>'
+    - 'sandokan <info@e-spin.de>'
+    - 'e-spin <git@e-spin.de>'

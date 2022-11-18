@@ -3,7 +3,7 @@
 /**
  * This file is part of MetaModels/attribute_select.
  *
- * (c) 2012-2019 The MetaModels team.
+ * (c) 2012-2022 The MetaModels team.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -18,7 +18,8 @@
  * @author     David Molineus <david.molineus@netzmacht.de>
  * @author     Sven Baumann <baumann.sv@gmail.com>
  * @author     Ingolf Steinhardt <info@e-spin.de>
- * @copyright  2012-2019 The MetaModels team.
+ * @author     Marc Reimann <reimann@mediendepot-ruhr.de>
+ * @copyright  2012-2022 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
  */
@@ -27,7 +28,10 @@ namespace MetaModels\AttributeSelectBundle\Attribute;
 
 use Contao\System;
 use Doctrine\DBAL\Connection;
+use MetaModels\Attribute\IAliasConverter;
+use MetaModels\Attribute\ITranslated;
 use MetaModels\Filter\IFilter;
+use MetaModels\Filter\Rules\SearchAttribute;
 use MetaModels\Filter\Rules\StaticIdList;
 use MetaModels\Filter\Setting\IFilterSettingFactory;
 use MetaModels\Helper\TableManipulator;
@@ -35,12 +39,15 @@ use MetaModels\IFactory;
 use MetaModels\IItem;
 use MetaModels\IItems;
 use MetaModels\IMetaModel;
+use MetaModels\ITranslatedMetaModel;
 use MetaModels\Render\Template;
 
 /**
  * This is the MetaModelAttribute class for handling select attributes on MetaModels.
+ *
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
-class MetaModelSelect extends AbstractSelect
+class MetaModelSelect extends AbstractSelect implements IAliasConverter
 {
     /**
      * The key in the result array where the RAW values shall be stored.
@@ -74,18 +81,13 @@ class MetaModelSelect extends AbstractSelect
      * Note that you should not use this directly but use the factory classes to instantiate attributes.
      *
      * @param IMetaModel                 $objMetaModel         The MetaModel instance this attribute belongs to.
-     *
-     * @param array $arrData                                   The information array, for attribute information, refer
+     * @param array                      $arrData              The information array, for attribute information, refer
      *                                                         to documentation of table tl_metamodel_attribute and
      *                                                         documentation of the certain attribute classes for
      *                                                         information what values are understood.
-     *
-     * @param Connection                 $connection           The database connection.
-     *
-     * @param TableManipulator           $tableManipulator     Table manipulator instance.
-     *
-     * @param IFactory                   $factory              MetaModel factory.
-     *
+     * @param Connection|null            $connection           The database connection.
+     * @param TableManipulator|null      $tableManipulator     Table manipulator instance.
+     * @param IFactory|null              $factory              MetaModel factory.
      * @param IFilterSettingFactory|null $filterSettingFactory Filter setting factory.
      */
     public function __construct(
@@ -212,8 +214,36 @@ class MetaModelSelect extends AbstractSelect
         $tables[$recursionKey] = $recursionKey;
 
         $metaModel = $this->getSelectMetaModel();
-        $filter    = $metaModel->getEmptyFilter()->addFilterRule(new StaticIdList($valueIds));
-        $items     = $metaModel->findByFilter($filter, 'id', 0, 0, 'ASC', $attrOnly);
+
+        try {
+            $parent = $this->getMetaModel();
+
+            if ($metaModel instanceof ITranslatedMetaModel && $parent instanceof ITranslatedMetaModel) {
+                $currentLanguage  = $parent->getLanguage();
+                $previousLanguage = $metaModel->selectLanguage($currentLanguage);
+            } elseif ($metaModel instanceof ITranslatedMetaModel) {
+                $previousLanguage = $metaModel->selectLanguage($metaModel->getMainLanguage());
+            }
+
+            $filter = $metaModel->getEmptyFilter();
+            $this->buildFilterRulesForFilterSetting($filter);
+            $filter->addFilterRule(new StaticIdList($valueIds));
+
+            $items  =
+                $metaModel->findByFilter(
+                    $filter,
+                    $this->getSortingColumn(),
+                    0,
+                    0,
+                    $this->getSortDirection(),
+                    $attrOnly
+                );
+        } finally {
+            if (isset($previousLanguage)) {
+                $metaModel->selectLanguage($previousLanguage);
+            }
+        }
+
         unset($tables[$recursionKey]);
 
         return $this->itemsToValues($items);
@@ -224,7 +254,7 @@ class MetaModelSelect extends AbstractSelect
      */
     public function valueToWidget($varValue)
     {
-        $aliasColumn = $this->getIdColumn();
+        $aliasColumn = $this->getAliasColumn();
 
         return $varValue[$aliasColumn] ?? $varValue[self::SELECT_RAW][$aliasColumn] ?? null;
     }
@@ -233,6 +263,9 @@ class MetaModelSelect extends AbstractSelect
      * {@inheritdoc}
      *
      * @throws \RuntimeException When the value is invalid.
+     *
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
     public function widgetToValue($varValue, $itemId)
     {
@@ -241,23 +274,45 @@ class MetaModelSelect extends AbstractSelect
         }
         static $cache = [];
         $attributeId = $this->get('id');
-        if (array_key_exists($attributeId, $cache) && array_key_exists($varValue, $cache[$attributeId])) {
+        if (\array_key_exists($attributeId, $cache) && \array_key_exists($varValue, $cache[$attributeId])) {
             return $cache[$attributeId][$varValue];
         }
 
         $model = $this->getSelectMetaModel();
-        $alias = $this->getIdColumn();
+        $alias = $this->getAliasColumn();
 
         if ($model->hasAttribute($alias)) {
             $attribute = $model->getAttribute($alias);
             // It is an attribute, we may search for it.
-            $ids = $attribute->searchFor($varValue);
+
+            if ($attribute instanceof ITranslated) {
+                $languages = [];
+                $metaModel = $this->getMetaModel();
+                if ($metaModel instanceof ITranslatedMetaModel) {
+                    $languages[] = $metaModel->getLanguage();
+                } elseif ($metaModel->isTranslated(false)) {
+                    $languages[] = $metaModel->getActiveLanguage();
+                }
+
+                $relatedModel = $attribute->getMetaModel();
+                if ($relatedModel instanceof ITranslatedMetaModel) {
+                    $languages[] = $relatedModel->getMainLanguage();
+                } elseif ($relatedModel->isTranslated(false)) {
+                    $languages[] = $metaModel->getActiveLanguage();
+                } else {
+                    throw new \LogicException('Translated attribute within untranslated MetaModel?!?');
+                }
+
+                $ids = $attribute->searchForInLanguages($varValue, $languages);
+            } else {
+                $ids = $attribute->searchFor($varValue);
+            }
         } else {
             // Must be a system column then.
             $result = $this->connection->createQueryBuilder()
                 ->select('v.id')
                 ->from($this->getSelectSource(), 'v')
-                ->where('v.' . $this->getIdColumn() . '=:value')
+                ->where('v.' . $alias . '=:value')
                 ->setParameter('value', $varValue)
                 ->execute();
 
@@ -295,6 +350,7 @@ class MetaModelSelect extends AbstractSelect
      * {@inheritDoc}
      *
      * @SuppressWarnings(PHPMD.Superglobals)
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.CamelCaseVariableName)
      */
     public function getFilterOptionsForDcGeneral()
@@ -303,8 +359,32 @@ class MetaModelSelect extends AbstractSelect
             return [];
         }
 
-        $originalLanguage       = $GLOBALS['TL_LANGUAGE'];
-        $GLOBALS['TL_LANGUAGE'] = $this->getMetaModel()->getActiveLanguage();
+        $metaModel    = $this->getMetaModel(); // Model of the attribute.
+        $relatedModel = $this->getSelectMetaModel(); // Model to get the options from.
+
+        // Check if the current MM has translations.
+        $originalLanguage = null;
+        $targetLanguage   = null;
+        if ($metaModel instanceof ITranslatedMetaModel) {
+            $targetLanguage = $this->getMetaModel()->getLanguage();
+        } elseif ($metaModel->isTranslated(false)) {
+            $targetLanguage = $metaModel->getActiveLanguage();
+        } elseif ($relatedModel instanceof ITranslatedMetaModel) {
+            $targetLanguage = $relatedModel->getMainLanguage();
+        } elseif ($relatedModel->isTranslated(false)) {
+            $targetLanguage = $relatedModel->getFallbackLanguage();
+        }
+
+
+        // Retrieve original language only if target language is set.
+        if ($targetLanguage) {
+            if ($relatedModel instanceof ITranslatedMetaModel) {
+                $originalLanguage = $relatedModel->selectLanguage($targetLanguage);
+            } elseif ($relatedModel->isTranslated(false)) {
+                $originalLanguage       = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
+                $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $this->getMetaModel()->getActiveLanguage());
+            }
+        }
 
         $filter = $this->getSelectMetaModel()->getEmptyFilter();
 
@@ -315,20 +395,25 @@ class MetaModelSelect extends AbstractSelect
             $this->getSortingColumn(),
             0,
             0,
-            'ASC',
-            [$this->getValueColumn(), $this->getIdColumn()]
+            $this->getSortDirection(),
+            [$this->getValueColumn(), $this->getAliasColumn()]
         );
 
-        $GLOBALS['TL_LANGUAGE'] = $originalLanguage;
+        if (isset($originalLanguage)) {
+            if ($relatedModel instanceof ITranslatedMetaModel) {
+                $relatedModel->selectLanguage($originalLanguage);
+            } else {
+                $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $originalLanguage);
+            }
+        }
 
-        return $this->convertItemsToFilterOptions($objItems, $this->getValueColumn(), $this->getIdColumn());
+        return $this->convertItemsToFilterOptions($objItems, $this->getValueColumn(), $this->getAliasColumn());
     }
 
     /**
      * Fetch filter options from foreign table taking the given flag into account.
      *
      * @param IFilter $filter The filter to which the rules shall be added to.
-     *
      * @param array   $idList The list of ids of items for which the rules shall be added.
      *
      * @return void
@@ -336,13 +421,13 @@ class MetaModelSelect extends AbstractSelect
     public function buildFilterRulesForUsedOnly($filter, $idList = [])
     {
         $builder = $this->connection->createQueryBuilder()
-            ->select($this->getColName())
-            ->from($this->getMetaModel()->getTableName())
-            ->groupBy($this->getColName());
+            ->select('t.' . $this->getColName())
+            ->from($this->getMetaModel()->getTableName(), 't')
+            ->groupBy('t.' . $this->getColName());
 
         if (!empty($idList)) {
             $builder
-                ->where('id IN (:ids)')
+                ->where('t.id IN (:ids)')
                 ->setParameter('ids', $idList, Connection::PARAM_STR_ARRAY);
         }
 
@@ -413,13 +498,9 @@ class MetaModelSelect extends AbstractSelect
      * Convert a collection of items into a proper filter option list.
      *
      * @param IItems|IItem[] $items        The item collection to convert.
-     *
      * @param string         $displayValue The name of the attribute to use as value.
-     *
      * @param string         $aliasColumn  The name of the attribute to use as alias.
-     *
      * @param null|string[]  $count        The counter array.
-     *
      * @param null|array     $idList       A list for the current Items to use.
      *
      * @return array
@@ -468,23 +549,25 @@ class MetaModelSelect extends AbstractSelect
     /**
      * Determine the option count for the passed items.
      *
-     * @param IItems|IItem[] $items The item collection to convert.
-     *
-     * @param null|string[]  $count The counter array.
-     *
+     * @param IItems|IItem[] $items  The item collection to convert.
+     * @param null|string[]  $count  The counter array.
      * @param array          $idList The id list for the subselect.
      *
      * @return void
      */
     private function determineCount($items, &$count, $idList)
     {
-        $usedOptionsIdList = \array_unique(\array_filter(\array_map(
-            function ($item) {
-                /** @var IItem $item */
-                return $item->get('id');
-            },
-            \iterator_to_array($items)
-        )));
+        $usedOptionsIdList = \array_unique(
+            \array_filter(
+                \array_map(
+                    function ($item) {
+                        /** @var IItem $item */
+                        return $item->get('id');
+                    },
+                    \iterator_to_array($items)
+                )
+            )
+        );
 
         if (empty($usedOptionsIdList)) {
             return;
@@ -492,15 +575,15 @@ class MetaModelSelect extends AbstractSelect
 
         $valueCol = $this->getColName();
         $query    = $this->connection->createQueryBuilder()
-            ->select($this->getColName())
-            ->addSelect(\sprintf('COUNT(%s) AS count', $this->getColName()))
-            ->from($this->getMetaModel()->getTableName())
-            ->where($this->getColName() . ' IN (:ids)')
-            ->groupBy($this->getColName())
+            ->select('t.' . $this->getColName())
+            ->addSelect(\sprintf('COUNT(t.%s) AS count', $this->getColName()))
+            ->from($this->getMetaModel()->getTableName(), 't')
+            ->where('t.' . $this->getColName() . ' IN (:ids)')
+            ->groupBy('t.' . $this->getColName())
             ->setParameter('ids', $usedOptionsIdList, Connection::PARAM_STR_ARRAY);
         if ($idList !== null && !empty($idList)) {
             $query
-                ->andWhere('id IN (:idList)')
+                ->andWhere('t.id IN (:idList)')
                 ->setParameter('idList', $idList, Connection::PARAM_STR_ARRAY);
         }
         $query = $query->execute();
@@ -517,6 +600,7 @@ class MetaModelSelect extends AbstractSelect
      *
      * @SuppressWarnings(PHPMD.Superglobals)
      * @SuppressWarnings(PHPMD.CamelCaseVariableName)
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     public function getFilterOptions($idList, $usedOnly, &$arrCount = null)
     {
@@ -528,10 +612,12 @@ class MetaModelSelect extends AbstractSelect
         $strSortingValue    = $this->getSortingColumn();
         $strCurrentLanguage = null;
 
+        $metaModel = $this->getSelectMetaModel();
+
         // Change language.
-        if (TL_MODE == 'BE') {
-            $strCurrentLanguage     = $GLOBALS['TL_LANGUAGE'];
-            $GLOBALS['TL_LANGUAGE'] = $this->getMetaModel()->getActiveLanguage();
+        if (TL_MODE == 'BE' && !$metaModel instanceof ITranslatedMetaModel) {
+            $strCurrentLanguage     = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
+            $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $this->getMetaModel()->getActiveLanguage());
         }
 
         $filter = $this->getSelectMetaModel()->getEmptyFilter();
@@ -546,8 +632,8 @@ class MetaModelSelect extends AbstractSelect
         $objItems = $this->getSelectMetaModel()->findByFilter($filter, $strSortingValue);
 
         // Reset language.
-        if (TL_MODE == 'BE') {
-            $GLOBALS['TL_LANGUAGE'] = $strCurrentLanguage;
+        if (TL_MODE == 'BE' && isset($strCurrentLanguage)) {
+            $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $strCurrentLanguage);
         }
 
         return $this->convertItemsToFilterOptions(
@@ -569,9 +655,9 @@ class MetaModelSelect extends AbstractSelect
         $metaModel = $this->getSelectMetaModel();
         $myColName = $this->getColName();
         $statement = $this->connection->createQueryBuilder()
-            ->select('id,' . $myColName)
-            ->from($this->getMetaModel()->getTableName())
-            ->where('id IN (:ids)')
+            ->select('t.id, t.' . $myColName)
+            ->from($this->getMetaModel()->getTableName(), 't')
+            ->where('t.id IN (:ids)')
             ->setParameter('ids', $idList, Connection::PARAM_STR_ARRAY)
             ->execute();
 
@@ -594,6 +680,7 @@ class MetaModelSelect extends AbstractSelect
         }
 
         $diff = \array_diff($idList, $result);
+
         return \array_merge($result, $diff);
     }
 
@@ -609,10 +696,10 @@ class MetaModelSelect extends AbstractSelect
         $result      = [];
         $valueColumn = $this->getColName();
         // First pass, load database rows.
-        $statement  = $this->connection->createQueryBuilder()
-            ->select($valueColumn . ', id')
-            ->from($this->getMetaModel()->getTableName())
-            ->where('id IN (:ids)')
+        $statement = $this->connection->createQueryBuilder()
+            ->select('t.' . $valueColumn . ', t.id')
+            ->from($this->getMetaModel()->getTableName(), 't')
+            ->where('t.id IN (:ids)')
             ->setParameter('ids', $arrIds, Connection::PARAM_STR_ARRAY)
             ->execute();
 
@@ -648,7 +735,7 @@ class MetaModelSelect extends AbstractSelect
 
         $query = \sprintf(
         // @codingStandardsIgnoreStart - We want to keep the numbers as comment at the end of the following lines.
-            'UPDATE %1$s SET %2$s=:val WHERE %1$s.id=:id',
+            'UPDATE %1$s SET %1$s.%2$s=:val WHERE %1$s.id=:id',
             $this->getMetaModel()->getTableName(), // 1
             $this->getColName()                    // 2
         // @codingStandardsIgnoreEnd
@@ -656,10 +743,8 @@ class MetaModelSelect extends AbstractSelect
 
         foreach ($arrValues as $itemId => $value) {
             if (\is_array($value) && isset($value[self::SELECT_RAW]['id'])) {
-                $this->connection->prepare($query)->execute([
-                    'val' => (int) $value[self::SELECT_RAW]['id'],
-                    'id'  => $itemId
-                ]);
+                $this->connection->prepare($query)
+                    ->execute(['val' => (int) $value[self::SELECT_RAW]['id'], 'id' => $itemId]);
             } elseif (\is_numeric($itemId) && (\is_numeric($value) || $value === null)) {
                 $this->connection->prepare($query)->execute(['val' => (int) $value, 'id' => $itemId]);
             } else {
@@ -674,20 +759,44 @@ class MetaModelSelect extends AbstractSelect
 
     /**
      * {@inheritdoc}
+     *
+     * @SuppressWarnings(PHPMD.Superglobals)
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
     public function convertValuesToValueIds($values)
     {
         $strColNameAlias = $this->getAliasColumn();
         $strColNameId    = $this->getIdColumn();
-
         if ($strColNameId === $strColNameAlias) {
             return $values;
         }
 
-        $attribute = $this->getSelectMetaModel()->getAttribute($strColNameAlias);
+        $metaModel    = $this->getMetaModel();
+        $relatedModel = $this->getSelectMetaModel();
+        $attribute    = $relatedModel->getAttribute($strColNameAlias);
         if (!$attribute) {
             // If not an attribute, perform plain SQL translation. See #32, 34.
             return parent::convertValuesToValueIds($values);
+        }
+
+        // Check if the current MM has translations.
+        $originalLanguage = null;
+        $targetLanguage   = null;
+        if ($metaModel instanceof ITranslatedMetaModel) {
+            $targetLanguage = $this->getMetaModel()->getLanguage();
+        } elseif ($metaModel->isTranslated(false)) {
+            $targetLanguage = $metaModel->getActiveLanguage();
+        }
+
+        // Retrieve original language only if target language is set.
+        if ($targetLanguage) {
+            if ($relatedModel instanceof ITranslatedMetaModel) {
+                $originalLanguage = $relatedModel->selectLanguage($targetLanguage);
+            } elseif ($relatedModel->isTranslated(false)) {
+                $originalLanguage       = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
+                $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $targetLanguage);
+            }
         }
 
         $sanitizedValues = [];
@@ -700,6 +809,159 @@ class MetaModelSelect extends AbstractSelect
             $sanitizedValues = \array_merge($valueIds, $sanitizedValues);
         }
 
+        if (isset($originalLanguage)) {
+            if ($relatedModel instanceof ITranslatedMetaModel) {
+                $relatedModel->selectLanguage($originalLanguage);
+            } else {
+                $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $originalLanguage);
+            }
+        }
+
         return \array_unique($sanitizedValues);
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @SuppressWarnings(PHPMD.Superglobals)
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
+     */
+    public function getIdForAlias(string $alias, string $language): ?string
+    {
+        if (!$this->isProperlyConfigured()) {
+            return null;
+        }
+
+        $aliasColumn  = $this->getAliasColumn();
+        $relatedModel = $this->getSelectMetaModel();
+
+        // Check first, if alias column a system column.
+        if (!$relatedModel->hasAttribute($aliasColumn)) {
+            $result  = $this->connection->createQueryBuilder()
+                ->select('t.id')
+                ->from($this->getSelectSource(), 't')
+                ->where('t.' . $aliasColumn . '=:value')
+                ->setParameter('value', $alias)
+                ->setFirstResult(0)
+                ->setMaxResults(1)
+                ->execute();
+            $idValue = $result->fetchOne();
+
+            return ($idValue === false) ? null : (string) $idValue;
+        }
+
+        // Check if the current MM has translations.
+        $currentLanguage    = null;
+        $supportedLanguages = null;
+
+        if ($relatedModel instanceof ITranslatedMetaModel) {
+            $supportedLanguages = $relatedModel->getLanguages();
+            $fallbackLanguage   = $relatedModel->getMainLanguage();
+        } elseif ($relatedModel->isTranslated(false)) {
+            $backendLanguage    = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
+            $supportedLanguages = $relatedModel->getAvailableLanguages();
+            $fallbackLanguage   = ($relatedModel->getFallbackLanguage() ?? $backendLanguage);
+        }
+
+        if (\is_array($supportedLanguages) && !empty($supportedLanguages)) {
+            if (\in_array($language, $supportedLanguages, false)) {
+                $currentLanguage = $language;
+            } else {
+                $currentLanguage = $fallbackLanguage;
+            }
+        }
+
+        // Retrieve original language only if target language is set.
+        if ($currentLanguage) {
+            if ($relatedModel instanceof ITranslatedMetaModel) {
+                $relatedModel->selectLanguage($language);
+            } elseif ($relatedModel->isTranslated(false)) {
+                $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $language);
+            }
+        }
+
+        // Find the alias in the related metamodels, if there is no found return null.
+        // On more than one result return the first one.
+        $filter = $relatedModel->getEmptyFilter();
+        $filter->addFilterRule(new SearchAttribute($relatedModel->getAttribute($aliasColumn), $alias));
+        $items = $relatedModel->findByFilter($filter);
+
+        if ($currentLanguage) {
+            if ($relatedModel instanceof ITranslatedMetaModel) {
+                $relatedModel->selectLanguage($currentLanguage);
+            } elseif ($relatedModel->isTranslated(false)) {
+                $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $currentLanguage);
+            }
+        }
+
+        if ($items->getCount() == 0) {
+            return null;
+        }
+
+        return $items->first()->current()->get('id');
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @SuppressWarnings(PHPMD.Superglobals)
+     * @SuppressWarnings(PHPMD.ShortVariable)
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
+     */
+    public function getAliasForId(string $id, string $language): ?string
+    {
+        if (!$this->isProperlyConfigured()) {
+            return null;
+        }
+
+        // Check if the current MM has translations.
+        $aliasColumn        = $this->getAliasColumn();
+        $relatedModel       = $this->getSelectMetaModel();
+        $currentLanguage    = null;
+        $supportedLanguages = null;
+        $fallbackLanguage   = null;
+
+        if ($relatedModel instanceof ITranslatedMetaModel) {
+            $supportedLanguages = $relatedModel->getLanguages();
+            $fallbackLanguage   = $relatedModel->getMainLanguage();
+        } elseif ($relatedModel->isTranslated(false)) {
+            $backendLanguage    = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
+            $supportedLanguages = $relatedModel->getAvailableLanguages();
+            $fallbackLanguage   = ($relatedModel->getFallbackLanguage() ?? $backendLanguage);
+        }
+
+        if (\is_array($supportedLanguages) && !empty($supportedLanguages)) {
+            if (\in_array($language, $supportedLanguages, false)) {
+                $currentLanguage = $language;
+            } else {
+                $currentLanguage = $fallbackLanguage;
+            }
+        }
+
+        // Retrieve original language only if target language is set.
+        if ($currentLanguage) {
+            if ($relatedModel instanceof ITranslatedMetaModel) {
+                $relatedModel->selectLanguage($language);
+            } elseif ($relatedModel->isTranslated(false)) {
+                $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $language);
+            }
+        }
+
+        $item = $relatedModel->findById($id, [$aliasColumn]);
+        if ($item === null) {
+            return null;
+        }
+
+        if ($currentLanguage) {
+            if ($relatedModel instanceof ITranslatedMetaModel) {
+                $relatedModel->selectLanguage($currentLanguage);
+            } elseif ($relatedModel->isTranslated(false)) {
+                $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $currentLanguage);
+            }
+        }
+
+        return ($item->parseAttribute($aliasColumn)['text'] ?? null);
     }
 }
