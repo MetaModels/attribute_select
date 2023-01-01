@@ -3,7 +3,7 @@
 /**
  * This file is part of MetaModels/attribute_select.
  *
- * (c) 2012-2022 The MetaModels team.
+ * (c) 2012-2023 The MetaModels team.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -22,7 +22,7 @@
  * @author     David Molineus <david.molineus@netzmacht.de>
  * @author     Ingolf Steinhardt <info@e-spin.de>
  * @author     Sven Baumann <baumann.sv@gmail.com>
- * @copyright  2012-2022 The MetaModels team.
+ * @copyright  2012-2023 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
  */
@@ -98,7 +98,7 @@ class Select extends AbstractSelect
             return null;
         }
 
-        return ($varValue[$idColumn] ?? null);
+        return ((string) $varValue[$idColumn] ?? null);
     }
 
     /**
@@ -109,17 +109,21 @@ class Select extends AbstractSelect
         if (null === $varValue) {
             return null;
         }
+
         // Lookup the value.
-        $value = $this->connection->createQueryBuilder()
+        $builder = $this->connection->createQueryBuilder()
             ->select('*')
             ->from($this->getSelectSource(), 't')
             ->where('t.' . $this->getAliasColumn() . '=:value')
             ->setParameter('value', $varValue)
-            ->setMaxResults(1)
-            ->executeQuery()
-            ->fetchAssociative();
+            ->setMaxResults(1);
 
-        return $value;
+        if (false === ($result = $builder->executeQuery()->fetchAssociative())) {
+
+            return null;
+        }
+
+        return $result;
     }
 
     /**
@@ -302,7 +306,7 @@ class Select extends AbstractSelect
         $statement = $builder->executeQuery();
 
         if ($statement->rowCount() == 0) {
-            return $result;
+            return $arrReturn;
         }
 
         foreach ($statement->fetchAllAssociative() as $row) {
@@ -323,11 +327,12 @@ class Select extends AbstractSelect
 
         $strTableName = $this->getSelectSource();
         $strColNameId = $this->getIdColumn();
+
         if ($strTableName && $strColNameId) {
             foreach ($arrValues as $intItemId => $arrValue) {
                 $this->connection->update(
                     $this->getMetaModel()->getTableName(),
-                    [$this->getColName() => $arrValue[$strColNameId]],
+                    [$this->getColName() => ($arrValue[$strColNameId] ?? null)],
                     ['id' => $intItemId]
                 );
             }
