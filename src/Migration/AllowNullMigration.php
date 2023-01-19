@@ -3,7 +3,7 @@
 /**
  * This file is part of MetaModels/attribute_select.
  *
- * (c) 2012-2021 The MetaModels team.
+ * (c) 2012-2023 The MetaModels team.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -13,7 +13,7 @@
  * @package    MetaModels/attribute_select
  * @author     Ingolf Steinhardt <info@e-spin.de>
  * @author     Sven Baumann <baumann.sv@gmail.com>
- * @copyright  2012-2021 The MetaModels team.
+ * @copyright  2012-2023 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
  */
@@ -162,7 +162,7 @@ class AllowNullMigration extends AbstractMigration
             ->leftJoin('attribute', 'tl_metamodel', 'metamodel', 'attribute.pid = metamodel.id')
             ->where('attribute.type=:type')
             ->setParameter('type', 'select')
-            ->execute()
+            ->executeQuery()
             ->fetchAllAssociative();
 
         $result = [];
@@ -205,6 +205,6 @@ class AllowNullMigration extends AbstractMigration
             ->update($tableName, 't')
             ->set('t.' . $column->getName(), 'null')
             ->where('t.' . $column->getName() . ' = 0')
-            ->execute();
+            ->executeQuery();
     }
 }

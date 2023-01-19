@@ -3,7 +3,7 @@
 /**
  * This file is part of MetaModels/attribute_select.
  *
- * (c) 2012-2022 The MetaModels team.
+ * (c) 2012-2023 The MetaModels team.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -19,7 +19,7 @@
  * @author     Sven Baumann <baumann.sv@gmail.com>
  * @author     Ingolf Steinhardt <info@e-spin.de>
  * @author     Marc Reimann <reimann@mediendepot-ruhr.de>
- * @copyright  2012-2022 The MetaModels team.
+ * @copyright  2012-2023 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
  */
@@ -439,7 +439,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
                 ->setParameter('ids', $idList, Connection::PARAM_STR_ARRAY);
         }
 
-        $arrUsedValues = $builder->execute()->fetchFirstColumn();
+        $arrUsedValues = $builder->executeQuery()->fetchFirstColumn();
         $arrUsedValues = \array_filter(
             $arrUsedValues,
             function ($value) {
@@ -594,7 +594,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
                 ->andWhere('t.id IN (:idList)')
                 ->setParameter('idList', $idList, Connection::PARAM_STR_ARRAY);
         }
-        $query = $query->execute();
+        $query = $query->executeQuery();
 
         while ($row = $query->fetchAssociative()) {
             $count[$row[$valueCol]] = $row['count'];
@@ -667,7 +667,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
             ->from($this->getMetaModel()->getTableName(), 't')
             ->where('t.id IN (:ids)')
             ->setParameter('ids', $idList, Connection::PARAM_STR_ARRAY)
-            ->execute();
+            ->executeQuery();
 
         $valueIds = [];
         $valueMap = [];
@@ -709,7 +709,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
             ->from($this->getMetaModel()->getTableName(), 't')
             ->where('t.id IN (:ids)')
             ->setParameter('ids', $arrIds, Connection::PARAM_STR_ARRAY)
-            ->execute();
+            ->executeQuery();
 
         $valueIds = [];
         while ($rows = $statement->fetchAssociative()) {
@@ -724,7 +724,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
                 $result[$itemId] = null;
                 continue;
             }
-            $result[$itemId] = $values[$valueId];
+            $result[$itemId] = $values[$valueId] ?? null;
         }
 
         return $result;
@@ -853,7 +853,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
                 ->setParameter('value', $alias)
                 ->setFirstResult(0)
                 ->setMaxResults(1)
-                ->execute();
+                ->executeQuery();
             $idValue = $result->fetchOne();
 
             return ($idValue === false) ? null : (string) $idValue;
