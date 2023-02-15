@@ -34,6 +34,7 @@ use MetaModels\Filter\IFilter;
 use MetaModels\Filter\Rules\SearchAttribute;
 use MetaModels\Filter\Rules\StaticIdList;
 use MetaModels\Filter\Setting\IFilterSettingFactory;
+use MetaModels\Helper\LocaleUtil;
 use MetaModels\Helper\TableManipulator;
 use MetaModels\IFactory;
 use MetaModels\IItem;
@@ -306,7 +307,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
                 if ($relatedModel instanceof ITranslatedMetaModel) {
                     $languages[] = $relatedModel->getMainLanguage();
                 } elseif ($relatedModel->isTranslated(false)) {
-                    $languages[] = $metaModel->getActiveLanguage();
+                    $languages[] = $relatedModel->getFallbackLanguage();
                 } else {
                     throw new \LogicException('Translated attribute within untranslated MetaModel?!?');
                 }
@@ -389,8 +390,9 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
             if ($relatedModel instanceof ITranslatedMetaModel) {
                 $originalLanguage = $relatedModel->selectLanguage($targetLanguage);
             } elseif ($relatedModel->isTranslated(false)) {
-                $originalLanguage       = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
-                $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $this->getMetaModel()->getActiveLanguage());
+                // @deprecated usage of TL_LANGUAGE - remove for Contao 5.0.
+                $originalLanguage       = LocaleUtil::formatAsLocale($GLOBALS['TL_LANGUAGE']);
+                $GLOBALS['TL_LANGUAGE'] = LocaleUtil::formatAsLanguageTag($this->getMetaModel()->getActiveLanguage());
             }
         }
 
@@ -411,7 +413,8 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
             if ($relatedModel instanceof ITranslatedMetaModel) {
                 $relatedModel->selectLanguage($originalLanguage);
             } else {
-                $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $originalLanguage);
+                // @deprecated usage of TL_LANGUAGE - remove for Contao 5.0.
+                $GLOBALS['TL_LANGUAGE'] = LocaleUtil::formatAsLanguageTag($originalLanguage);
             }
         }
 
@@ -624,8 +627,9 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
 
         // Change language.
         if (TL_MODE == 'BE' && !$metaModel instanceof ITranslatedMetaModel) {
-            $strCurrentLanguage     = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
-            $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $this->getMetaModel()->getActiveLanguage());
+            // @deprecated usage of TL_LANGUAGE - remove for Contao 5.0.
+            $strCurrentLanguage     = LocaleUtil::formatAsLocale($GLOBALS['TL_LANGUAGE']);
+            $GLOBALS['TL_LANGUAGE'] = LocaleUtil::formatAsLanguageTag($this->getMetaModel()->getActiveLanguage());
         }
 
         $filter = $this->getSelectMetaModel()->getEmptyFilter();
@@ -641,7 +645,8 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
 
         // Reset language.
         if (TL_MODE == 'BE' && isset($strCurrentLanguage)) {
-            $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $strCurrentLanguage);
+            // @deprecated usage of TL_LANGUAGE - remove for Contao 5.0.
+            $GLOBALS['TL_LANGUAGE'] = LocaleUtil::formatAsLanguageTag($strCurrentLanguage);
         }
 
         return $this->convertItemsToFilterOptions(
