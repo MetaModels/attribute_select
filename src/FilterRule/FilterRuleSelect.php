@@ -87,7 +87,7 @@ class FilterRuleSelect extends FilterRule
         }
 
         $matches = $this->connection->createQueryBuilder()
-            ->select('id')
+            ->select('t.id')
             ->from($this->objAttribute->getMetaModel()->getTableName(), 't')
             ->where('t.' . $this->objAttribute->getColName() . ' IN (:ids)')
             ->setParameter('ids', $values, Connection::PARAM_STR_ARRAY)
