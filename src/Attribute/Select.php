@@ -65,12 +65,12 @@ class Select extends AbstractSelect
         $idList        = $this->connection->createQueryBuilder()
             ->select('m.id')
             ->from($this->getMetaModel()->getTableName(), 'm')
-            ->leftJoin('m', $strTableName, 's', sprintf('s.%s = m.%s', $strColNameId, $this->getColName()))
+            ->leftJoin('m', $strTableName, 's', \sprintf('s.%s = m.%s', $strColNameId, $this->getColName()))
             ->where('m.id IN (:ids)')
             ->orderBy('s.' . $strSortColumn, $strDirection)
             ->setParameter('ids', $idList, Connection::PARAM_STR_ARRAY)
             ->executeQuery()
-            ->fetchAllAssociative();
+            ->fetchFirstColumn();
 
         return $idList;
     }
