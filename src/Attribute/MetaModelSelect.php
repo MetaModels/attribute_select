@@ -67,14 +67,14 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
      *
      * @var IFactory
      */
-    private $factory;
+    private IFactory $factory;
 
     /**
      * Filter setting factory.
      *
      * @var IFilterSettingFactory
      */
-    private $filterSettingFactory;
+    private IFilterSettingFactory $filterSettingFactory;
 
     /**
      * Instantiate an MetaModel attribute.
@@ -328,6 +328,10 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
             $ids = $result->fetchFirstColumn();
         }
 
+        if (!\array_key_exists($attributeId, $cache)) {
+            $cache[$attributeId] = [];
+        }
+
         // Maybe deleted value?
         if ([] === $ids) {
             return $cache[$attributeId][$varValue] = null;
@@ -352,7 +356,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
             [$this->getAliasColumn(), $this->getValueColumn(), $this->getIdColumn(), $this->getSortingColumn()]
         );
 
-        return $cache[$attributeId][$varValue] = $value[$valueId];
+        return $cache[$attributeId][$varValue] = $value[$valueId] ?? null;
     }
 
     /**
@@ -368,7 +372,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
             return [];
         }
 
-        $metaModel    = $this->getMetaModel(); // Model of the attribute.
+        $metaModel    = $this->getMetaModel();       // Model of the attribute.
         $relatedModel = $this->getSelectMetaModel(); // Model to get the options from.
 
         // Check if the current MM has translations.
@@ -547,7 +551,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
      *
      * @return mixed
      */
-    private function tryParseAttribute($displayValue, IItem $item)
+    private function tryParseAttribute(string $displayValue, IItem $item): mixed
     {
         $parsedValue = $item->parseAttribute($displayValue);
         if (isset($parsedValue['text'])) {
@@ -560,13 +564,13 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
     /**
      * Determine the option count for the passed items.
      *
-     * @param IItems|IItem[] $items  The item collection to convert.
-     * @param null|string[]  $count  The counter array.
+     * @param IItem[]|IItems $items  The item collection to convert.
+     * @param string[]|null  $count  The counter array.
      * @param array          $idList The id list for the subselect.
      *
      * @return void
      */
-    private function determineCount($items, &$count, $idList)
+    private function determineCount(array|IItems $items, ?array &$count, array $idList): void
     {
         $usedOptionsIdList = \array_unique(
             \array_filter(
