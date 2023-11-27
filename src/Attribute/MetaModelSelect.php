@@ -566,11 +566,11 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
      *
      * @param IItem[]|IItems $items  The item collection to convert.
      * @param string[]|null  $count  The counter array.
-     * @param array          $idList The id list for the subselect.
+     * @param array|null     $idList The id list for the subselect.
      *
      * @return void
      */
-    private function determineCount(array|IItems $items, ?array &$count, array $idList): void
+    private function determineCount(array|IItems $items, ?array &$count, ?array $idList): void
     {
         $usedOptionsIdList = \array_unique(
             \array_filter(
