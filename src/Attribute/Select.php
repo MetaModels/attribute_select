@@ -3,7 +3,7 @@
 /**
  * This file is part of MetaModels/attribute_select.
  *
- * (c) 2012-2023 The MetaModels team.
+ * (c) 2012-2024 The MetaModels team.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -22,19 +22,15 @@
  * @author     David Molineus <david.molineus@netzmacht.de>
  * @author     Ingolf Steinhardt <info@e-spin.de>
  * @author     Sven Baumann <baumann.sv@gmail.com>
- * @copyright  2012-2023 The MetaModels team.
+ * @copyright  2012-2024 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
  */
 
 namespace MetaModels\AttributeSelectBundle\Attribute;
 
-use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Driver\Exception as DbalDriverException;
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Driver\ResultStatement;
-use Doctrine\DBAL\Exception;
-use MetaModels\Attribute\IAliasConverter;
-use MetaModels\ITranslatedMetaModel;
 
 /**
  * This is the MetaModelAttribute class for handling select attributes on plain SQL tables.
@@ -47,7 +43,7 @@ class Select extends AbstractSelect
     protected function checkConfiguration()
     {
         return parent::checkConfiguration()
-               && $this->connection->getSchemaManager()->tablesExist([$this->getSelectSource()]);
+               && $this->connection->createSchemaManager()->tablesExist([$this->getSelectSource()]);
     }
 
     /**
@@ -68,7 +64,7 @@ class Select extends AbstractSelect
             ->leftJoin('m', $strTableName, 's', \sprintf('s.%s = m.%s', $strColNameId, $this->getColName()))
             ->where('m.id IN (:ids)')
             ->orderBy('s.' . $strSortColumn, $strDirection)
-            ->setParameter('ids', $idList, Connection::PARAM_STR_ARRAY)
+            ->setParameter('ids', $idList, ArrayParameterType::STRING)
             ->executeQuery()
             ->fetchFirstColumn();
 
@@ -94,7 +90,7 @@ class Select extends AbstractSelect
      */
     public function valueToWidget($varValue)
     {
-        if (!is_array($varValue) || !array_key_exists($idColumn = $this->getAliasColumn(), $varValue)) {
+        if (!\is_array($varValue) || !\array_key_exists($idColumn = $this->getAliasColumn(), $varValue)) {
             return null;
         }
 
@@ -119,7 +115,6 @@ class Select extends AbstractSelect
             ->setMaxResults(1);
 
         if (false === ($result = $builder->executeQuery()->fetchAssociative())) {
-
             return null;
         }
 
@@ -147,7 +142,7 @@ class Select extends AbstractSelect
      */
     protected function getAdditionalWhere()
     {
-        return $this->get('select_where') ? html_entity_decode($this->get('select_where')) : false;
+        return $this->get('select_where') ? \html_entity_decode($this->get('select_where')) : false;
     }
 
     /**
@@ -254,7 +249,7 @@ class Select extends AbstractSelect
                     'modelTable.' . $this->getColName() . '=sourceTable.' . $idColumn
                 )
                 ->where('modelTable.id IN (:ids)')
-                ->setParameter('ids', $idList, Connection::PARAM_STR_ARRAY)
+                ->setParameter('ids', $idList, ArrayParameterType::STRING)
                 ->addGroupBy('sourceTable.' . $idColumn)
                 ->addOrderBy('sourceTable.' . $strSortColumn);
 
@@ -272,6 +267,8 @@ class Select extends AbstractSelect
 
     /**
      * {@inheritdoc}
+     *
+     * @SuppressWarnings(PHPMD.LongVariable)
      */
     public function getDataFor($arrIds)
     {
@@ -297,7 +294,7 @@ class Select extends AbstractSelect
                 'sourceTable.' . $strColNameId . '=modelTable.' . $this->getColName()
             )
             ->where('modelTable.id IN (:ids)')
-            ->setParameter('ids', $arrIds, Connection::PARAM_STR_ARRAY);
+            ->setParameter('ids', $arrIds, ArrayParameterType::STRING);
 
         if ($additionalWhere = $this->getAdditionalWhere()) {
             $builder->andWhere($additionalWhere);
@@ -305,7 +302,7 @@ class Select extends AbstractSelect
 
         $statement = $builder->executeQuery();
 
-        if ($statement->rowCount() == 0) {
+        if ($statement->rowCount() === 0) {
             return $arrReturn;
         }
 

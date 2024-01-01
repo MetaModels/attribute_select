@@ -3,7 +3,7 @@
 /**
  * This file is part of MetaModels/attribute_select.
  *
- * (c) 2012-2023 The MetaModels team.
+ * (c) 2012-2024 The MetaModels team.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -16,14 +16,14 @@
  * @author     David Molineus <david.molineus@netzmacht.de>
  * @author     Sven Baumann <baumann.sv@gmail.com>
  * @author     Ingolf Steinhardt <info@e-spin.de>
- * @copyright  2012-2023 The MetaModels team.
+ * @copyright  2012-2024 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
  */
 
 namespace MetaModels\AttributeSelectBundle\Attribute;
 
-use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\ArrayParameterType;
 use MetaModels\Attribute\AbstractHybrid;
 use MetaModels\AttributeSelectBundle\FilterRule\FilterRuleSelect;
 
@@ -44,7 +44,7 @@ abstract class AbstractSelect extends AbstractHybrid
      *
      * @var bool
      */
-    private $isProperlyConfigured;
+    private bool $isProperlyConfigured;
 
     /**
      * {@inheritdoc}
@@ -61,7 +61,7 @@ abstract class AbstractSelect extends AbstractHybrid
      */
     protected function isTreePicker()
     {
-        return $this->widgetMode == 2;
+        return $this->widgetMode === 2;
     }
 
     /**
@@ -204,7 +204,7 @@ abstract class AbstractSelect extends AbstractHybrid
             $arrFieldDef['eval']['orderField'] = $this->getSortingColumn();
             $arrFieldDef['eval']['minLevel']   = $arrOverrides['select_minLevel'];
             $arrFieldDef['eval']['maxLevel']   = $arrOverrides['select_maxLevel'];
-        } elseif ($this->widgetMode == 1) {
+        } elseif ($this->widgetMode === 1) {
             // If select as radio is true, change the input type.
             $arrFieldDef['inputType'] = 'radio';
         } else {
@@ -259,7 +259,7 @@ abstract class AbstractSelect extends AbstractHybrid
             ->update($this->getMetaModel()->getTableName(), 't')
             ->set('t.' . $this->getColName(), 0)
             ->where('t.id IN (:ids)')
-            ->setParameter('ids', $arrIds, Connection::PARAM_STR_ARRAY)
+            ->setParameter('ids', $arrIds, ArrayParameterType::STRING)
             ->executeQuery();
     }
 
@@ -289,7 +289,7 @@ abstract class AbstractSelect extends AbstractHybrid
             ->select('t.' . $idColumn)
             ->from($tableName, 't')
             ->where('t.' . $aliasColumn . ' IN (:values)')
-            ->setParameter('values', $values, Connection::PARAM_STR_ARRAY)
+            ->setParameter('values', $values, ArrayParameterType::STRING)
             ->executeQuery()
             ->fetchAssociative();
     }

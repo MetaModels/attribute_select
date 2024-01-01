@@ -3,7 +3,7 @@
 /**
  * This file is part of MetaModels/attribute_select.
  *
- * (c) 2012-2023 The MetaModels team.
+ * (c) 2012-2024 The MetaModels team.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -13,12 +13,12 @@
  * @package    MetaModels/attribute_select
  * @author     Ingolf Steinhardt <info@e-spin.de>
  * @author     Sven Baumann <baumann.sv@gmail.com>
- * @copyright  2012-2023 The MetaModels team.
+ * @copyright  2012-2024 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
  */
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace MetaModels\AttributeSelectBundle\Migration;
 
@@ -26,8 +26,6 @@ use Contao\CoreBundle\Migration\AbstractMigration;
 use Contao\CoreBundle\Migration\MigrationResult;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\Column;
-use Doctrine\DBAL\Schema\ColumnDiff;
-use Doctrine\DBAL\Schema\TableDiff;
 
 /**
  * This migration changes all database columns to allow null values.
@@ -41,7 +39,7 @@ class AllowNullMigration extends AbstractMigration
      *
      * @var Connection
      */
-    private $connection;
+    private Connection $connection;
 
     /**
      * Create a new instance.
@@ -73,7 +71,7 @@ class AllowNullMigration extends AbstractMigration
      */
     public function shouldRun(): bool
     {
-        $schemaManager = $this->connection->getSchemaManager();
+        $schemaManager = $this->connection->createSchemaManager();
 
         if (!$schemaManager->tablesExist(['tl_metamodel', 'tl_metamodel_attribute'])) {
             return false;
@@ -103,7 +101,7 @@ class AllowNullMigration extends AbstractMigration
             }
         }
 
-        return new MigrationResult(true, 'Adjusted column(s): ' . implode(', ', $message));
+        return new MigrationResult(true, 'Adjusted column(s): ' . \implode(', ', $message));
     }
 
     /**
@@ -117,7 +115,7 @@ class AllowNullMigration extends AbstractMigration
         if (empty($langColumns)) {
             return [];
         }
-        $schemaManager = $this->connection->getSchemaManager();
+        $schemaManager = $this->connection->createSchemaManager();
 
         $result = [];
         foreach ($langColumns as $tableName => $tableColumnNames) {
@@ -157,7 +155,7 @@ class AllowNullMigration extends AbstractMigration
         $langColumns = $this
             ->connection
             ->createQueryBuilder()
-            ->select('metamodel.tableName AS metamodel', 'attribute.colName AS attribute')
+            ->select('metamodel.tableName AS metamodel, attribute.colName AS attribute')
             ->from('tl_metamodel_attribute', 'attribute')
             ->leftJoin('attribute', 'tl_metamodel', 'metamodel', 'attribute.pid = metamodel.id')
             ->where('attribute.type=:type')
@@ -186,19 +184,16 @@ class AllowNullMigration extends AbstractMigration
      */
     private function fixColumn(string $tableName, Column $column): void
     {
-        $manager = $this->connection->getSchemaManager();
-        $table   = $manager->listTableDetails($tableName);
+        $manager = $this->connection->createSchemaManager();
+        $table   = $manager->introspectTable($tableName);
+        $updated = $manager->introspectTable($tableName);
 
-        $changeColumn = new Column($column->getName(), $column->getType());
-        $changeColumn
-            ->setLength($column->getLength())
+        $updated->getColumn($column->getName())
             ->setNotnull(false)
             ->setDefault(null);
-        $columnDiff = new ColumnDiff($column->getName(), $changeColumn);
 
-        $tableDiff                   = new TableDiff($tableName);
-        $tableDiff->fromTable        = $table;
-        $tableDiff->changedColumns[] = $columnDiff;
+        $tableDiff = $manager->createComparator()->compareTables($table, $updated);
+
         $manager->alterTable($tableDiff);
 
         $this->connection->createQueryBuilder()
