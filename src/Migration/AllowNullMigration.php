@@ -25,7 +25,9 @@ namespace MetaModels\AttributeSelectBundle\Migration;
 use Contao\CoreBundle\Migration\AbstractMigration;
 use Contao\CoreBundle\Migration\MigrationResult;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Schema\Column;
+use Doctrine\DBAL\Schema\SchemaException;
 
 /**
  * This migration changes all database columns to allow null values.
@@ -122,12 +124,10 @@ class AllowNullMigration extends AbstractMigration
             /** @var Column[] $columns */
             $columns = [];
             // The schema manager return the column list with lowercase keys, wo got to use the real names.
-            \array_map(
-                function (Column $column) use (&$columns) {
-                    $columns[$column->getName()] = $column;
-                },
-                $schemaManager->listTableColumns($tableName)
-            );
+            $table = $schemaManager->introspectTable($tableName);
+            foreach ($table->getColumns() as $column) {
+                $columns[$column->getName()] = $column;
+            }
             foreach ($tableColumnNames as $tableColumnName) {
                 $column = ($columns[$tableColumnName] ?? null);
                 if (null === $column) {
@@ -155,7 +155,7 @@ class AllowNullMigration extends AbstractMigration
         $langColumns = $this
             ->connection
             ->createQueryBuilder()
-            ->select('metamodel.tableName AS metamodel, attribute.colName AS attribute')
+            ->select('metamodel.tableName AS metamodel', 'attribute.colName AS attribute')
             ->from('tl_metamodel_attribute', 'attribute')
             ->leftJoin('attribute', 'tl_metamodel', 'metamodel', 'attribute.pid = metamodel.id')
             ->where('attribute.type=:type')
@@ -181,6 +181,9 @@ class AllowNullMigration extends AbstractMigration
      * @param Column $column    The column.
      *
      * @return void
+     *
+     * @throws Exception
+     * @throws SchemaException
      */
     private function fixColumn(string $tableName, Column $column): void
     {
@@ -199,7 +202,7 @@ class AllowNullMigration extends AbstractMigration
         $this->connection->createQueryBuilder()
             ->update($tableName, 't')
             ->set('t.' . $column->getName(), 'null')
-            ->where('t.' . $column->getName() . ' = 0')
+            ->where('t.' . $column->getName() . ' = ""')
             ->executeQuery();
     }
 }

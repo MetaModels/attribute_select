@@ -245,9 +245,7 @@ abstract class AbstractSelect extends AbstractHybrid
      */
     public function searchFor($strPattern)
     {
-        $objFilterRule = new FilterRuleSelect($this, $strPattern, $this->connection);
-
-        return $objFilterRule->getMatchingIds();
+        return (new FilterRuleSelect($this, $strPattern, $this->connection))->getMatchingIds() ?? [];
     }
 
     /**
@@ -257,7 +255,7 @@ abstract class AbstractSelect extends AbstractHybrid
     {
         $this->connection->createQueryBuilder()
             ->update($this->getMetaModel()->getTableName(), 't')
-            ->set('t.' . $this->getColName(), 0)
+            ->set('t.' . $this->getColName(), '0')
             ->where('t.id IN (:ids)')
             ->setParameter('ids', $arrIds, ArrayParameterType::STRING)
             ->executeQuery();

@@ -46,7 +46,7 @@ class FilterRuleSelect extends FilterRule
      *
      * @var string
      */
-    protected $value;
+    protected $strValue;
 
     /**
      * Database connection.
@@ -58,7 +58,7 @@ class FilterRuleSelect extends FilterRule
     /**
      * {@inheritDoc}
      */
-    public function __construct(AbstractSelect $objAttribute, $strValue, Connection $connection = null)
+    public function __construct(AbstractSelect $objAttribute, string $strValue, Connection $connection = null)
     {
         parent::__construct();
 
@@ -74,7 +74,7 @@ class FilterRuleSelect extends FilterRule
         }
 
         $this->objAttribute = $objAttribute;
-        $this->value        = $strValue;
+        $this->strValue     = $strValue;
         $this->connection   = $connection;
     }
 
@@ -83,7 +83,7 @@ class FilterRuleSelect extends FilterRule
      */
     public function getMatchingIds()
     {
-        $values = $this->objAttribute->convertValuesToValueIds(\explode(',', $this->value));
+        $values = $this->objAttribute->convertValuesToValueIds(\explode(',', $this->strValue));
         if (empty($values)) {
             return $values;
         }

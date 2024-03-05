@@ -3,7 +3,7 @@
 /**
  * This file is part of MetaModels/attribute_select.
  *
- * (c) 2012-2021 The MetaModels team.
+ * (c) 2012-2024 The MetaModels team.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -13,7 +13,8 @@
  * @package    MetaModels/attribute_select
  * @author     Christian Schiffler <c.schiffler@cyberspectrum.de>
  * @author     Sven Baumann <baumann.sv@gmail.com>
- * @copyright  2012-2021 The MetaModels team.
+ * @author     Ingolf Steinhardt <info@e-spin.de>
+ * @copyright  2012-2024 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
  */
@@ -22,6 +23,7 @@ namespace MetaModels\AttributeSelectBundle\Test\Attribute;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder;
+use Doctrine\DBAL\Result;
 use Doctrine\DBAL\Statement;
 use MetaModels\Attribute\IAttribute;
 use MetaModels\AttributeSelectBundle\Attribute\MetaModelSelect;
@@ -238,14 +240,13 @@ class MetaModelSelectTest extends TestCase
             'tstamp'  => 343094400,
         ]]);
 
-        $statement = $this
-            ->getMockBuilder(Statement::class)
+        $result = $this
+            ->getMockBuilder(Result::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $statement
+        $result
             ->expects($this->once())
-            ->method('fetchAll')
-            ->with(\PDO::FETCH_COLUMN)
+            ->method('fetchFirstColumn')
             ->willReturn([10]);
 
         $builder = $this
@@ -256,7 +257,7 @@ class MetaModelSelectTest extends TestCase
         $builder->expects($this->once())->method('from')->with('mm_test_select', 'v')->willReturn($builder);
         $builder->expects($this->once())->method('where')->with('v.id=:value')->willReturn($builder);
         $builder->expects($this->once())->method('setParameter')->with('value', 10)->willReturn($builder);
-        $builder->expects($this->once())->method('execute')->willReturn($statement);
+        $builder->expects($this->once())->method('execute')->willReturn($result);
 
 
         $connection->expects($this->once())->method('createQueryBuilder')->willReturn($builder);

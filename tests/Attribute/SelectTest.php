@@ -23,10 +23,12 @@ namespace MetaModels\AttributeSelectBundle\Test\Attribute;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder;
+use Doctrine\DBAL\Result;
 use Doctrine\DBAL\Statement;
 use MetaModels\AttributeSelectBundle\Attribute\Select;
 use MetaModels\Helper\TableManipulator;
 use MetaModels\IMetaModel;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -83,7 +85,7 @@ class SelectTest extends TestCase
      *
      * @param Connection $connection The database connection mock.
      *
-     * @return TableManipulator|\PHPUnit_Framework_MockObject_MockObject
+     * @return TableManipulator|MockObject
      */
     private function mockTableManipulator(Connection $connection)
     {
@@ -234,14 +236,13 @@ class SelectTest extends TestCase
             ->with(1)
             ->willReturn($builder);
 
-        $statement = $this
-            ->getMockBuilder(Statement::class)
+        $result = $this
+            ->getMockBuilder(Result::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $statement
+        $result
             ->expects($this->once())
-            ->method('fetch')
-            ->with(\PDO::FETCH_ASSOC)
+            ->method('fetchAssociative')
             ->willReturnOnConsecutiveCalls([
                 'id'      => 10,
                 'pid'     => 0,
@@ -251,7 +252,7 @@ class SelectTest extends TestCase
         $builder
             ->expects($this->once())
             ->method('execute')
-            ->willReturn($statement);
+            ->willReturn($result);
         $connection->expects($this->once())->method('createQueryBuilder')->willReturn($builder);
 
         $this->assertSame([

@@ -257,7 +257,6 @@ class BackendEventsListener
      * Retrieve all columns from a database table.
      *
      * @param string     $tableName  The database table name.
-     *
      * @param array|null $typeFilter Optional of types to filter for.
      *
      * @return string[]
@@ -272,7 +271,7 @@ class BackendEventsListener
         $fieldList = $this->connection->createSchemaManager()->listTableColumns($tableName);
 
         foreach ($fieldList as $column) {
-            if (($typeFilter === null) || \in_array($column->getType()->getName(), $typeFilter)) {
+            if (($typeFilter === null) || \in_array($column->getType()->lookupName('???'), $typeFilter)) {
                 $result[$column->getName()] = $column->getName();
             }
         }
@@ -511,7 +510,7 @@ class BackendEventsListener
     /**
      * Build the data definition palettes.
      *
-     * @param array<string,bool>          $propertyNames The property names which shall be masked.
+     * @param array<string, bool>         $propertyNames The property names which shall be masked.
      * @param PalettesDefinitionInterface $palettes      The palette definition.
      *
      * @return void

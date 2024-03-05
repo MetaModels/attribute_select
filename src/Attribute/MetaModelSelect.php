@@ -30,6 +30,7 @@ use Contao\System;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
 use MetaModels\Attribute\IAliasConverter;
+use MetaModels\Attribute\IAttribute;
 use MetaModels\Attribute\ITranslated;
 use MetaModels\Filter\IFilter;
 use MetaModels\Filter\Rules\SearchAttribute;
@@ -48,6 +49,8 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * This is the MetaModelAttribute class for handling select attributes on MetaModels.
  *
+ * @psalm-suppress PropertyNotSetInConstructor
+ *
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  * @SuppressWarnings(PHPMD.ExcessiveClassLength)
@@ -64,7 +67,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
      *
      * @var IMetaModel
      */
-    protected $objSelectMetaModel;
+    protected IMetaModel $objSelectMetaModel;
 
     /**
      * MetaModel factory.
@@ -136,7 +139,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
      */
     protected function checkConfiguration()
     {
-        return parent::checkConfiguration() && (null !== $this->getSelectMetaModel());
+        return parent::checkConfiguration();
     }
 
     /**
@@ -147,7 +150,9 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
     protected function getSelectMetaModel()
     {
         if (empty($this->objSelectMetaModel)) {
-            $this->objSelectMetaModel = $this->factory->getMetaModel($this->getSelectSource());
+            $objSelectMetaModel = $this->factory->getMetaModel($this->getSelectSource());
+            assert($objSelectMetaModel instanceof IMetaModel);
+            $this->objSelectMetaModel = $objSelectMetaModel;
         }
 
         return $this->objSelectMetaModel;
@@ -352,7 +357,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
         }
 
         // Multiple results.
-        if (null === $ids || \count($ids) > 1) {
+        if (\count($ids) > 1) {
             throw new \RuntimeException(
                 \sprintf(
                     'Multiple values found for %s, are there obsolete values for %s.%s (att_id: %s)?',
@@ -397,7 +402,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
          * @psalm-suppress TooManyArguments
          */
         if ($metaModel instanceof ITranslatedMetaModel) {
-            $targetLanguage = $this->getMetaModel()->getLanguage();
+            $targetLanguage = $metaModel->getLanguage();
         } elseif ($metaModel->isTranslated(false)) {
             $targetLanguage = $metaModel->getActiveLanguage();
         } elseif ($relatedModel instanceof ITranslatedMetaModel) {
@@ -408,7 +413,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
 
 
         // Retrieve original language only if target language is set.
-        if ($targetLanguage) {
+        if (null !== $targetLanguage) {
             /**
              * @psalm-suppress DeprecatedMethod
              * @psalm-suppress TooManyArguments
@@ -597,7 +602,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
         $usedOptionsIdList = \array_unique(
             \array_filter(
                 \array_map(
-                    function ($item) {
+                    static function ($item): mixed {
                         /** @var IItem $item */
                         return $item->get('id');
                     },
@@ -618,7 +623,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
             ->where('t.' . $this->getColName() . ' IN (:ids)')
             ->groupBy('t.' . $this->getColName())
             ->setParameter('ids', $usedOptionsIdList, ArrayParameterType::STRING);
-        if ($idList !== null && !empty($idList)) {
+        if (null !== $idList && [] !== $idList) {
             $query
                 ->andWhere('t.id IN (:idList)')
                 ->setParameter('idList', $idList, ArrayParameterType::STRING);
@@ -664,8 +669,8 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
         $this->buildFilterRulesForFilterSetting($filter);
 
         // Add some more filter rules.
-        if ($usedOnly || ($idList && \is_array($idList))) {
-            $this->buildFilterRulesForUsedOnly($filter, $idList ?: []);
+        if ($usedOnly || \is_array($idList)) {
+            $this->buildFilterRulesForUsedOnly($filter, $idList ?? []);
         }
 
         $objItems = $this->getSelectMetaModel()->findByFilter($filter, $strSortingValue);
@@ -828,7 +833,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
          * @psalm-suppress TooManyArguments
          */
         if ($metaModel instanceof ITranslatedMetaModel) {
-            $targetLanguage = $this->getMetaModel()->getLanguage();
+            $targetLanguage = $metaModel->getLanguage();
         } elseif ($metaModel->isTranslated(false)) {
             $targetLanguage = $metaModel->getActiveLanguage();
         }
@@ -838,11 +843,11 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
          * @psalm-suppress DeprecatedMethod
          * @psalm-suppress TooManyArguments
          */
-        if ($targetLanguage) {
+        if (null !== $targetLanguage) {
             if ($relatedModel instanceof ITranslatedMetaModel) {
                 $originalLanguage = $relatedModel->selectLanguage($targetLanguage);
             } elseif ($relatedModel->isTranslated(false)) {
-                $originalLanguage       = (string) \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
+                $originalLanguage       = \str_replace('-', '_', $GLOBALS['TL_LANGUAGE']);
                 $GLOBALS['TL_LANGUAGE'] = \str_replace('_', '-', $targetLanguage);
             }
         }
@@ -851,7 +856,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
         foreach ($values as $value) {
             $valueIds = $attribute->searchFor($value);
             if ($valueIds === null) {
-                return null;
+                return [];
             }
 
             $sanitizedValues = \array_merge($valueIds, $sanitizedValues);
@@ -926,7 +931,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
         }
 
         // Retrieve original language only if target language is set.
-        if ($currentLanguage) {
+        if (null !== $currentLanguage) {
             /**
              * @psalm-suppress DeprecatedMethod
              * @psalm-suppress TooManyArguments
@@ -940,11 +945,13 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
 
         // Find the alias in the related metamodels, if there is no found return null.
         // On more than one result return the first one.
+        $attribute = $relatedModel->getAttribute($aliasColumn);
+        assert($attribute instanceof IAttribute);
         $filter = $relatedModel->getEmptyFilter();
-        $filter->addFilterRule(new SearchAttribute($relatedModel->getAttribute($aliasColumn), $alias));
+        $filter->addFilterRule(new SearchAttribute($attribute, $alias));
         $items = $relatedModel->findByFilter($filter);
 
-        if ($currentLanguage) {
+        if (null !== $currentLanguage) {
             /**
              * @psalm-suppress DeprecatedMethod
              * @psalm-suppress TooManyArguments
@@ -1001,12 +1008,12 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
             if (\in_array($language, $supportedLanguages, false)) {
                 $currentLanguage = $language;
             } else {
-                $currentLanguage = (string) $fallbackLanguage;
+                $currentLanguage = $fallbackLanguage;
             }
         }
 
         // Retrieve original language only if target language is set.
-        if ($currentLanguage) {
+        if (null !== $currentLanguage) {
             /**
              * @psalm-suppress DeprecatedMethod
              * @psalm-suppress TooManyArguments
@@ -1023,7 +1030,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
             return null;
         }
 
-        if ($currentLanguage) {
+        if (null !== $currentLanguage) {
             /**
              * @psalm-suppress DeprecatedMethod
              * @psalm-suppress TooManyArguments

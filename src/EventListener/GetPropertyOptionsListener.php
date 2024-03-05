@@ -61,7 +61,9 @@ class GetPropertyOptionsListener
         // Check if we have the right attribute.
         $item = $model->getItem();
         assert($item instanceof IItem);
-        $attribute = $item->getAttribute($event->getPropertyName());
+        $propertyName = $event->getPropertyName();
+        assert(\is_string($propertyName));
+        $attribute = $item->getAttribute($propertyName);
         if (!($attribute instanceof AbstractSelect)) {
             return;
         }

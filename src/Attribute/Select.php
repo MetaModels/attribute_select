@@ -30,10 +30,12 @@
 namespace MetaModels\AttributeSelectBundle\Attribute;
 
 use Doctrine\DBAL\ArrayParameterType;
-use Doctrine\DBAL\Driver\ResultStatement;
+use Doctrine\DBAL\Result;
 
 /**
  * This is the MetaModelAttribute class for handling select attributes on plain SQL tables.
+ *
+ * @psalm-suppress PropertyNotSetInConstructor
  */
 class Select extends AbstractSelect
 {
@@ -94,7 +96,7 @@ class Select extends AbstractSelect
             return null;
         }
 
-        return ((string) $varValue[$idColumn] ?? null);
+        return ((string) ($varValue[$idColumn] ?? null));
     }
 
     /**
@@ -138,7 +140,7 @@ class Select extends AbstractSelect
     /**
      * Determine the correct sorting column to use.
      *
-     * @return string
+     * @return string|bool
      */
     protected function getAdditionalWhere()
     {
@@ -148,10 +150,10 @@ class Select extends AbstractSelect
     /**
      * Convert the database result into a proper result array.
      *
-     * @param ResultStatement $statement   The database result statement.
-     * @param string          $aliasColumn The name of the alias column to be used.
-     * @param string          $valueColumn The name of the value column.
-     * @param array           $count       The optional count array.
+     * @param Result $statement   The database result statement.
+     * @param string $aliasColumn The name of the alias column to be used.
+     * @param string $valueColumn The name of the value column.
+     * @param array  $count       The optional count array.
      *
      * @return array
      */
@@ -160,7 +162,6 @@ class Select extends AbstractSelect
         $arrReturn = [];
         while ($values = $statement->fetchAssociative()) {
             if (\is_array($count)) {
-                /** @noinspection PhpUndefinedFieldInspection */
                 $count[$values[$aliasColumn]] = $values['mm_count'];
             }
 
@@ -175,7 +176,7 @@ class Select extends AbstractSelect
      *
      * @param bool $usedOnly The flag if only used values shall be returned.
      *
-     * @return ResultStatement
+     * @return Result
      */
     public function getFilterOptionsForUsedOnly($usedOnly)
     {
@@ -195,7 +196,7 @@ class Select extends AbstractSelect
                 ->addGroupBy('sourceTable.' . $this->getIdColumn())
                 ->addOrderBy('sourceTable.' . $sortColumn);
 
-            if ($additionalWhere = $this->getAdditionalWhere()) {
+            if (false !== ($additionalWhere = $this->getAdditionalWhere())) {
                 $builder->andWhere($additionalWhere);
             }
 
@@ -215,7 +216,7 @@ class Select extends AbstractSelect
             ->addGroupBy('sourceTable.' . $this->getIdColumn())
             ->addOrderBy('sourceTable.' . $sortColumn);
 
-        if ($additionalWhere = $this->getAdditionalWhere()) {
+        if (false !== ($additionalWhere = $this->getAdditionalWhere())) {
             $builder->andWhere($additionalWhere);
         }
 
@@ -253,7 +254,7 @@ class Select extends AbstractSelect
                 ->addGroupBy('sourceTable.' . $idColumn)
                 ->addOrderBy('sourceTable.' . $strSortColumn);
 
-            if ($additionalWhere = $this->getAdditionalWhere()) {
+            if (false !== ($additionalWhere = $this->getAdditionalWhere())) {
                 $builder->andWhere($additionalWhere);
             }
 
@@ -296,7 +297,7 @@ class Select extends AbstractSelect
             ->where('modelTable.id IN (:ids)')
             ->setParameter('ids', $arrIds, ArrayParameterType::STRING);
 
-        if ($additionalWhere = $this->getAdditionalWhere()) {
+        if (false !== ($additionalWhere = $this->getAdditionalWhere())) {
             $builder->andWhere($additionalWhere);
         }
 

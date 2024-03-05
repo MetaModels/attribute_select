@@ -23,9 +23,9 @@ declare(strict_types=1);
 namespace MetaModels\AttributeSelectBundle\Test\Migration;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Driver\Result;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Query\QueryBuilder;
+use Doctrine\DBAL\Result;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Schema\Table;
@@ -203,7 +203,7 @@ class AllowNullMigrationTest extends TestCase
             $queryBuilder
                 ->expects($configuration->shouldRun ? self::exactly(2)  : self::once())
                 ->method('setParameter')
-                ->with('type', 'alias')
+                ->with('type', 'select')
                 ->willReturn($queryBuilder);
             $queryBuilder
                 ->expects($configuration->shouldRun ? self::exactly(6)  : self::once())
