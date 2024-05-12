@@ -39,6 +39,7 @@ use ContaoCommunityAlliance\DcGeneral\DataDefinition\Palette\Condition\Property\
 use ContaoCommunityAlliance\DcGeneral\DataDefinition\Palette\PropertyInterface;
 use ContaoCommunityAlliance\DcGeneral\Factory\Event\BuildDataDefinitionEvent;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Types\Types;
 use MetaModels\DcGeneral\DataDefinition\Palette\Condition\Property\ConditionTableNameIsMetaModel;
 use MetaModels\Filter\Setting\IFilterSettingFactory;
@@ -271,7 +272,7 @@ class BackendEventsListener
         $fieldList = $this->connection->createSchemaManager()->listTableColumns($tableName);
 
         foreach ($fieldList as $column) {
-            if (($typeFilter === null) || \in_array($column->getType()->lookupName('???'), $typeFilter)) {
+            if (($typeFilter === null) || \in_array(Type::getTypeRegistry()->lookupName($column->getType()), $typeFilter, true)) {
                 $result[$column->getName()] = $column->getName();
             }
         }

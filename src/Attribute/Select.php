@@ -60,17 +60,18 @@ class Select extends AbstractSelect
         $strTableName  = $this->getSelectSource();
         $strColNameId  = $this->getIdColumn();
         $strSortColumn = $this->getSortingColumn();
-        $idList        = $this->connection->createQueryBuilder()
+        $statement     = $this->connection
+            ->createQueryBuilder()
             ->select('m.id')
             ->from($this->getMetaModel()->getTableName(), 'm')
             ->leftJoin('m', $strTableName, 's', \sprintf('s.%s = m.%s', $strColNameId, $this->getColName()))
             ->where('m.id IN (:ids)')
             ->orderBy('s.' . $strSortColumn, $strDirection)
             ->setParameter('ids', $idList, ArrayParameterType::STRING)
-            ->executeQuery()
-            ->fetchFirstColumn();
+            ->executeQuery();
 
-        return $idList;
+        // Return value list as list<mixed>, parent function wants a list<string> so we make a cast.
+        return \array_map(static fn (mixed $value) => (string) $value, $statement->fetchFirstColumn());
     }
 
     /**
