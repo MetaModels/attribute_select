@@ -71,7 +71,7 @@ class SelectTest extends TestCase
     /**
      * Mock the database connection.
      *
-     * @return \PHPUnit_Framework_MockObject_MockObject|Connection
+     * @return MockObject|Connection
      */
     private function mockConnection()
     {
@@ -132,7 +132,7 @@ class SelectTest extends TestCase
                 'attr_config' => ['id' => uniqid('', false)],
             ],
             'numeric id is returned' => [
-                'expected'    => 10,
+                'expected'    => '10',
                 'value'       => ['id' => 10],
                 'attr_config' => ['id' => uniqid('', false)],
             ],
@@ -251,7 +251,7 @@ class SelectTest extends TestCase
             ], null);
         $builder
             ->expects($this->once())
-            ->method('execute')
+            ->method('executeQuery')
             ->willReturn($result);
         $connection->expects($this->once())->method('createQueryBuilder')->willReturn($builder);
 

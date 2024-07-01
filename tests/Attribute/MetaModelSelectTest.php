@@ -141,7 +141,7 @@ class MetaModelSelectTest extends TestCase
                 'attr_config' => ['id' => uniqid('', false)],
             ],
             'numeric id is returned' => [
-                'expected'    => 10,
+                'expected'    => '10',
                 'value'       => ['id' => 10],
                 'attr_config' => ['id' => uniqid('', false)],
             ],
@@ -230,7 +230,7 @@ class MetaModelSelectTest extends TestCase
                 $factory,
                 $filterFactory
             ])
-            ->setMethods(['getValuesById'])
+            ->onlyMethods(['getValuesById'])
             ->getMock();
 
         $select->expects($this->once())->method('getValuesById')->willReturn([10 => [
@@ -257,7 +257,7 @@ class MetaModelSelectTest extends TestCase
         $builder->expects($this->once())->method('from')->with('mm_test_select', 'v')->willReturn($builder);
         $builder->expects($this->once())->method('where')->with('v.id=:value')->willReturn($builder);
         $builder->expects($this->once())->method('setParameter')->with('value', 10)->willReturn($builder);
-        $builder->expects($this->once())->method('execute')->willReturn($result);
+        $builder->expects($this->once())->method('executeQuery')->willReturn($result);
 
 
         $connection->expects($this->once())->method('createQueryBuilder')->willReturn($builder);
