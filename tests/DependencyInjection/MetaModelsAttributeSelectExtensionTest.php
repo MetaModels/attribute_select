@@ -19,7 +19,7 @@
  * @filesource
  */
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace MetaModels\AttributeSelectBundle\Test\DependencyInjection;
 
@@ -29,7 +29,6 @@ use MetaModels\AttributeSelectBundle\DependencyInjection\MetaModelsAttributeSele
 use MetaModels\AttributeSelectBundle\Migration\AllowNullMigration;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 
 /**
@@ -59,40 +58,17 @@ class MetaModelsAttributeSelectExtensionTest extends TestCase
      */
     public function testRegistersServices()
     {
-        $container = $this->getMockBuilder(ContainerBuilder::class)->getMock();
-
-        $container
-            ->expects($this->atLeastOnce())
-            ->method('setDefinition')
-            ->withConsecutive(
-                [
-                    'metamodels.attribute_select.factory',
-                    $this->callback(
-                        function ($value) {
-                            /** @var Definition $value */
-                            $this->assertInstanceOf(Definition::class, $value);
-                            $this->assertEquals(AttributeTypeFactory::class, $value->getClass());
-                            $this->assertCount(1, $value->getTag('metamodels.attribute_factory'));
-
-                            return true;
-                        }
-                    )
-                ],
-                [
-                    AllowNullMigration::class,
-                    $this->callback(
-                        function ($value) {
-                            /** @var Definition $value */
-                            $this->assertInstanceOf(Definition::class, $value);
-                            $this->assertCount(1, $value->getTag('contao.migration'));
-
-                            return true;
-                        }
-                    )
-                ]
-            );
+        $container = new ContainerBuilder();
 
         $extension = new MetaModelsAttributeSelectExtension();
         $extension->load([], $container);
+
+        self::assertTrue($container->hasDefinition('metamodels.attribute_select.factory'));
+        $definition = $container->getDefinition('metamodels.attribute_select.factory');
+        self::assertCount(1, $definition->getTag('metamodels.attribute_factory'));
+
+        self::assertTrue($container->hasDefinition(AllowNullMigration::class));
+        $definition = $container->getDefinition(AllowNullMigration::class);
+        self::assertCount(1, $definition->getTag('contao.migration'));
     }
 }

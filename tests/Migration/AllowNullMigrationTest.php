@@ -3,7 +3,7 @@
 /**
  * This file is part of MetaModels/attribute_select.
  *
- * (c) 2012-2021 The MetaModels team.
+ * (c) 2012-2024 The MetaModels team.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -12,7 +12,8 @@
  *
  * @package    MetaModels/attribute_select
  * @author     Sven Baumann <baumann.sv@gmail.com>
- * @copyright  2012-2021 The MetaModels team.
+ * @author     Ingolf Steinhardt <info@e-spin.de>
+ * @copyright  2012-2024 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
  */
@@ -22,12 +23,13 @@ declare(strict_types=1);
 namespace MetaModels\AttributeSelectBundle\Test\Migration;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Driver\Result;
+use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Query\QueryBuilder;
+use Doctrine\DBAL\Result;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Schema\Table;
-use Doctrine\DBAL\Types\IntegerType;
+use Doctrine\DBAL\Types\StringType;
 use MetaModels\AttributeSelectBundle\Migration\AllowNullMigration;
 use PHPUnit\Framework\TestCase;
 
@@ -81,14 +83,21 @@ class AllowNullMigrationTest extends TestCase
 
     /**
      * @dataProvider runConfiguration
+     *
+     * @param object{requiredTablesExist: bool, shouldRun: bool, attributeConfigured: bool} $configuration
+     *
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
     public function testRun(object $configuration): void
     {
         $connection = $this->createMock(Connection::class);
+        $plattform  = $this->getMockBuilder(AbstractPlatform::class)->disableOriginalConstructor()->getMock();
         $manager    = $this
             ->getMockBuilder(AbstractSchemaManager::class)
-            ->setConstructorArgs([$connection])
-            ->onlyMethods(['tablesExist', 'listTableColumns', 'listTableDetails', 'alterTable'])
+            ->setConstructorArgs([$connection, $plattform])
+            ->onlyMethods(['tablesExist', 'introspectTable', 'alterTable'])
             ->getMockForAbstractClass();
 
         $manager
@@ -98,10 +107,11 @@ class AllowNullMigrationTest extends TestCase
             ->willReturn($configuration->requiredTablesExist);
 
         $connection
-            ->expects($configuration->attributeConfigured ? self::exactly($configuration->shouldRun ? 7 : 2) : self::once())
-            ->method('getSchemaManager')
+            ->expects(
+                $configuration->attributeConfigured ? self::exactly($configuration->shouldRun ? 7 : 2) : self::once()
+            )
+            ->method('createSchemaManager')
             ->willReturn($manager);
-
 
         $queryBuilderExecuted = 0;
         if ($configuration->requiredTablesExist) {
@@ -113,7 +123,7 @@ class AllowNullMigrationTest extends TestCase
                 ['metamodel' => 'mm_table_2', 'attribute' => 'columnnotexist'],
                 ['metamodel' => 'mm_table_2', 'attribute' => 'columnNotExist']
             ];
-            $result = $this->getMockForAbstractClass(Result::class);
+            $result = $this->getMockBuilder(Result::class)->disableOriginalConstructor()->getMock();
             $result
                 ->expects($configuration->shouldRun ? self::exactly(2)  : self::once())
                 ->method('fetchAllAssociative')
@@ -123,13 +133,39 @@ class AllowNullMigrationTest extends TestCase
             $queryBuilder
                 ->expects($configuration->shouldRun ? self::exactly(4)  : self::never())
                 ->method('update')
-                ->withConsecutive(['mm_table_2', 't'], ['mm_table_2', 't'], ['mm_table_1', 't'], ['mm_table_1', 't'])
-                ->willReturn($queryBuilder);
+                ->willReturnCallback(function (string $table, string $alias) use ($queryBuilder) {
+                    static $expected = [
+                        ['mm_table_2', 't'],
+                        ['mm_table_2', 't'],
+                        ['mm_table_1', 't'],
+                        ['mm_table_1', 't'],
+                    ];
+                    static $invocationCount = 0;
+
+                    self::assertSame($expected[$invocationCount][0] ?? null, $table);
+                    self::assertSame($expected[$invocationCount][1] ?? null, $alias);
+                    $invocationCount++;
+
+                    return $queryBuilder;
+                });
             $queryBuilder
                 ->expects($configuration->shouldRun ? self::exactly(4)  : self::never())
                 ->method('set')
-                ->withConsecutive(['t.normal'], ['t.camelCase'], ['t.camelCase'], ['t.normal'])
-                ->willReturn($queryBuilder);
+                ->willReturnCallback(function (string $parameter, string $value) use ($queryBuilder) {
+                    static $expected = [
+                        ['t.normal', 'null'],
+                        ['t.camelCase', 'null'],
+                        ['t.camelCase', 'null'],
+                        ['t.normal', 'null'],
+                    ];
+                    static $invocationCount = 0;
+
+                    self::assertSame($expected[$invocationCount][0] ?? null, $parameter);
+                    self::assertSame($expected[$invocationCount][1] ?? null, $value);
+                    $invocationCount++;
+
+                    return $queryBuilder;
+                });
             $queryBuilder
                 ->expects($configuration->shouldRun ? self::exactly(2)  : self::once())
                 ->method('select')
@@ -146,10 +182,24 @@ class AllowNullMigrationTest extends TestCase
                 ->with('attribute', 'tl_metamodel', 'metamodel', 'attribute.pid = metamodel.id')
                 ->willReturn($queryBuilder);
             $queryBuilder
-                ->expects($configuration->shouldRun ? self::exactly(6)  : self::once())
+                ->expects($configuration->shouldRun ? self::exactly(6) : self::once())
                 ->method('where')
-                ->withConsecutive(['attribute.type=:type'], ['attribute.type=:type'], ['t.normal = 0'], ['t.camelCase = 0'], ['t.camelCase = 0'], ['t.normal = 0'])
-                ->willReturn($queryBuilder);
+                ->willReturnCallback(function (string $restriction) use ($queryBuilder) {
+                    static $expected = [
+                        ['attribute.type=:type'],
+                        ['attribute.type=:type'],
+                        ['t.normal = ""'],
+                        ['t.camelCase = ""'],
+                        ['t.camelCase = ""'],
+                        ['t.normal = ""']
+                    ];
+                    static $invocationCount = 0;
+
+                    self::assertSame($expected[$invocationCount][0] ?? '', $restriction);
+                    $invocationCount++;
+
+                    return $queryBuilder;
+                });
             $queryBuilder
                 ->expects($configuration->shouldRun ? self::exactly(2)  : self::once())
                 ->method('setParameter')
@@ -157,7 +207,7 @@ class AllowNullMigrationTest extends TestCase
                 ->willReturn($queryBuilder);
             $queryBuilder
                 ->expects($configuration->shouldRun ? self::exactly(6)  : self::once())
-                ->method('execute')
+                ->method('executeQuery')
                 ->willReturnCallback(
                     function () use (&$queryBuilderExecuted, $result) {
                         $queryBuilderExecuted++;
@@ -165,7 +215,7 @@ class AllowNullMigrationTest extends TestCase
                             return $result;
                         }
 
-                        return 1;
+                        return $this->getMockBuilder(Result::class)->disableOriginalConstructor()->getMock();
                     }
                 );
 
@@ -175,32 +225,27 @@ class AllowNullMigrationTest extends TestCase
                 ->willReturn($queryBuilder);
         }
 
+        $tables = [];
         if ($configuration->requiredTablesExist && $configuration->attributeConfigured) {
             $columnDefault = $configuration->shouldRun ? 0 : null;
-            $table1Columns = [
-                'normal' =>
-                    (new Column('normal', new IntegerType()))->setDefault($columnDefault),
-                'camelcase' =>
-                    (new Column('camelCase', new IntegerType()))->setDefault($columnDefault)
+            $tables = [
+                'mm_table_1' => (new Table('mm_table_2', [
+                    (new Column('normal', new StringType()))->setDefault($columnDefault),
+                    (new Column('camelCase', new StringType()))->setDefault($columnDefault)
+                ])),
+                'mm_table_2' => (new Table('mm_table_2', [
+                    (new Column('normal', new StringType()))->setDefault($columnDefault),
+                    (new Column('camelCase', new StringType()))->setDefault($columnDefault)
+                ])),
             ];
-            $table2Columns = [
-                'normal' =>
-                    (new Column('normal', new IntegerType()))->setDefault($columnDefault),
-                'camelcase' =>
-                    (new Column('camelCase', new IntegerType()))->setDefault($columnDefault)
-            ];
-            if ($configuration->shouldRun) {
-                $manager
-                    ->method('listTableColumns')
-                    ->withConsecutive(['mm_table_2'], ['mm_table_1'], ['mm_table_2'], ['mm_table_1'])
-                    ->willReturn($table2Columns, $table1Columns, $table2Columns, $table1Columns);
-            } else {
-                $manager
-                    ->method('listTableColumns')
-                    ->withConsecutive(['mm_table_2'], ['mm_table_1'])
-                    ->willReturn($table2Columns, $table1Columns);
-            }
         }
+        $manager
+            ->method('introspectTable')
+            ->willReturnCallback(function (string $tableName) use ($tables) {
+                $return = $tables[$tableName] ?? null;
+                self::assertNotNull($return);
+                return $return;
+            });
 
         $migration = new AllowNullMigration($connection);
         self::assertSame($configuration->shouldRun, $migration->shouldRun());
@@ -210,10 +255,6 @@ class AllowNullMigrationTest extends TestCase
             return;
         }
 
-        $manager
-            ->method('listTableDetails')
-            ->withConsecutive(['mm_table_2'], ['mm_table_2'], ['mm_table_1'], ['mm_table_1'])
-            ->willReturn((new Table('mm_table_2')), (new Table('mm_table_2')), (new Table('mm_table_1')), (new Table('mm_table_1')));
 
         $migrationResult = $migration->run();
         self::assertTrue($migrationResult->isSuccessful());

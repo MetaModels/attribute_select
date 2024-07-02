@@ -23,10 +23,12 @@ namespace MetaModels\AttributeSelectBundle\Test\Attribute;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder;
+use Doctrine\DBAL\Result;
 use Doctrine\DBAL\Statement;
 use MetaModels\AttributeSelectBundle\Attribute\Select;
 use MetaModels\Helper\TableManipulator;
 use MetaModels\IMetaModel;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -46,7 +48,7 @@ class SelectTest extends TestCase
      */
     protected function mockMetaModel($language, $fallbackLanguage)
     {
-        $metaModel = $this->getMockForAbstractClass('MetaModels\IMetaModel');
+        $metaModel = $this->getMockForAbstractClass(IMetaModel::class);
 
         $metaModel
             ->expects($this->any())
@@ -69,7 +71,7 @@ class SelectTest extends TestCase
     /**
      * Mock the database connection.
      *
-     * @return \PHPUnit_Framework_MockObject_MockObject|Connection
+     * @return MockObject|Connection
      */
     private function mockConnection()
     {
@@ -83,7 +85,7 @@ class SelectTest extends TestCase
      *
      * @param Connection $connection The database connection mock.
      *
-     * @return TableManipulator|\PHPUnit_Framework_MockObject_MockObject
+     * @return TableManipulator|MockObject
      */
     private function mockTableManipulator(Connection $connection)
     {
@@ -130,7 +132,7 @@ class SelectTest extends TestCase
                 'attr_config' => ['id' => uniqid('', false)],
             ],
             'numeric id is returned' => [
-                'expected'    => 10,
+                'expected'    => '10',
                 'value'       => ['id' => 10],
                 'attr_config' => ['id' => uniqid('', false)],
             ],
@@ -234,14 +236,13 @@ class SelectTest extends TestCase
             ->with(1)
             ->willReturn($builder);
 
-        $statement = $this
-            ->getMockBuilder(Statement::class)
+        $result = $this
+            ->getMockBuilder(Result::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $statement
+        $result
             ->expects($this->once())
-            ->method('fetch')
-            ->with(\PDO::FETCH_ASSOC)
+            ->method('fetchAssociative')
             ->willReturnOnConsecutiveCalls([
                 'id'      => 10,
                 'pid'     => 0,
@@ -250,8 +251,8 @@ class SelectTest extends TestCase
             ], null);
         $builder
             ->expects($this->once())
-            ->method('execute')
-            ->willReturn($statement);
+            ->method('executeQuery')
+            ->willReturn($result);
         $connection->expects($this->once())->method('createQueryBuilder')->willReturn($builder);
 
         $this->assertSame([
