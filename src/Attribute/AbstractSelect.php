@@ -37,14 +37,14 @@ abstract class AbstractSelect extends AbstractHybrid
      *
      * @var int
      */
-    protected $widgetMode;
+    protected $widgetMode = 0;
 
     /**
      * Local cached flag if the attribute has been properly configured.
      *
-     * @var bool
+     * @var bool|null
      */
-    private bool $isProperlyConfigured;
+    private ?bool $isProperlyConfigured = null;
 
     /**
      * {@inheritdoc}
@@ -131,7 +131,7 @@ abstract class AbstractSelect extends AbstractHybrid
      */
     protected function isProperlyConfigured()
     {
-        if (isset($this->isProperlyConfigured)) {
+        if (null !== $this->isProperlyConfigured) {
             return $this->isProperlyConfigured;
         }
 
@@ -185,7 +185,7 @@ abstract class AbstractSelect extends AbstractHybrid
      *
      * This is being called from BackendSubscriber to circumvent problems when dealing with translated aliases.
      *
-     * @return array
+     * @return array<string, string>
      */
     abstract public function getFilterOptionsForDcGeneral();
 
@@ -264,9 +264,9 @@ abstract class AbstractSelect extends AbstractHybrid
     /**
      * Convert the passed values to a list of value ids.
      *
-     * @param string[] $values The values to convert.
+     * @param list<string> $values The values to convert.
      *
-     * @return string[]
+     * @return list<string>
      */
     public function convertValuesToValueIds($values)
     {
@@ -289,7 +289,7 @@ abstract class AbstractSelect extends AbstractHybrid
             ->where('t.' . $aliasColumn . ' IN (:values)')
             ->setParameter('values', $values, ArrayParameterType::STRING)
             ->executeQuery()
-            ->fetchAssociative();
+            ->fetchFirstColumn();
     }
 
     /**

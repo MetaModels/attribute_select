@@ -272,7 +272,10 @@ class BackendEventsListener
         $fieldList = $this->connection->createSchemaManager()->listTableColumns($tableName);
 
         foreach ($fieldList as $column) {
-            if (($typeFilter === null) || \in_array(Type::getTypeRegistry()->lookupName($column->getType()), $typeFilter, true)) {
+            if (
+                ($typeFilter === null)
+                || \in_array(Type::getTypeRegistry()->lookupName($column->getType()), $typeFilter, true)
+            ) {
                 $result[$column->getName()] = $column->getName();
             }
         }

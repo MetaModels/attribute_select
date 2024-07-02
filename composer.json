@@ -38,6 +38,7 @@
     "doctrine/dbal": "^3.3",
     "metamodels/core": "^2.3@dev",
     "symfony/dependency-injection": "^5.4",
+    "symfony/http-foundation": "^5.4",
     "symfony/http-kernel": "^5.4"
   },
   "require-dev": {

@@ -239,7 +239,7 @@ class Select extends AbstractSelect
         $idColumn      = $this->getIdColumn();
         $strSortColumn = $this->getSortingColumn();
 
-        if ($idList) {
+        if (null !== $idList) {
             $builder = $this->connection->createQueryBuilder()
                 ->select('COUNT(sourceTable.' . $idColumn . ') as mm_count')
                 ->addSelect('sourceTable.*')
