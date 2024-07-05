@@ -202,7 +202,7 @@ class AllowNullMigration extends AbstractMigration
         $this->connection->createQueryBuilder()
             ->update($tableName, 't')
             ->set('t.' . $column->getName(), 'null')
-            ->where('t.' . $column->getName() . ' = ""')
+            ->where('t.' . $column->getName() . ' = "0"')
             ->executeQuery();
     }
 }
