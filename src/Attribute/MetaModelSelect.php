@@ -674,16 +674,24 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
         $strCurrentLanguage = null;
 
         $metaModel = $this->getSelectMetaModel();
+        $parent    = $this->getMetaModel();
 
         // Change language.
         if ($this->isBackend() && !$metaModel instanceof ITranslatedMetaModel) {
             // @deprecated usage of TL_LANGUAGE - remove for Contao 5.0.
             $strCurrentLanguage = LocaleUtil::formatAsLocale($GLOBALS['TL_LANGUAGE']);
             /** @psalm-suppress DeprecatedMethod */
-            $GLOBALS['TL_LANGUAGE'] = LocaleUtil::formatAsLanguageTag($this->getMetaModel()->getActiveLanguage());
+            $GLOBALS['TL_LANGUAGE'] = LocaleUtil::formatAsLanguageTag($parent->getActiveLanguage());
         }
 
-        $filter = $this->getSelectMetaModel()->getEmptyFilter();
+        if ($metaModel instanceof ITranslatedMetaModel && $parent instanceof ITranslatedMetaModel) {
+            $currentLanguage  = $parent->getLanguage();
+            $previousLanguage = $metaModel->selectLanguage($currentLanguage);
+        } elseif ($metaModel instanceof ITranslatedMetaModel) {
+            $previousLanguage = $metaModel->selectLanguage($metaModel->getMainLanguage());
+        }
+
+        $filter = $metaModel->getEmptyFilter();
 
         $this->buildFilterRulesForFilterSetting($filter);
 
@@ -692,7 +700,13 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
             $this->buildFilterRulesForUsedOnly($filter, $idList ?? []);
         }
 
-        $objItems = $this->getSelectMetaModel()->findByFilter($filter, $strSortingValue);
+        try {
+            $objItems = $metaModel->findByFilter($filter, $strSortingValue);
+        } finally {
+            if (isset($previousLanguage) && $metaModel instanceof ITranslatedMetaModel) {
+                $metaModel->selectLanguage($previousLanguage);
+            }
+        }
 
         // Reset language.
         if ($this->isBackend() && isset($strCurrentLanguage)) {
