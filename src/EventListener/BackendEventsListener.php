@@ -150,21 +150,9 @@ class BackendEventsListener
      */
     public function getTableAndMetaModelsList()
     {
-        $sqlTable     = $this->translator->trans(
-            'tl_metamodel_attribute.select_table_type.sql-table',
-            [],
-            'contao_tl_metamodel_attribute'
-        );
-        $translated   = $this->translator->trans(
-            'tl_metamodel_attribute.select_table_type.translated',
-            [],
-            'contao_tl_metamodel_attribute'
-        );
-        $untranslated = $this->translator->trans(
-            'tl_metamodel_attribute.select_table_type.untranslated',
-            [],
-            'contao_tl_metamodel_attribute'
-        );
+        $sqlTable     = $this->translator->trans('select_table_type.sql-table', [], 'tl_metamodel_attribute');
+        $translated   = $this->translator->trans('select_table_type.translated', [], 'tl_metamodel_attribute');
+        $untranslated = $this->translator->trans('select_table_type.untranslated', [], 'tl_metamodel_attribute');
 
         $result = $this->getMetaModelTableNames($translated, $untranslated);
 
@@ -304,17 +292,9 @@ class BackendEventsListener
             $attributes = $this->getAttributeNamesFrom($table);
             \asort($attributes);
 
-            $sql = $this->translator->trans(
-                'tl_metamodel_attribute.select_column_type.sql',
-                [],
-                'contao_tl_metamodel_attribute'
-            );
+            $sql = $this->translator->trans('select_column_type.sql', [], 'tl_metamodel_attribute');
 
-            $attribute = $this->translator->trans(
-                'tl_metamodel_attribute.select_column_type.attribute',
-                [],
-                'contao_tl_metamodel_attribute'
-            );
+            $attribute = $this->translator->trans('select_column_type.attribute', [], 'tl_metamodel_attribute');
 
             return
                 [
@@ -619,8 +599,10 @@ class BackendEventsListener
                 ->select('sourceTable.*')
                 ->from($values->getPropertyValue('select_table'), 'sourceTable')
                 ->where($where)
-                ->orderBy('sourceTable.' . ($values->getPropertyValue('select_sorting')
-                        ?: $values->getPropertyValue('select_id')));
+                ->orderBy(
+                    'sourceTable.' . ($values->getPropertyValue('select_sorting')
+                        ?: $values->getPropertyValue('select_id'))
+                );
 
             try {
                 $query->executeQuery();
@@ -628,7 +610,7 @@ class BackendEventsListener
                 throw new \RuntimeException(
                     \sprintf(
                         '%s %s',
-                        $this->translator->trans('sql_error', [], 'contao_tl_metamodel_attribute'),
+                        $this->translator->trans('sql_error', [], 'tl_metamodel_attribute'),
                         $e->getMessage()
                     )
                 );
