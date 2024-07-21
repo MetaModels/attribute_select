@@ -1,0 +1,114 @@
+<?xml version="1.0" ?><xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" datatype="plaintext" original="src/Resources/translations/tl_metamodel_attribute.en.xlf" target-language="de">
+    <body>
+      <trans-unit id="typeOptions.select" resname="typeOptions.select">
+        <source>Select</source>
+        <target>Einzelauswahl [select]</target>
+      </trans-unit>
+      <trans-unit id="select_table.label" resname="select_table.label">
+        <source>Source table</source>
+        <target>Quelltabelle</target>
+      </trans-unit>
+      <trans-unit id="select_table.description" resname="select_table.description">
+        <source>Please select the source table from where the values shall be retrieved from.</source>
+        <target>Bitte wählen Sie die Tabelle, aus der die Werte bezogen werden sollen.</target>
+      </trans-unit>
+      <trans-unit id="select_column.label" resname="select_column.label">
+        <source>Value column</source>
+        <target>Werte-Spalte</target>
+      </trans-unit>
+      <trans-unit id="select_column.description" resname="select_column.description">
+        <source>Please select the column where the display text value shall be retrieved from.</source>
+        <target>Bitte wählen Sie die Tabellenspalte, aus der ein Textwert bezogen werden soll.</target>
+      </trans-unit>
+      <trans-unit id="select_id.label" resname="select_id.label">
+        <source>Id column</source>
+        <target>ID-Spalte</target>
+      </trans-unit>
+      <trans-unit id="select_id.description" resname="select_id.description">
+        <source>Please select the column that shall be used as id.</source>
+        <target>Bitte wählen Sie die Tabellenspalte aus, die als Datensatz-ID dienen soll.</target>
+      </trans-unit>
+      <trans-unit id="select_alias.label" resname="select_alias.label">
+        <source>Alias column</source>
+        <target>Alias-Spalte</target>
+      </trans-unit>
+      <trans-unit id="select_alias.description" resname="select_alias.description">
+        <source>Please select the column that shall be used as option alias (Used in filter widgets i.e.). Select the same as for the id column if unsure.</source>
+        <target>Bitte wählen Sie die Tabellenspalte, die als Optionsalias (zum Beispiel in Filterwidgets) benutzt werden soll. Falls Sie unsicher sind, wählen Sie dieselbe Spalte wie für die ID aus.</target>
+      </trans-unit>
+      <trans-unit id="select_sorting.label" resname="select_sorting.label">
+        <source>Select sorting</source>
+        <target>Auswahl-Sortierung</target>
+      </trans-unit>
+      <trans-unit id="select_sorting.description" resname="select_sorting.description">
+        <source>Please select an entry for the tag sorting.</source>
+        <target>Bitte wählen Sie einen Eintrag für die Tag-Sortierung aus.</target>
+      </trans-unit>
+      <trans-unit id="select_sort.label" resname="select_sort.label">
+        <source>Sorting direction</source>
+        <target>Sortierrichtung</target>
+      </trans-unit>
+      <trans-unit id="select_sort.description" resname="select_sort.description">
+        <source>The sorting direction.</source>
+        <target>Richtung der Sortierung.</target>
+      </trans-unit>
+      <trans-unit id="select_where.label" resname="select_where.label">
+        <source>SQL</source>
+        <target>SQL</target>
+      </trans-unit>
+      <trans-unit id="select_where.description" resname="select_where.description">
+        <source>The list of options can be limited by using SQL as WHERE condition - use the alias 'sourceTable' for the source table.</source>
+        <target>Die Liste der Optionen kann durch Verwendung von SQL als WHERE-Bedingung eingeschränkt werden - verwenden Sie den Alias 'sourceTable' für die Quelltabelle.</target>
+      </trans-unit>
+      <trans-unit id="select_filter.label" resname="select_filter.label">
+        <source>Filter</source>
+        <target>Filter</target>
+      </trans-unit>
+      <trans-unit id="select_filter.description" resname="select_filter.description">
+        <source>Here you can choose the filter to use.</source>
+        <target>Hier können Sie den Filter wählen.</target>
+      </trans-unit>
+      <trans-unit id="select_filterparams.label" resname="select_filterparams.label">
+        <source>Filter parameters</source>
+        <target>Filterparameter</target>
+      </trans-unit>
+      <trans-unit id="select_filterparams.description" resname="select_filterparams.description">
+        <source>Here you can choose a default value for the filter.</source>
+        <target>Hier können Sie eine Vorgabe für den Filter wählen..</target>
+      </trans-unit>
+      <trans-unit id="sql_error" resname="sql_error">
+        <source>The SQL query causes an error.</source>
+        <target>Die SQL-Abfrage verursacht einen Fehler.</target>
+      </trans-unit>
+      <trans-unit id="select_table_type.translated" resname="select_table_type.translated">
+        <source>Translated MetaModels</source>
+        <target>Übersetztes MetaModels</target>
+      </trans-unit>
+      <trans-unit id="select_table_type.untranslated" resname="select_table_type.untranslated">
+        <source>Untranslated MetaModels</source>
+        <target>Unübersetztes MetaModels</target>
+      </trans-unit>
+      <trans-unit id="select_table_type.sql-table" resname="select_table_type.sql-table">
+        <source>SQL Table</source>
+        <target>SQL Tabelle</target>
+      </trans-unit>
+      <trans-unit id="select_column_type.attribute" resname="select_column_type.attribute">
+        <source>MetaModel attributes</source>
+        <target>MetaModels Attribute</target>
+      </trans-unit>
+      <trans-unit id="select_column_type.sql" resname="select_column_type.sql">
+        <source>SQL table column</source>
+        <target>Spalte der SQL-Tabelle</target>
+      </trans-unit>
+      <trans-unit id="select_sort_directions.asc" resname="select_sort_directions.asc">
+        <source>Ascending</source>
+        <target>Aufsteigend</target>
+      </trans-unit>
+      <trans-unit id="select_sort_directions.desc" resname="select_sort_directions.desc">
+        <source>Descending</source>
+        <target>Absteigend</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
