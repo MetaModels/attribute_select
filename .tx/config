@@ -15,6 +15,6 @@ file_filter            = src/Resources/translations/tl_metamodel_dcasetting.<lan
 source_file            = src/Resources/translations/tl_metamodel_dcasetting.en.xlf
 type                   = XLIFF
 minimum_perc           = 0
-resource_name          = tl_metamodel_attribute
+resource_name          = tl_metamodel_dcasetting
 replace_edited_strings = false
 keep_translations      = false
