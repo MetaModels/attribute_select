@@ -188,10 +188,10 @@ class AllowNullMigrationTest extends TestCase
                     static $expected = [
                         ['attribute.type=:type'],
                         ['attribute.type=:type'],
-                        ['t.normal = ""'],
-                        ['t.camelCase = ""'],
-                        ['t.camelCase = ""'],
-                        ['t.normal = ""']
+                        ['t.normal = 0'],
+                        ['t.camelCase = 0'],
+                        ['t.camelCase = 0'],
+                        ['t.normal = 0']
                     ];
                     static $invocationCount = 0;
 

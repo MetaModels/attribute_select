@@ -74,6 +74,7 @@ use function var_export;
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  * @SuppressWarnings(PHPMD.ExcessiveClassLength)
+ * @SuppressWarnings(PHPMD.NPathComplexity)
  */
 class MetaModelSelect extends AbstractSelect implements IAliasConverter
 {
