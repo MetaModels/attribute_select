@@ -235,9 +235,10 @@ class Select extends AbstractSelect
             return [];
         }
 
-        $tableName     = $this->getSelectSource();
-        $idColumn      = $this->getIdColumn();
-        $strSortColumn = $this->getSortingColumn();
+        $tableName        = $this->getSelectSource();
+        $idColumn         = $this->getIdColumn();
+        $strSortColumn    = $this->getSortingColumn();
+        $sortingDirection = $this->getSortDirection();
 
         if (null !== $idList) {
             $builder = $this->connection->createQueryBuilder()
@@ -253,7 +254,7 @@ class Select extends AbstractSelect
                 ->where('modelTable.id IN (:ids)')
                 ->setParameter('ids', $idList, ArrayParameterType::STRING)
                 ->addGroupBy('sourceTable.' . $idColumn)
-                ->addOrderBy('sourceTable.' . $strSortColumn);
+                ->addOrderBy('sourceTable.' . $strSortColumn, $sortingDirection);
 
             if (false !== ($additionalWhere = $this->getAdditionalWhere())) {
                 $builder->andWhere($additionalWhere);
