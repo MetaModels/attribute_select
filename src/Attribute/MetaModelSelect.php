@@ -672,6 +672,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
 
         $strDisplayValue    = $this->getValueColumn();
         $strSortingValue    = $this->getSortingColumn();
+        $sortingDirection   = $this->getSortDirection();
         $strCurrentLanguage = null;
 
         $metaModel = $this->getSelectMetaModel();
@@ -702,7 +703,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
         }
 
         try {
-            $objItems = $metaModel->findByFilter($filter, $strSortingValue);
+            $objItems = $metaModel->findByFilter($filter, $strSortingValue, 0, 0, $sortingDirection);
         } finally {
             if (isset($previousLanguage) && $metaModel instanceof ITranslatedMetaModel) {
                 $metaModel->selectLanguage($previousLanguage);
