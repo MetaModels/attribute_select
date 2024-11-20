@@ -320,6 +320,7 @@ class MetaModelSelect extends AbstractSelect implements IAliasConverter
         }
 
         $model = $this->getSelectMetaModel();
+        assert($model instanceof IMetaModel);
         $alias = $this->getAliasColumn();
 
         if ($model->hasAttribute($alias)) {
