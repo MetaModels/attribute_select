@@ -195,12 +195,12 @@ abstract class AbstractSelect extends AbstractHybrid
     public function getFieldDefinition($arrOverrides = [])
     {
         $arrFieldDef      = parent::getFieldDefinition($arrOverrides);
-        $this->widgetMode = $arrOverrides['select_as_radio'];
+        $this->widgetMode = (int) $arrOverrides['select_as_radio'];
         if ($this->isTreePicker()) {
             $arrFieldDef['inputType']          = $this->getPickerType();
             $arrFieldDef['eval']['sourceName'] = $this->getSelectSource();
             $arrFieldDef['eval']['fieldType']  = 'radio';
-            $arrFieldDef['eval']['idProperty'] = $this->getIdColumn();
+            $arrFieldDef['eval']['idProperty'] = $this->getAliasColumn();
             $arrFieldDef['eval']['orderField'] = $this->getSortingColumn();
             $arrFieldDef['eval']['minLevel']   = $arrOverrides['select_minLevel'];
             $arrFieldDef['eval']['maxLevel']   = $arrOverrides['select_maxLevel'];
