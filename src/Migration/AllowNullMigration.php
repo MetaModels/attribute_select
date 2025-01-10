@@ -29,6 +29,11 @@ use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Schema\SchemaException;
 
+use function array_intersect;
+use function array_map;
+use function count;
+use function implode;
+
 /**
  * This migration changes all database columns to allow null values.
  *
@@ -42,6 +47,9 @@ class AllowNullMigration extends AbstractMigration
      * @var Connection
      */
     private Connection $connection;
+
+    /** @var list<string> */
+    private array $existsCache = [];
 
     /**
      * Create a new instance.
@@ -73,9 +81,7 @@ class AllowNullMigration extends AbstractMigration
      */
     public function shouldRun(): bool
     {
-        $schemaManager = $this->connection->createSchemaManager();
-
-        if (!$schemaManager->tablesExist(['tl_metamodel', 'tl_metamodel_attribute'])) {
+        if (!$this->tablesExist(['tl_metamodel', 'tl_metamodel_attribute'])) {
             return false;
         }
 
@@ -103,7 +109,7 @@ class AllowNullMigration extends AbstractMigration
             }
         }
 
-        return new MigrationResult(true, 'Adjusted column(s): ' . \implode(', ', $message));
+        return new MigrationResult(true, 'Adjusted column(s): ' . implode(', ', $message));
     }
 
     /**
@@ -121,6 +127,10 @@ class AllowNullMigration extends AbstractMigration
 
         $result = [];
         foreach ($langColumns as $tableName => $tableColumnNames) {
+            if (!$this->tablesExist([$tableName])) {
+                continue;
+            }
+
             /** @var Column[] $columns */
             $columns = [];
             // The schema manager return the column list with lowercase keys, wo got to use the real names.
@@ -204,5 +214,14 @@ class AllowNullMigration extends AbstractMigration
             ->set('t.' . $column->getName(), 'null')
             ->where('t.' . $column->getName() . ' = 0')
             ->executeQuery();
+    }
+
+    private function tablesExist(array $tableNames): bool
+    {
+        if ([] === $this->existsCache) {
+            $this->existsCache = \array_values($this->connection->createSchemaManager()->listTableNames());
+        }
+
+        return count($tableNames) === count(array_intersect($tableNames, array_map('strtolower', $this->existsCache)));
     }
 }
