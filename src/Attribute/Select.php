@@ -3,7 +3,7 @@
 /**
  * This file is part of MetaModels/attribute_select.
  *
- * (c) 2012-2022 The MetaModels team.
+ * (c) 2012-2024 The MetaModels team.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -22,22 +22,20 @@
  * @author     David Molineus <david.molineus@netzmacht.de>
  * @author     Ingolf Steinhardt <info@e-spin.de>
  * @author     Sven Baumann <baumann.sv@gmail.com>
- * @copyright  2012-2022 The MetaModels team.
+ * @copyright  2012-2024 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
  */
 
 namespace MetaModels\AttributeSelectBundle\Attribute;
 
-use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Driver\Exception as DbalDriverException;
-use Doctrine\DBAL\Driver\ResultStatement;
-use Doctrine\DBAL\Exception;
-use MetaModels\Attribute\IAliasConverter;
-use MetaModels\ITranslatedMetaModel;
+use Doctrine\DBAL\ArrayParameterType;
+use Doctrine\DBAL\Result;
 
 /**
  * This is the MetaModelAttribute class for handling select attributes on plain SQL tables.
+ *
+ * @psalm-suppress PropertyNotSetInConstructor
  */
 class Select extends AbstractSelect
 {
@@ -47,7 +45,7 @@ class Select extends AbstractSelect
     protected function checkConfiguration()
     {
         return parent::checkConfiguration()
-               && $this->connection->getSchemaManager()->tablesExist([$this->getSelectSource()]);
+               && $this->connection->createSchemaManager()->tablesExist([$this->getSelectSource()]);
     }
 
     /**
@@ -62,17 +60,18 @@ class Select extends AbstractSelect
         $strTableName  = $this->getSelectSource();
         $strColNameId  = $this->getIdColumn();
         $strSortColumn = $this->getSortingColumn();
-        $idList        = $this->connection->createQueryBuilder()
+        $statement     = $this->connection
+            ->createQueryBuilder()
             ->select('m.id')
             ->from($this->getMetaModel()->getTableName(), 'm')
-            ->leftJoin('m', $strTableName, 's', sprintf('s.%s = m.%s', $strColNameId, $this->getColName()))
+            ->leftJoin('m', $strTableName, 's', \sprintf('s.%s = m.%s', $strColNameId, $this->getColName()))
             ->where('m.id IN (:ids)')
             ->orderBy('s.' . $strSortColumn, $strDirection)
-            ->setParameter('ids', $idList, Connection::PARAM_STR_ARRAY)
-            ->execute()
-            ->fetchAll(\PDO::FETCH_COLUMN);
+            ->setParameter('ids', $idList, ArrayParameterType::STRING)
+            ->executeQuery();
 
-        return $idList;
+        // Return value list as list<mixed>, parent function wants a list<string> so we make a cast.
+        return \array_map(static fn (mixed $value) => (string) $value, $statement->fetchFirstColumn());
     }
 
     /**
@@ -94,11 +93,11 @@ class Select extends AbstractSelect
      */
     public function valueToWidget($varValue)
     {
-        if (!is_array($varValue) || !array_key_exists($idColumn = $this->getAliasColumn(), $varValue)) {
+        if (!\is_array($varValue) || !\array_key_exists($idColumn = $this->getAliasColumn(), $varValue)) {
             return null;
         }
 
-        return ($varValue[$idColumn] ?? null);
+        return ((string) ($varValue[$idColumn] ?? null));
     }
 
     /**
@@ -109,17 +108,20 @@ class Select extends AbstractSelect
         if (null === $varValue) {
             return null;
         }
+
         // Lookup the value.
-        $value = $this->connection->createQueryBuilder()
+        $builder = $this->connection->createQueryBuilder()
             ->select('*')
             ->from($this->getSelectSource(), 't')
             ->where('t.' . $this->getAliasColumn() . '=:value')
             ->setParameter('value', $varValue)
-            ->setMaxResults(1)
-            ->execute()
-            ->fetch(\PDO::FETCH_ASSOC);
+            ->setMaxResults(1);
 
-        return $value;
+        if (false === ($result = $builder->executeQuery()->fetchAssociative())) {
+            return null;
+        }
+
+        return $result;
     }
 
     /**
@@ -139,33 +141,32 @@ class Select extends AbstractSelect
     /**
      * Determine the correct sorting column to use.
      *
-     * @return string
+     * @return string|bool
      */
     protected function getAdditionalWhere()
     {
-        return $this->get('select_where') ? html_entity_decode($this->get('select_where')) : false;
+        return $this->get('select_where') ? \html_entity_decode($this->get('select_where')) : false;
     }
 
     /**
      * Convert the database result into a proper result array.
      *
-     * @param ResultStatement $statement   The database result statement.
-     * @param string          $aliasColumn The name of the alias column to be used.
-     * @param string          $valueColumn The name of the value column.
-     * @param array           $count       The optional count array.
+     * @param Result $statement   The database result statement.
+     * @param string $aliasColumn The name of the alias column to be used.
+     * @param string $valueColumn The name of the value column.
+     * @param array  $count       The optional count array.
      *
      * @return array
      */
     protected function convertOptionsList($statement, $aliasColumn, $valueColumn, &$count = null)
     {
         $arrReturn = [];
-        while ($values = $statement->fetch(\PDO::FETCH_OBJ)) {
+        while ($values = $statement->fetchAssociative()) {
             if (\is_array($count)) {
-                /** @noinspection PhpUndefinedFieldInspection */
-                $count[$values->$aliasColumn] = $values->mm_count;
+                $count[$values[$aliasColumn]] = $values['mm_count'];
             }
 
-            $arrReturn[$values->$aliasColumn] = $values->$valueColumn;
+            $arrReturn[$values[$aliasColumn]] = $values[$valueColumn];
         }
 
         return $arrReturn;
@@ -176,7 +177,7 @@ class Select extends AbstractSelect
      *
      * @param bool $usedOnly The flag if only used values shall be returned.
      *
-     * @return ResultStatement
+     * @return Result
      */
     public function getFilterOptionsForUsedOnly($usedOnly)
     {
@@ -196,11 +197,11 @@ class Select extends AbstractSelect
                 ->addGroupBy('sourceTable.' . $this->getIdColumn())
                 ->addOrderBy('sourceTable.' . $sortColumn);
 
-            if ($additionalWhere = $this->getAdditionalWhere()) {
+            if (false !== ($additionalWhere = $this->getAdditionalWhere())) {
                 $builder->andWhere($additionalWhere);
             }
 
-            return $builder->execute();
+            return $builder->executeQuery();
         }
 
         $builder = $this->connection->createQueryBuilder()
@@ -216,11 +217,11 @@ class Select extends AbstractSelect
             ->addGroupBy('sourceTable.' . $this->getIdColumn())
             ->addOrderBy('sourceTable.' . $sortColumn);
 
-        if ($additionalWhere = $this->getAdditionalWhere()) {
+        if (false !== ($additionalWhere = $this->getAdditionalWhere())) {
             $builder->andWhere($additionalWhere);
         }
 
-        return $builder->execute();
+        return $builder->executeQuery();
     }
 
     /**
@@ -234,11 +235,12 @@ class Select extends AbstractSelect
             return [];
         }
 
-        $tableName     = $this->getSelectSource();
-        $idColumn      = $this->getIdColumn();
-        $strSortColumn = $this->getSortingColumn();
+        $tableName        = $this->getSelectSource();
+        $idColumn         = $this->getIdColumn();
+        $strSortColumn    = $this->getSortingColumn();
+        $sortingDirection = $this->getSortDirection();
 
-        if ($idList) {
+        if (null !== $idList) {
             $builder = $this->connection->createQueryBuilder()
                 ->select('COUNT(sourceTable.' . $idColumn . ') as mm_count')
                 ->addSelect('sourceTable.*')
@@ -250,15 +252,15 @@ class Select extends AbstractSelect
                     'modelTable.' . $this->getColName() . '=sourceTable.' . $idColumn
                 )
                 ->where('modelTable.id IN (:ids)')
-                ->setParameter('ids', $idList, Connection::PARAM_STR_ARRAY)
+                ->setParameter('ids', $idList, ArrayParameterType::STRING)
                 ->addGroupBy('sourceTable.' . $idColumn)
-                ->addOrderBy('sourceTable.' . $strSortColumn);
+                ->addOrderBy('sourceTable.' . $strSortColumn, $sortingDirection);
 
-            if ($additionalWhere = $this->getAdditionalWhere()) {
+            if (false !== ($additionalWhere = $this->getAdditionalWhere())) {
                 $builder->andWhere($additionalWhere);
             }
 
-            $statement = $builder->execute();
+            $statement = $builder->executeQuery();
         } else {
             $statement = $this->getFilterOptionsForUsedOnly($usedOnly);
         }
@@ -268,6 +270,8 @@ class Select extends AbstractSelect
 
     /**
      * {@inheritdoc}
+     *
+     * @SuppressWarnings(PHPMD.LongVariable)
      */
     public function getDataFor($arrIds)
     {
@@ -293,15 +297,19 @@ class Select extends AbstractSelect
                 'sourceTable.' . $strColNameId . '=modelTable.' . $this->getColName()
             )
             ->where('modelTable.id IN (:ids)')
-            ->setParameter('ids', $arrIds, Connection::PARAM_STR_ARRAY);
+            ->setParameter('ids', $arrIds, ArrayParameterType::STRING);
 
-        if ($additionalWhere = $this->getAdditionalWhere()) {
+        if (false !== ($additionalWhere = $this->getAdditionalWhere())) {
             $builder->andWhere($additionalWhere);
         }
 
-        $statement = $builder->execute();
+        $statement = $builder->executeQuery();
 
-        foreach ($statement->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+        if ($statement->rowCount() === 0) {
+            return $arrReturn;
+        }
+
+        foreach ($statement->fetchAllAssociative() as $row) {
             $arrReturn[$row[$strMetaModelTableNameId]] = $row;
         }
 
@@ -319,11 +327,12 @@ class Select extends AbstractSelect
 
         $strTableName = $this->getSelectSource();
         $strColNameId = $this->getIdColumn();
+
         if ($strTableName && $strColNameId) {
             foreach ($arrValues as $intItemId => $arrValue) {
                 $this->connection->update(
                     $this->getMetaModel()->getTableName(),
-                    [$this->getColName() => $arrValue[$strColNameId]],
+                    [$this->getColName() => ($arrValue[$strColNameId] ?? null)],
                     ['id' => $intItemId]
                 );
             }

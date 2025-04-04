@@ -3,7 +3,7 @@
 /**
  * This file is part of MetaModels/attribute_select.
  *
- * (c) 2012-2022 The MetaModels team.
+ * (c) 2012-2024 The MetaModels team.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -16,14 +16,14 @@
  * @author     David Molineus <david.molineus@netzmacht.de>
  * @author     Sven Baumann <baumann.sv@gmail.com>
  * @author     Ingolf Steinhardt <info@e-spin.de>
- * @copyright  2012-2022 The MetaModels team.
+ * @copyright  2012-2024 The MetaModels team.
  * @license    https://github.com/MetaModels/attribute_select/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
  */
 
 namespace MetaModels\AttributeSelectBundle\Attribute;
 
-use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\ArrayParameterType;
 use MetaModels\Attribute\AbstractHybrid;
 use MetaModels\AttributeSelectBundle\FilterRule\FilterRuleSelect;
 
@@ -37,14 +37,14 @@ abstract class AbstractSelect extends AbstractHybrid
      *
      * @var int
      */
-    protected $widgetMode;
+    protected $widgetMode = 0;
 
     /**
      * Local cached flag if the attribute has been properly configured.
      *
-     * @var bool
+     * @var bool|null
      */
-    private $isProperlyConfigured;
+    private ?bool $isProperlyConfigured = null;
 
     /**
      * {@inheritdoc}
@@ -61,7 +61,7 @@ abstract class AbstractSelect extends AbstractHybrid
      */
     protected function isTreePicker()
     {
-        return $this->widgetMode == 2;
+        return $this->widgetMode === 2;
     }
 
     /**
@@ -131,7 +131,7 @@ abstract class AbstractSelect extends AbstractHybrid
      */
     protected function isProperlyConfigured()
     {
-        if (isset($this->isProperlyConfigured)) {
+        if (null !== $this->isProperlyConfigured) {
             return $this->isProperlyConfigured;
         }
 
@@ -185,7 +185,7 @@ abstract class AbstractSelect extends AbstractHybrid
      *
      * This is being called from BackendSubscriber to circumvent problems when dealing with translated aliases.
      *
-     * @return array
+     * @return array<string, string>
      */
     abstract public function getFilterOptionsForDcGeneral();
 
@@ -195,16 +195,16 @@ abstract class AbstractSelect extends AbstractHybrid
     public function getFieldDefinition($arrOverrides = [])
     {
         $arrFieldDef      = parent::getFieldDefinition($arrOverrides);
-        $this->widgetMode = $arrOverrides['select_as_radio'];
+        $this->widgetMode = (int) $arrOverrides['select_as_radio'];
         if ($this->isTreePicker()) {
             $arrFieldDef['inputType']          = $this->getPickerType();
             $arrFieldDef['eval']['sourceName'] = $this->getSelectSource();
             $arrFieldDef['eval']['fieldType']  = 'radio';
-            $arrFieldDef['eval']['idProperty'] = $this->getIdColumn();
+            $arrFieldDef['eval']['idProperty'] = $this->getAliasColumn();
             $arrFieldDef['eval']['orderField'] = $this->getSortingColumn();
             $arrFieldDef['eval']['minLevel']   = $arrOverrides['select_minLevel'];
             $arrFieldDef['eval']['maxLevel']   = $arrOverrides['select_maxLevel'];
-        } elseif ($this->widgetMode == 1) {
+        } elseif ($this->widgetMode === 1) {
             // If select as radio is true, change the input type.
             $arrFieldDef['inputType'] = 'radio';
         } else {
@@ -245,9 +245,7 @@ abstract class AbstractSelect extends AbstractHybrid
      */
     public function searchFor($strPattern)
     {
-        $objFilterRule = new FilterRuleSelect($this, $strPattern, $this->connection);
-
-        return $objFilterRule->getMatchingIds();
+        return (new FilterRuleSelect($this, $strPattern, $this->connection))->getMatchingIds() ?? [];
     }
 
     /**
@@ -257,18 +255,18 @@ abstract class AbstractSelect extends AbstractHybrid
     {
         $this->connection->createQueryBuilder()
             ->update($this->getMetaModel()->getTableName(), 't')
-            ->set('t.' . $this->getColName(), 0)
+            ->set('t.' . $this->getColName(), '0')
             ->where('t.id IN (:ids)')
-            ->setParameter('ids', $arrIds, Connection::PARAM_STR_ARRAY)
-            ->execute();
+            ->setParameter('ids', $arrIds, ArrayParameterType::STRING)
+            ->executeQuery();
     }
 
     /**
      * Convert the passed values to a list of value ids.
      *
-     * @param string[] $values The values to convert.
+     * @param list<string> $values The values to convert.
      *
-     * @return string[]
+     * @return list<string>
      */
     public function convertValuesToValueIds($values)
     {
@@ -289,9 +287,9 @@ abstract class AbstractSelect extends AbstractHybrid
             ->select('t.' . $idColumn)
             ->from($tableName, 't')
             ->where('t.' . $aliasColumn . ' IN (:values)')
-            ->setParameter('values', $values, Connection::PARAM_STR_ARRAY)
-            ->execute()
-            ->fetch(\PDO::FETCH_ASSOC);
+            ->setParameter('values', $values, ArrayParameterType::STRING)
+            ->executeQuery()
+            ->fetchFirstColumn();
     }
 
     /**

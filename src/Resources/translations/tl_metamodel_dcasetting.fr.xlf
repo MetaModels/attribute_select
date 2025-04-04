@@ -1,0 +1,42 @@
+<?xml version="1.0" ?><xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" datatype="plaintext" original="src/Resources/translations/tl_metamodel_dcasetting.en.xlf" target-language="fr">
+    <body>
+      <trans-unit id="select_as_radio.label" resname="select_as_radio.label">
+        <source>Display type</source>
+        <target>Type d'affichage</target>
+      </trans-unit>
+      <trans-unit id="select_as_radio.description" resname="select_as_radio.description">
+        <source>Select the desired display type.</source>
+        <target>Sélectionnez le type d'affichage.</target>
+      </trans-unit>
+      <trans-unit id="select_minLevel.label" resname="select_minLevel.label">
+        <source>Minimum level in tree picker</source>
+        <target>Niveau minimum dans l'arborescence</target>
+      </trans-unit>
+      <trans-unit id="select_minLevel.description" resname="select_minLevel.description">
+        <source>If you pass a value &gt;0 here, no item below this level will be selectable.</source>
+        <target>Si la valeur est &gt;0, aucun élément situé en dessous de ce niveau ne pourra être sélectionné.</target>
+      </trans-unit>
+      <trans-unit id="select_maxLevel.label" resname="select_maxLevel.label">
+        <source>Maximum level in tree picker</source>
+        <target>Niveau maximum dans l'arborescence</target>
+      </trans-unit>
+      <trans-unit id="select_maxLevel.description" resname="select_maxLevel.description">
+        <source>If you pass a value &gt;0 here, no item above this level will be selectable.</source>
+        <target>Si la valeur &gt;0, aucun élément situé au-dessus de ce niveau ne pourra être sélectionné.</target>
+      </trans-unit>
+      <trans-unit id="select_as_radio_reference.0" resname="select_as_radio_reference.0">
+        <source>Display as select menu</source>
+        <target>Afficher comme liste déroulante</target>
+      </trans-unit>
+      <trans-unit id="select_as_radio_reference.1" resname="select_as_radio_reference.1">
+        <source>Display as radio button list</source>
+        <target>Afficher comme boutons radios</target>
+      </trans-unit>
+      <trans-unit id="select_as_radio_reference.2" resname="select_as_radio_reference.2">
+        <source>Display as picker popup</source>
+        <target>Afficher comme popup de sélection</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
