@@ -28,7 +28,6 @@
     "email": "mail@metamodel.me",
     "issues": "https://github.com/MetaModels/attribute_select/issues",
     "wiki": "https://de.contaowiki.org/MetaModels",
-    "irc": "irc://irc.freenode.org/contao.mm",
     "source": "https://github.com/MetaModels/attribute_select"
   },
   "require": {
@@ -36,7 +35,7 @@
     "contao-community-alliance/dc-general": "^2.3",
     "contao/core-bundle": "^4.13.0 <5.0",
     "doctrine/dbal": "^3.3",
-    "metamodels/core": "^2.3@dev",
+    "metamodels/core": "^2.3",
     "symfony/dependency-injection": "^5.4",
     "symfony/http-foundation": "^5.4",
     "symfony/http-kernel": "^5.4"
